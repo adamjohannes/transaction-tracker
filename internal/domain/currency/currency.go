@@ -6,7 +6,7 @@ import (
 )
 
 type Currency struct {
-	code string `json:"code"`
+	Code string `json:"Code"`
 }
 
 func New(code string) (*Currency, error) {
@@ -16,8 +16,8 @@ func New(code string) (*Currency, error) {
 
 	re := regexp.MustCompile(`^[a-zA-Z]+$`)
 	if !re.MatchString(code) {
-		return nil, errors.New("currency code must only contain alphabetic characters")
+		return nil, errors.New("currency Code must only contain alphabetic characters")
 	}
 
-	return &Currency{code: code}, nil
+	return &Currency{Code: code}, nil
 }

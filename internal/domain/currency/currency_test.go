@@ -39,13 +39,13 @@ func TestNew(t *testing.T) {
 			name:          "Error on Code with Numbers",
 			inputCode:     "U5D",
 			expectError:   true,
-			expectedError: "currency code must only contain alphabetic characters",
+			expectedError: "currency Code must only contain alphabetic characters",
 		},
 		{
 			name:          "Error on Code with Symbols",
 			inputCode:     "U$D",
 			expectError:   true,
-			expectedError: "currency code must only contain alphabetic characters",
+			expectedError: "currency Code must only contain alphabetic characters",
 		},
 	}
 
@@ -76,8 +76,8 @@ func TestNew(t *testing.T) {
 			}
 
 			// Case 4: We got a valid currency object, check its value
-			if currency.code != tc.inputCode {
-				t.Errorf("expected currency code '%s' but got '%s'", tc.inputCode, currency.code)
+			if currency.Code != tc.inputCode {
+				t.Errorf("expected currency Code '%s' but got '%s'", tc.inputCode, currency.Code)
 			}
 		})
 	}
