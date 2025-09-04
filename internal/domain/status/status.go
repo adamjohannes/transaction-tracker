@@ -17,3 +17,10 @@ func New(name string) (*Status, error) {
 		Name: name,
 	}, nil
 }
+
+func Build(id int8, name string) *Status {
+	return &Status{
+		ID:   id,
+		Name: name,
+	}
+}
