@@ -20,10 +20,10 @@ func New(name, description string) (*Category, error) {
 	}, nil
 }
 
-func Build(id int8, name string, description string) (*Category, error) {
+func Build(id int8, name string, description string) *Category {
 	return &Category{
 		Id:          id,
 		Name:        name,
 		Description: description,
-	}, nil
+	}
 }
