@@ -14,7 +14,7 @@ func New(parentID int8, name string) (*SubCategory, error) {
 	}
 
 	if name == "" {
-		return nil, fmt.Errorf("name must not be empty")
+		return nil, fmt.Errorf("name is required")
 	}
 
 	return &SubCategory{
