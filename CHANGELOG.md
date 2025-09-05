@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - *(.github)* Add inner .gitignore
 - *(.github/workflows)* Add cd pipeline
 - Add git cliff to project
+- *(.github/workflows)* Add CI pipeline
 
 ### 🚜 Refactor
 
@@ -36,6 +37,11 @@ All notable changes to this project will be documented in this file.
 - *(internal/domain/status)* Adjust return type of Build()
 - *(internal/domain/category)* Adjust return type of Build()
 - *(cmd)* Move main.go to cmd/
+- *(cmd)* Start testing new GUI
+
+### 📚 Documentation
+
+- Add CHANGELOG.md
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -48,6 +54,7 @@ All notable changes to this project will be documented in this file.
 - Add fyne to project
 - Add gui/ to .gitignore
 - Go mod tidy
+- Updated .gitignore
 - Updated .gitignore
 - Updated .gitignore
 
