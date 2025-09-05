@@ -19,32 +19,33 @@ func addGUI(a fyne.App, config *config.GUIConfig) fyne.Window {
 	// 1. Amount *
 	ctrAmount := amount()
 
-	// 2. Category *
-	ctrCategory := category()
-
-	// 3. Subcategory
-	ctrSubCategory := subCategory()
-
-	// 4. Date *
+	// 2. Date *
 	ctrDate := date()
 
-	// 5. Description
-	ctrDescription := description()
-
-	// 6. Status *
+	// 3. Status *
 	ctrStatus := status()
 
-	// 7. Currency *
+	// 4. Currency *
 	ctrCurrency := currency()
+
+	// 5. Category *
+	ctrCategory := category()
+
+	// 6. Subcategory
+	ctrSubCategory := subCategory()
+
+	// 7. Description
+	ctrDescription := description()
 
 	content := container.NewVBox(
 		ctrAmount, widget.NewSeparator(),
+		ctrDate, widget.NewSeparator(),
+		ctrStatus, widget.NewSeparator(),
+		ctrCurrency,
 		ctrCategory, widget.NewSeparator(),
 		ctrSubCategory, widget.NewSeparator(),
-		ctrDate, widget.NewSeparator(),
 		ctrDescription, widget.NewSeparator(),
-		ctrStatus, widget.NewSeparator(),
-		ctrCurrency)
+	)
 
 	scrollCtr := container.NewScroll(content)
 	w.SetContent(scrollCtr)
@@ -91,9 +92,36 @@ func category() fyne.CanvasObject {
 }
 
 func subCategory() fyne.CanvasObject {
-	lblSubCategory := widget.NewLabel("Subcategory:")
-	entrySubCategory := widget.NewEntry()
-	return container.NewBorder(nil, nil, lblSubCategory, nil, entrySubCategory)
+	radioGroup := widget.NewRadioGroup(
+		[]string{
+			"Sub Category 1",
+			"Sub Category 2",
+			"Sub Category 3",
+			"Sub Category 4",
+			"Sub Category 5",
+			"Sub Category 6",
+			"Sub Category 7",
+			"Sub Category 8",
+			"Sub Category 9",
+			"Sub Category 10",
+		},
+		func(s string) {
+			fmt.Println(s)
+		},
+	)
+
+	ctrItems := container.NewScroll(
+		radioGroup,
+	)
+	ctrItems.SetMinSize(fyne.NewSize(radioGroup.MinSize().Width, 200))
+
+	accSubCategory := widget.NewAccordion(
+		widget.NewAccordionItem("Category:",
+			ctrItems,
+		),
+	)
+
+	return accSubCategory
 }
 
 func date() fyne.CanvasObject {
