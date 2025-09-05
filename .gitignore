@@ -5,6 +5,9 @@
 !go.sum
 !main.go
 
+!.github/
+!.github/*
+
 !cmd/
 !cmd/*
 
