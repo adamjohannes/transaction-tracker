@@ -9,7 +9,7 @@ type PostgresConfig struct {
 	DatabasePass string
 }
 
-func New(url, name, user, password string) (*PostgresConfig, error) {
+func NewPostgresConfig(url, name, user, password string) (*PostgresConfig, error) {
 	if url == "" {
 		return nil, errors.New("postgres url required")
 	}

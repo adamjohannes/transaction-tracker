@@ -61,7 +61,7 @@ func TestNew(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config, err := New(tc.inputURL, tc.inputName, tc.inputUser, tc.inputPassword)
+			config, err := NewPostgresConfig(tc.inputURL, tc.inputName, tc.inputUser, tc.inputPassword)
 
 			if tc.expectError {
 				if err == nil {
