@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"log"
 	"monthly-expenses-handler/internal/config"
 
@@ -20,13 +21,16 @@ func addGUI(a fyne.App, config *config.GUIConfig) fyne.Window {
 	// 2. Date *
 	ctrDate := date()
 
-	// 3. Status *
+	// 3. Essential *
+	ctrEssential := essential()
+
+	// 4. Status *
 	ctrStatus := buildRadioGroupAccordion("Status (Required)", float32(120), []string{"Pending", "Completed", "Failed"})
 
-	// 4. Currency *
+	// 5. Currency *
 	ctrCurrency := buildRadioGroupAccordion("Currency (Required)", float32(120), []string{"BRL", "USD", "EUR"})
 
-	// 5. Category *
+	// 6. Category *
 	ctrCategory := buildRadioGroupAccordion("Category (Required)", float32(200), []string{
 		"Category 1",
 		"Category 2",
@@ -40,7 +44,7 @@ func addGUI(a fyne.App, config *config.GUIConfig) fyne.Window {
 		"Category 10",
 	})
 
-	// 6. Subcategory
+	// 7. Subcategory
 	ctrSubCategory := buildRadioGroupAccordion("Sub Category (Required)", float32(200), []string{
 		"Sub Category 1",
 		"Sub Category 2",
@@ -54,13 +58,14 @@ func addGUI(a fyne.App, config *config.GUIConfig) fyne.Window {
 		"Sub Category 10",
 	})
 
-	// 7. Description
+	// 8. Description
 	ctrDescription := description()
 
 	formContent := &widget.Form{
 		Items: []*widget.FormItem{
 			{Text: "", Widget: ctrAmount},
 			{Text: "", Widget: ctrDate},
+			{Text: "", Widget: ctrEssential},
 			{Text: "", Widget: ctrStatus},
 			{Text: "", Widget: ctrCurrency},
 			{Text: "", Widget: ctrCategory},
@@ -92,6 +97,14 @@ func date() fyne.CanvasObject {
 	lblDate := widget.NewLabel("Date: (Required)")
 	entryDate := widget.NewDateEntry()
 	return container.NewBorder(nil, nil, lblDate, nil, entryDate)
+}
+
+func essential() fyne.CanvasObject {
+	lblEssential := widget.NewLabel("Essential:")
+	checkEssential := widget.NewCheck("", func(checked bool) {
+		log.Println(fmt.Sprintf("Essential: %v", checked))
+	})
+	return container.NewBorder(nil, nil, lblEssential, nil, checkEssential)
 }
 
 func description() fyne.CanvasObject {
