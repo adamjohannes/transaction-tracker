@@ -1,0 +1,25 @@
+name: 🏗️ CD
+on:
+  push:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out repository's code so the workflow can access it
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the Go programming environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      # Step 3: Run the 'go build' command
+      - name: Build Project
+        run: go build -v ./...
+
+      # Step 4: Run the unit tests for all packages
+      - name: Run Unit Tests
+        run: go test -v ./...
