@@ -60,16 +60,16 @@ func amount() fyne.CanvasObject {
 func category() fyne.CanvasObject {
 	radioGroup := widget.NewRadioGroup(
 		[]string{
-			"Option 1",
-			"Option 2",
-			"Option 3",
-			"Option 4",
-			"Option 5",
-			"Option 6",
-			"Option 7",
-			"Option 8",
-			"Option 9",
-			"Option 10",
+			"Category 1",
+			"Category 2",
+			"Category 3",
+			"Category 4",
+			"Category 5",
+			"Category 6",
+			"Category 7",
+			"Category 8",
+			"Category 9",
+			"Category 10",
 		},
 		func(s string) {
 			fmt.Println(s)
