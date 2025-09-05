@@ -19,13 +19,14 @@ type Transaction struct {
 	Description string
 	Status      *status.Status
 	Currency    *currency.Currency
+	Essential   bool
 }
 
 func New(
 	amount decimal.Decimal, transactionCategory category.Category,
 	transactionSubcategory sub_category.SubCategory,
-	date time.Time, description string,
-	transactionStatus status.Status, transactionCurrency currency.Currency) *Transaction {
+	date time.Time, description string, transactionStatus status.Status,
+	transactionCurrency currency.Currency, essential bool) *Transaction {
 	return &Transaction{
 		ID:          -1,
 		Amount:      amount,
@@ -35,14 +36,15 @@ func New(
 		Description: description,
 		Status:      &transactionStatus,
 		Currency:    &transactionCurrency,
+		Essential:   essential,
 	}
 }
 
 func Build(
 	id int8, amount decimal.Decimal, transactionCategory category.Category,
 	transactionSubcategory sub_category.SubCategory,
-	date time.Time, description string,
-	transactionStatus status.Status, transactionCurrency currency.Currency) *Transaction {
+	date time.Time, description string, transactionStatus status.Status,
+	transactionCurrency currency.Currency, essential bool) *Transaction {
 	return &Transaction{
 		ID:          id,
 		Amount:      amount,
@@ -52,5 +54,6 @@ func Build(
 		Description: description,
 		Status:      &transactionStatus,
 		Currency:    &transactionCurrency,
+		Essential:   essential,
 	}
 }

@@ -22,9 +22,10 @@ func TestNew(t *testing.T) {
 	description := "Dinner with friends"
 	st, _ := status.New("Completed")
 	curr, _ := currency.New("BRL")
+	essential := false
 
 	// --- Act ---
-	transaction := New(amount, *cat, *subCat, date, description, *st, *curr)
+	transaction := New(amount, *cat, *subCat, date, description, *st, *curr, essential)
 
 	// --- Assert ---
 	if transaction == nil {
@@ -71,9 +72,10 @@ func TestBuild(t *testing.T) {
 	description := "New shirt"
 	st, _ := status.New("Pending")
 	curr, _ := currency.New("USD")
+	essential := true
 
 	// --- Act ---
-	transaction := Build(id, amount, *cat, *subCat, date, description, *st, *curr)
+	transaction := Build(id, amount, *cat, *subCat, date, description, *st, *curr, essential)
 
 	// --- Assert ---
 	if transaction == nil {
