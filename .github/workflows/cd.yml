@@ -16,10 +16,14 @@ jobs:
         with:
           go-version: '1.24'
 
-      # Step 3: Run the 'go build' command
+      # Step 3: Install Fyne
+      - name: Install Fyne Dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev xorg-dev
+
+      # Step 4: Run the 'go build' command
       - name: Build Project
         run: go build -v ./...
 
-      # Step 4: Run the unit tests for all packages
+      # Step 5: Run the unit tests for all packages
       - name: Run Unit Tests
         run: go test -v ./...
