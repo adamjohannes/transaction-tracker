@@ -76,20 +76,29 @@ func date() fyne.CanvasObject {
 }
 
 func status() fyne.CanvasObject {
-	lblStatus := widget.NewLabel("Status: (Required)")
-	errorText := canvas.NewText("Please select only one status.", theme.ErrorColor())
-	errorText.Hide()
+	radioGroup := widget.NewRadioGroup(
+		[]string{
+			"Pending",
+			"Completed",
+			"Failed",
+		},
+		func(s string) {
+			fmt.Println(s)
+		},
+	)
 
-	checkStatus := widget.NewCheckGroup([]string{"Pending", "Completed", "Failed"}, func(selected []string) {
-		if len(selected) > 1 {
-			errorText.Show()
-		} else {
-			errorText.Hide()
-		}
-	})
+	ctrItems := container.NewScroll(
+		radioGroup,
+	)
+	ctrItems.SetMinSize(fyne.NewSize(radioGroup.MinSize().Width, 200))
 
-	inputContainer := container.NewVBox(checkStatus, errorText)
-	return container.NewBorder(nil, nil, lblStatus, nil, inputContainer)
+	accStatus := widget.NewAccordion(
+		widget.NewAccordionItem("Status: (Required)",
+			ctrItems,
+		),
+	)
+
+	return accStatus
 }
 
 func currency() fyne.CanvasObject {
