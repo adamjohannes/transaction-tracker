@@ -27,7 +27,7 @@ func NewGUI() *GUI {
 		fmt.Println("List")
 	})
 
-	ctr := container.NewHBox(addBtn, listBtn)
+	ctr := container.NewGridWithRows(2, addBtn, listBtn)
 	w.SetContent(ctr)
 	return &GUI{w}
 }
