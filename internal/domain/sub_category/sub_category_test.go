@@ -35,7 +35,7 @@ func TestNew(t *testing.T) {
 			inputParentID:    2,
 			inputName:        "",
 			expectError:      true,
-			expectedErrorMsg: "name must not be empty",
+			expectedErrorMsg: "name is required",
 		},
 	}
 
