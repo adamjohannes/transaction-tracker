@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"monthly-expenses-handler/internal/config"
 
 	"fyne.io/fyne/v2"
@@ -57,9 +58,36 @@ func amount() fyne.CanvasObject {
 }
 
 func category() fyne.CanvasObject {
-	lblCategory := widget.NewLabel("Category:")
-	entryCategory := widget.NewEntry()
-	return container.NewBorder(nil, nil, lblCategory, nil, entryCategory)
+	radioGroup := widget.NewRadioGroup(
+		[]string{
+			"Option 1",
+			"Option 2",
+			"Option 3",
+			"Option 4",
+			"Option 5",
+			"Option 6",
+			"Option 7",
+			"Option 8",
+			"Option 9",
+			"Option 10",
+		},
+		func(s string) {
+			fmt.Println(s)
+		},
+	)
+
+	ctrItems := container.NewScroll(
+		radioGroup,
+	)
+	ctrItems.SetMinSize(fyne.NewSize(radioGroup.MinSize().Width, 200))
+
+	accCategory := widget.NewAccordion(
+		widget.NewAccordionItem("Category:",
+			ctrItems,
+		),
+	)
+
+	return accCategory
 }
 
 func subCategory() fyne.CanvasObject {
