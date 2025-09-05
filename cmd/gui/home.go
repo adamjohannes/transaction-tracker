@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"fmt"
+	"log"
 	"monthly-expenses-handler/internal/config"
 
 	"fyne.io/fyne/v2"
@@ -38,7 +38,7 @@ func homeGUI(a fyne.App, addGui fyne.Window, config *config.GUIConfig) fyne.Wind
 	})
 
 	listBtn := widget.NewButton("Listar Transações", func() {
-		fmt.Println("List")
+		log.Println("List")
 	})
 
 	ctrBtns := container.NewGridWithRows(2, addBtn, listBtn)

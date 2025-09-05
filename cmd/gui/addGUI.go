@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"fmt"
 	"log"
 	"monthly-expenses-handler/internal/config"
 
@@ -105,7 +104,7 @@ func buildRadioGroupAccordion(lbl string, minHeight float32, options []string) f
 	radioGroup := widget.NewRadioGroup(
 		options,
 		func(s string) {
-			fmt.Println(s)
+			log.Println(s)
 		},
 	)
 
