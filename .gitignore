@@ -13,5 +13,8 @@
 !cmd/
 !cmd/*
 
+!doc/
+!doc/*
+
 !internal/
 !internal/*
