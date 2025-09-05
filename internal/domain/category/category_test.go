@@ -77,11 +77,8 @@ func TestBuild(t *testing.T) {
 	name := "Rehydrated Category"
 	description := "This category was built from existing data."
 
-	category, err := Build(id, name, description)
+	category := Build(id, name, description)
 
-	if err != nil {
-		t.Fatalf("Build() returned an unexpected error: %v", err)
-	}
 	if category == nil {
 		t.Fatal("Build() returned a nil category")
 	}
