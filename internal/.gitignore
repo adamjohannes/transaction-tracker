@@ -5,5 +5,8 @@
 !config/
 !config/*
 
+!database/
+!database/*
+
 !domain/
 !domain/*
