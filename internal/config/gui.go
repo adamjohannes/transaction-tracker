@@ -6,7 +6,7 @@ type GUIConfig struct {
 	Resizable bool
 }
 
-func BuildGUIConfig(width, height float32, resizable bool) *GUIConfig {
+func NewGUIConfig(width, height float32, resizable bool) *GUIConfig {
 	return &GUIConfig{
 		Width:     width,
 		Height:    height,

@@ -11,12 +11,12 @@ func TestBuildGUIConfig(t *testing.T) {
 
 	// --- Act ---
 	// Call the function we are testing.
-	guiConfig := BuildGUIConfig(expectedWidth, expectedHeight, expectedResizable)
+	guiConfig := NewGUIConfig(expectedWidth, expectedHeight, expectedResizable)
 
 	// --- Assert ---
 	// Check that the returned object is not nil.
 	if guiConfig == nil {
-		t.Fatal("BuildGUIConfig() returned a nil pointer")
+		t.Fatal("NewGUIConfig() returned a nil pointer")
 	}
 
 	// Check that each field was assigned the correct value.
