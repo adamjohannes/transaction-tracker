@@ -1,8 +1,12 @@
 package main
 
-import "monthly-expenses-handler/cmd/gui"
+import (
+	"monthly-expenses-handler/cmd/gui"
+	"monthly-expenses-handler/internal/config"
+)
 
 func main() {
-	gui := gui.NewGUI()
+	guiConfig := config.NewGUIConfig(400, 800, false)
+	gui := gui.NewGUI(guiConfig)
 	gui.Start()
 }
