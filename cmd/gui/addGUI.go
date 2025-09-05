@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"log"
 	"monthly-expenses-handler/internal/config"
 
 	"fyne.io/fyne/v2"
@@ -37,25 +38,76 @@ func addGUI(a fyne.App, config *config.GUIConfig) fyne.Window {
 	// 7. Description
 	ctrDescription := description()
 
-	content := container.NewVBox(
-		ctrAmount, widget.NewSeparator(),
-		ctrDate, widget.NewSeparator(),
-		ctrStatus, widget.NewSeparator(),
-		ctrCurrency,
-		ctrCategory, widget.NewSeparator(),
-		ctrSubCategory, widget.NewSeparator(),
-		ctrDescription, widget.NewSeparator(),
-	)
+	formContent := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "", Widget: ctrAmount},
+			{Text: "", Widget: ctrDate},
+			{Text: "", Widget: ctrStatus},
+			{Text: "", Widget: ctrCurrency},
+			{Text: "", Widget: ctrCategory},
+			{Text: "", Widget: ctrSubCategory},
+			{Text: "", Widget: ctrDescription},
+		},
+		OnSubmit: func() {
+			log.Println("Form submited.")
+		},
+		OnCancel: func() {
+			log.Println("Form canceled")
+		},
+		SubmitText: "Save",
+		CancelText: "Cancel",
+	}
 
-	scrollCtr := container.NewScroll(content)
+	scrollCtr := container.NewScroll(formContent)
 	w.SetContent(scrollCtr)
 	return w
 }
 
 func amount() fyne.CanvasObject {
-	lblAmount := widget.NewLabel("Amount:")
+	lblAmount := widget.NewLabel("Amount: (Required)")
 	entryAmount := widget.NewEntry()
 	return container.NewBorder(nil, nil, lblAmount, nil, entryAmount)
+}
+
+func date() fyne.CanvasObject {
+	lblDate := widget.NewLabel("Date: (Required)")
+	entryDate := widget.NewDateEntry()
+	return container.NewBorder(nil, nil, lblDate, nil, entryDate)
+}
+
+func status() fyne.CanvasObject {
+	lblStatus := widget.NewLabel("Status: (Required)")
+	errorText := canvas.NewText("Please select only one status.", theme.ErrorColor())
+	errorText.Hide()
+
+	checkStatus := widget.NewCheckGroup([]string{"Pending", "Completed", "Failed"}, func(selected []string) {
+		if len(selected) > 1 {
+			errorText.Show()
+		} else {
+			errorText.Hide()
+		}
+	})
+
+	inputContainer := container.NewVBox(checkStatus, errorText)
+	return container.NewBorder(nil, nil, lblStatus, nil, inputContainer)
+}
+
+func currency() fyne.CanvasObject {
+	lblCurrency := widget.NewLabel("Currency: (Required)")
+	errorText := canvas.NewText("Please select only one currency.", theme.ErrorColor())
+	errorText.Hide()
+
+	checkCurrency := widget.NewCheckGroup([]string{"BRL", "USD", "EUR"}, func(selected []string) {
+		if len(selected) > 1 {
+			errorText.Show()
+		} else {
+			errorText.Hide()
+		}
+	})
+
+	// Use a VBox to stack the input widget and its potential error message
+	inputContainer := container.NewVBox(checkCurrency, errorText)
+	return container.NewBorder(nil, nil, lblCurrency, nil, inputContainer)
 }
 
 func category() fyne.CanvasObject {
@@ -84,7 +136,7 @@ func category() fyne.CanvasObject {
 	ctrItems.SetMinSize(fyne.NewSize(radioGroup.MinSize().Width, 200))
 
 	accCategory := widget.NewAccordion(
-		widget.NewAccordionItem("Category:",
+		widget.NewAccordionItem("Category: (Required)",
 			ctrItems,
 		),
 	)
@@ -117,7 +169,7 @@ func subCategory() fyne.CanvasObject {
 	ctrItems.SetMinSize(fyne.NewSize(radioGroup.MinSize().Width, 200))
 
 	accSubCategory := widget.NewAccordion(
-		widget.NewAccordionItem("Category:",
+		widget.NewAccordionItem("Sub Category:",
 			ctrItems,
 		),
 	)
@@ -125,49 +177,8 @@ func subCategory() fyne.CanvasObject {
 	return accSubCategory
 }
 
-func date() fyne.CanvasObject {
-	lblDate := widget.NewLabel("Date:")
-	entryDate := widget.NewDateEntry()
-	return container.NewBorder(nil, nil, lblDate, nil, entryDate)
-}
-
 func description() fyne.CanvasObject {
 	lblDescription := widget.NewLabel("Description:")
 	entryDescription := widget.NewEntry()
 	return container.NewBorder(nil, nil, lblDescription, nil, entryDescription)
-}
-
-func status() fyne.CanvasObject {
-	lblStatus := widget.NewLabel("Status:")
-	errorText := canvas.NewText("Please select only one status.", theme.ErrorColor())
-	errorText.Hide()
-
-	checkStatus := widget.NewCheckGroup([]string{"Pending", "Completed", "Failed"}, func(selected []string) {
-		if len(selected) > 1 {
-			errorText.Show()
-		} else {
-			errorText.Hide()
-		}
-	})
-
-	inputContainer := container.NewVBox(checkStatus, errorText)
-	return container.NewBorder(nil, nil, lblStatus, nil, inputContainer)
-}
-
-func currency() fyne.CanvasObject {
-	lblCurrency := widget.NewLabel("Currency:")
-	errorText := canvas.NewText("Please select only one currency.", theme.ErrorColor())
-	errorText.Hide()
-
-	checkCurrency := widget.NewCheckGroup([]string{"BRL", "USD", "EUR"}, func(selected []string) {
-		if len(selected) > 1 {
-			errorText.Show()
-		} else {
-			errorText.Hide()
-		}
-	})
-
-	// Use a VBox to stack the input widget and its potential error message
-	inputContainer := container.NewVBox(checkCurrency, errorText)
-	return container.NewBorder(nil, nil, lblCurrency, nil, inputContainer)
 }
