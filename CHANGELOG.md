@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 - *(workflows)* Install fyne before trying to build
 - *(workflows)* Add write permission to CI pipeline
+- *(workflows)* Refactor logic for collecting release notes
 
 ### 🚜 Refactor
 
