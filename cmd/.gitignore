@@ -1,6 +1,7 @@
 *
 
 !.gitignore
+!main.go
 
 !api/
 !api/*
