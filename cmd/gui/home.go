@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"monthly-expenses-handler/internal/config"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -13,23 +14,39 @@ type GUI struct {
 	window fyne.Window
 }
 
-func NewGUI() *GUI {
+func NewGUI(config *config.GUIConfig) *GUI {
 	a := app.New()
-	w := a.NewWindow("Fyne UI")
-	w.Resize(fyne.NewSize(800, 600))
-	w.SetFixedSize(true)
 
-	addBtn := widget.NewButton("Add", func() {
-		fmt.Println("Add")
+	addGui := addGUI(a, config)
+	home := homeGUI(a, addGui, config)
+
+	return &GUI{home}
+}
+
+func homeGUI(a fyne.App, addGui fyne.Window, config *config.GUIConfig) fyne.Window {
+	w := a.NewWindow("Rastreador de Transações")
+	w.Resize(fyne.NewSize(config.Width, config.Height))
+	w.SetFixedSize(!config.Resizable)
+
+	lblTitle := widget.NewLabel("Rastreador de Transações")
+	lblTitle.Alignment = fyne.TextAlignCenter
+	lblTitle.TextStyle.Bold = true
+
+	addBtn := widget.NewButton("Adicionar Transação", func() {
+		addGui.Show()
+		w.Hide()
 	})
 
-	listBtn := widget.NewButton("List", func() {
+	listBtn := widget.NewButton("Listar Transações", func() {
 		fmt.Println("List")
 	})
 
-	ctr := container.NewGridWithRows(2, addBtn, listBtn)
+	ctrBtns := container.NewGridWithRows(2, addBtn, listBtn)
+
+	ctr := container.NewBorder(lblTitle, nil, nil, nil, ctrBtns)
+
 	w.SetContent(ctr)
-	return &GUI{w}
+	return w
 }
 
 func (g *GUI) Start() {
