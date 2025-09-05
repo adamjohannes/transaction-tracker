@@ -19,20 +19,23 @@ jobs:
       # Step 2: Extract the release notes for the specific tag from CHANGELOG.md
       - name: Extract Release Notes
         id: extract_notes
-        # This script finds the section for the new tag and saves it to a file.
-        # It starts reading after the tag's header (e.g., "## [v1.0.0]") and stops
-        # at the next header or the end of the file.
+        # This improved script looks for a line starting with '##' that CONTAINS the tag version.
+        # It's less strict about brackets or extra words.
         run: |
-          awk '/^## \[?'"${{ github.ref_name }}"'\]?/ {p=1; next} p && /^## / {exit} p' CHANGELOG.md > release_notes.md
+          awk '/^## .*'"${{ github.ref_name }}"'/ {p=1; next} p && /^## / {exit} p' CHANGELOG.md > release_notes.md
           echo "notes_file=release_notes.md" >> $GITHUB_OUTPUT
 
-      # Step 3: Create the GitHub Release
+      # Step 3: Print Release Notes
+      - name: Verify Release Notes
+        run: |
+          echo "--- Content of release_notes.md ---"
+          cat ${{ steps.extract_notes.outputs.notes_file }}
+          echo "-----------------------------------"
+
+      # Step 4: Create the GitHub Release
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          # The body of the release is read from the file created in the previous step
           body_path: ${{ steps.extract_notes.outputs.notes_file }}
-          # The release will be titled "Release <tag_name>"
           name: Release ${{ github.ref_name }}
-          # The tag for the release is taken directly from the Git tag that triggered the workflow
           tag_name: ${{ github.ref_name }}
