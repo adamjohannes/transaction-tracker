@@ -2,5 +2,8 @@
 
 !.gitignore
 
+!config/
+!config/*
+
 !domain/
 !domain/*
