@@ -1,6 +1,7 @@
 *
 
 !.gitignore
+!CHANGELOG.md
 !cliff.toml
 !go.mod
 !go.sum
