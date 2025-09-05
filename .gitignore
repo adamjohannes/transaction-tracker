@@ -1,6 +1,7 @@
 *
 
 !.gitignore
+!cliff.toml
 !go.mod
 !go.sum
 !main.go
