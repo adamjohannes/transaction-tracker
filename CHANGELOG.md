@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 Bug Fixes
 
 - *(workflows)* Install fyne before trying to build
+- *(workflows)* Add write permission to CI pipeline
 
 ### 🚜 Refactor
 
