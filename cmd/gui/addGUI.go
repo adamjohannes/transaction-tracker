@@ -52,7 +52,7 @@ func addGUI(a fyne.App, config *config.GUIConfig) fyne.Window {
 }
 
 func amount() fyne.CanvasObject {
-	lblAmount := widget.NewLabel("Amout:")
+	lblAmount := widget.NewLabel("Amount:")
 	entryAmount := widget.NewEntry()
 	return container.NewBorder(nil, nil, lblAmount, nil, entryAmount)
 }
