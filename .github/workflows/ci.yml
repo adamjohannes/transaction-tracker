@@ -1,0 +1,36 @@
+name: 🚀 CI
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository's code to access the CHANGELOG.md file
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Extract the release notes for the specific tag from CHANGELOG.md
+      - name: Extract Release Notes
+        id: extract_notes
+        # This script finds the section for the new tag and saves it to a file.
+        # It starts reading after the tag's header (e.g., "## [v1.0.0]") and stops
+        # at the next header or the end of the file.
+        run: |
+          awk '/^## \[?'"${{ github.ref_name }}"'\]?/ {p=1; next} p && /^## / {exit} p' CHANGELOG.md > release_notes.md
+          echo "notes_file=release_notes.md" >> $GITHUB_OUTPUT
+
+      # Step 3: Create the GitHub Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # The body of the release is read from the file created in the previous step
+          body_path: ${{ steps.extract_notes.outputs.notes_file }}
+          # The release will be titled "Release <tag_name>"
+          name: Release ${{ github.ref_name }}
+          # The tag for the release is taken directly from the Git tag that triggered the workflow
+          tag_name: ${{ github.ref_name }}
