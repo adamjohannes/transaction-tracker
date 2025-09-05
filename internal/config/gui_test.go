@@ -5,8 +5,8 @@ import "testing"
 func TestBuildGUIConfig(t *testing.T) {
 	// --- Arrange ---
 	// Define the input values for the test.
-	expectedWidth := 1920
-	expectedHeight := 1080
+	expectedWidth := float32(1920)
+	expectedHeight := float32(1080)
 	expectedResizable := false
 
 	// --- Act ---
@@ -21,11 +21,11 @@ func TestBuildGUIConfig(t *testing.T) {
 
 	// Check that each field was assigned the correct value.
 	if guiConfig.Width != expectedWidth {
-		t.Errorf("expected Width to be %d, but got %d", expectedWidth, guiConfig.Width)
+		t.Errorf("expected Width to be %f, but got %f", expectedWidth, guiConfig.Width)
 	}
 
 	if guiConfig.Height != expectedHeight {
-		t.Errorf("expected Height to be %d, but got %d", expectedHeight, guiConfig.Height)
+		t.Errorf("expected Height to be %f, but got %f", expectedHeight, guiConfig.Height)
 	}
 
 	if guiConfig.Resizable != expectedResizable {
