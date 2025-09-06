@@ -29,14 +29,33 @@ func NewPostgresRepository(db *pgxpool.Pool) Repository {
 
 // Create
 // Inserts a new transaction record into the database.
+// It uses subqueries to look up foreign key IDs from names.
 func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transaction) (*transaction.Transaction, error) {
 	var id int
-	query := `INSERT INTO transactions (amount, date, essential, status, currency, category, sub_category, description) 
-	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-	          RETURNING id`
+	query := `
+		INSERT INTO transactions (amount, date, description, essential, type, status, currency, category, sub_category) 
+		VALUES (
+			$1, $2, $3, $4,
+			(SELECT id FROM transaction_types WHERE name = $5),
+			(SELECT id FROM transaction_status WHERE name = $6),
+			(SELECT code FROM currencies WHERE code = $7),
+			(SELECT id FROM transaction_categories WHERE name = $8),
+			(SELECT id FROM transaction_sub_categories WHERE name = $9)
+		) 
+		RETURNING id`
 
-	// Use QueryRow for statements that are expected to return a single row.[5]
-	err := r.db.QueryRow(ctx, query, tx.Amount.Abs(), tx.Essential, tx.Status.ID, tx.Currency.Code, tx.Category.Id, tx.SubCategory.ID, tx.Description).Scan(&id)
+	err := r.db.QueryRow(ctx, query,
+		tx.Amount,
+		tx.Date,
+		tx.Description,
+		tx.Essential,
+		tx.Type.Name,
+		tx.Status.Name,
+		tx.Currency.Code,
+		tx.Category.Name,
+		tx.SubCategory.Name,
+	).Scan(&id)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
 	}

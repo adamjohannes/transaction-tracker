@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -45,7 +46,16 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 
 	// Build buttons
 	saveButton := widget.NewButton("Save", func() {
-		log.Println(fmt.Sprintf("Transaction to save: %v", tempTransaction))
+		log.Printf("Attempting to save transaction: %v", tempTransaction)
+		_, err := g.transactionController.NewTransaction(tempTransaction)
+		if err != nil {
+			log.Printf("Error saving transaction: %v", err)
+			dialog.ShowError(fmt.Errorf("failed to save transaction: %w", err), g.addWindow)
+			return
+		}
+
+		log.Println("Transaction saved successfully!")
+		dialog.ShowInformation("Success", "Transaction saved successfully!", g.addWindow)
 		g.ShowHomeScreen()
 	})
 
@@ -75,9 +85,9 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 
 func resetTransaction(transaction map[string]any) {
 	transaction["amount"] = nil
-	transaction["buildDateCtr"] = nil
+	transaction["date"] = nil
 	transaction["type"] = nil
-	transaction["buildCheckCtr"] = false
+	transaction["essential"] = false
 	transaction["status"] = nil
 	transaction["currency"] = nil
 	transaction["category"] = nil
@@ -99,6 +109,8 @@ func buildCheckCtr(lbl, dbEntry string, transaction map[string]any) fyne.CanvasO
 	checkEssential := widget.NewCheck("", func(checked bool) {
 		transaction[dbEntry] = checked
 	})
+	checkEssential.SetChecked(false)
+	transaction[dbEntry] = false
 	return container.NewBorder(nil, nil, lblCtr, nil, checkEssential)
 }
 

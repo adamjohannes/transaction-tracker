@@ -3,10 +3,14 @@ package main
 import (
 	"monthly-expenses-handler/cmd/gui"
 	"monthly-expenses-handler/internal/config"
+	"monthly-expenses-handler/internal/database"
 )
 
 func main() {
+	pool := database.ConnectDB()
+	defer pool.Close()
+
 	guiConfig := config.NewGUIConfig(400, 800, false)
-	gui := gui.NewGUI(guiConfig)
-	gui.Start()
+	g := gui.NewGUI(guiConfig, pool)
+	g.Start()
 }

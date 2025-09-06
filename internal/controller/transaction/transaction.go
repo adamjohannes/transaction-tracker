@@ -1,7 +1,8 @@
 package transaction
 
 import (
-	"monthly-expenses-handler/internal/domain/transaction"
+	domain "monthly-expenses-handler/internal/domain/transaction"
+	repository "monthly-expenses-handler/internal/repository/transaction"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/net/context"
@@ -27,7 +28,21 @@ func NewTransactionController(pool *pgxpool.Pool, ctx context.Context) *Transact
 // NewTransaction
 // Inserts a new transaction record in the database.
 // ERROR: Will fail if a required field is missing.
-func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) (*transaction.Transaction, error) {
+func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) (*domain.Transaction, error) {
+	// Build domain object from the raw map data
+	transaction, err := domain.Build(tempTransaction)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	// Initialize repository with database pool
+	repo := repository.NewPostgresRepository(tc.pool)
+
+	// Save the transaction.
+	createdTransaction, err := repo.Create(tc.ctx, transaction)
+	if err != nil {
+		return nil, err
+	}
+
+	return createdTransaction, nil
 }

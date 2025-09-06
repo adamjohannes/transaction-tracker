@@ -7,7 +7,6 @@ import (
 	"monthly-expenses-handler/internal/domain/status"
 	"monthly-expenses-handler/internal/domain/sub_category"
 	"monthly-expenses-handler/internal/domain/transaction_type"
-	"strconv"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -23,7 +22,7 @@ type Transaction struct {
 	Status      *status.Status
 	Currency    *currency.Currency
 	Essential   bool
-	Type        transaction_type.TransactionType
+	Type        *transaction_type.TransactionType
 }
 
 func New(
@@ -42,7 +41,7 @@ func New(
 		Status:      &transactionStatus,
 		Currency:    &transactionCurrency,
 		Essential:   essential,
-		Type:        transactionType,
+		Type:        &transactionType,
 	}
 }
 
@@ -51,70 +50,70 @@ func Build(transaction map[string]any) (*Transaction, error) {
 		return nil, err
 	}
 
-	var id int8
-	var amount decimal.Decimal
-	var transactionCategory category.Category
-	var transactionSubcategory sub_category.SubCategory
-	var date time.Time
-	var description string
-	var transactionStatus status.Status
-	var transactionCurrency currency.Currency
-	var essential bool
-	var transactionType transaction_type.TransactionType
-
-	// Build ID, if present
-	if transaction["id"] != nil {
-		if tempId, err := strconv.Atoi(transaction["id"].(string)); err != nil {
-			return nil, err
-		} else {
-			id = int8(tempId)
-		}
+	// --- Amount ---
+	amountStr, _ := transaction["amount"].(string)
+	amount, err := decimal.NewFromString(amountStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid amount format: %w", err)
 	}
 
-	// Build Amount
-	if tempAmount, err := decimal.NewFromString(transaction["amount"].(string)); err != nil {
-		return nil, err
-	} else {
-		amount = tempAmount
+	// --- Date ---
+	dateStr, _ := transaction["date"].(string)
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid date format: %w", err)
 	}
 
-	// Build Date
-	if tempDate, err := time.Parse("2006-01-02", transaction["date"].(string)); err != nil {
-		return nil, err
-	} else {
-		date = tempDate
-	}
+	// --- Essential ---
+	essential, _ := transaction["essential"].(bool)
 
-	// Build Type
-	if transaction["type"] != nil {
-		if tempType, err := transaction_type.New(transaction["type"].(string)); err != nil {
-			return nil, err
-		} else {
-			transactionType = *tempType
-		}
-	}
-
+	// --- Description (Optional) ---
+	description := ""
 	if transaction["description"] != nil {
-		description = transaction["description"].(string)
+		description, _ = transaction["description"].(string)
 	}
 
-	if transaction["category"] != nil {
-		if tempCategory, err := category.New(transaction["category"].(string), ""); err != nil {
-			return nil, err
-		} else {
-			transactionCategory = *tempCategory
-		}
+	// --- Build Domain Objects ---
+	typeStr, _ := transaction["type"].(string)
+	transactionType, err := transaction_type.New(typeStr)
+	if err != nil {
+		return nil, err
+	}
+
+	statusStr, _ := transaction["status"].(string)
+	transactionStatus, err := status.New(statusStr)
+	if err != nil {
+		return nil, err
+	}
+
+	currencyStr, _ := transaction["currency"].(string)
+	transactionCurrency, err := currency.New(currencyStr)
+	if err != nil {
+		return nil, err
+	}
+
+	categoryStr, _ := transaction["category"].(string)
+	transactionCategory, err := category.New(categoryStr, "") // Description is optional
+	if err != nil {
+		return nil, err
+	}
+
+	subCategoryStr, _ := transaction["subCategory"].(string)
+	// The parent ID is unknown here, so we use a placeholder. The repository will handle the lookup.
+	transactionSubcategory, err := sub_category.New(-1, subCategoryStr)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Transaction{
-		ID:          id,
+		ID:          -1, // ID is set by the database
 		Amount:      amount,
-		Category:    &transactionCategory,
-		SubCategory: &transactionSubcategory,
+		Category:    transactionCategory,
+		SubCategory: transactionSubcategory,
 		Date:        date,
 		Description: description,
-		Status:      &transactionStatus,
-		Currency:    &transactionCurrency,
+		Status:      transactionStatus,
+		Currency:    transactionCurrency,
 		Essential:   essential,
 		Type:        transactionType,
 	}, nil
@@ -129,32 +128,18 @@ func validateRequiredFields(transaction map[string]any) error {
 		return fmt.Errorf("transaction is required")
 	}
 
-	if transaction["amount"] == nil {
-		return fmt.Errorf("amount is required")
+	requiredFields := []string{
+		"amount", "date", "type", "essential",
+		"status", "currency", "category", "subCategory",
 	}
 
-	if transaction["date"] == nil {
-		return fmt.Errorf("date is required")
-	}
-
-	if transaction["type"] == nil {
-		return fmt.Errorf("type is required")
-	}
-
-	if transaction["essential"] == nil {
-		return fmt.Errorf("essential is required")
-	}
-
-	if transaction["status"] == nil {
-		return fmt.Errorf("status is required")
-	}
-
-	if transaction["currency"] == nil {
-		return fmt.Errorf("currency is required")
-	}
-
-	if transaction["category"] == nil {
-		return fmt.Errorf("category is required")
+	for _, field := range requiredFields {
+		if val, ok := transaction[field]; !ok || val == nil {
+			return fmt.Errorf("%s is required", field)
+		}
+		if strVal, ok := transaction[field].(string); ok && strVal == "" {
+			return fmt.Errorf("%s is required", field)
+		}
 	}
 
 	return nil
