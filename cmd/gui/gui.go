@@ -2,24 +2,30 @@ package gui
 
 import (
 	"monthly-expenses-handler/internal/config"
+	"monthly-expenses-handler/internal/controller/transaction"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/net/context"
 )
 
 // GUI
 // Holds the application and all its windows, acting as a controller.
 type GUI struct {
-	app        fyne.App
-	homeWindow fyne.Window
-	addWindow  fyne.Window
+	app                   fyne.App
+	homeWindow            fyne.Window
+	addWindow             fyne.Window
+	transactionController *transaction.TransactionController
 }
 
 // NewGUI
 // Creates and initializes the entire application, including all windows.
-func NewGUI(config *config.GUIConfig) *GUI {
+func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 	a := app.New()
 	g := &GUI{app: a}
+
+	g.transactionController = transaction.NewTransactionController(pool, context.Background())
 
 	g.homeWindow = a.NewWindow("Rastreador de Transações")
 	g.addWindow = a.NewWindow("Adicionar Transação")
@@ -27,10 +33,10 @@ func NewGUI(config *config.GUIConfig) *GUI {
 	g.homeWindow.SetContent(makeHomeContent(g))
 	g.addWindow.SetContent(makeAddContent(g))
 
-	g.homeWindow.Resize(fyne.NewSize(config.Width, config.Height))
-	g.homeWindow.SetFixedSize(!config.Resizable)
-	g.addWindow.Resize(fyne.NewSize(config.Width, config.Height))
-	g.addWindow.SetFixedSize(!config.Resizable)
+	g.homeWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
+	g.homeWindow.SetFixedSize(!guiConfig.Resizable)
+	g.addWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
+	g.addWindow.SetFixedSize(!guiConfig.Resizable)
 
 	g.addWindow.SetCloseIntercept(func() {
 		g.ShowHomeScreen()
