@@ -23,10 +23,10 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 	ctrDate := buildDateCtr("Date (Required)", "date", tempTransaction)
 	ctrEssential := buildCheckCtr("Essential", "essential", tempTransaction)
 	ctrType := buildRadioGroupAccordion("Type (Required)", "type", float32(120), tempTransaction, []string{"Debit", "Credit", "Refund"})
-	ctrStatus := buildRadioGroupAccordion("Status (Required)", "status", float32(120), tempTransaction, []string{"Pending", "Completed", "Failed"})
+	ctrStatus := buildRadioGroupAccordion("Status (Required)", "status", float32(120), tempTransaction, []string{"PENDING", "COMPLETED", "FAILED"})
 	ctrCurrency := buildRadioGroupAccordion("Currency (Required)", "currency", float32(120), tempTransaction, []string{"BRL", "USD", "EUR"})
-	ctrCategory := buildRadioGroupAccordion("Category (Required)", "category", float32(200), tempTransaction, []string{"Category 1", "Category 2", "Category 3", "Category 4", "Category 5"})
-	ctrSubCategory := buildRadioGroupAccordion("Sub Category (Required)", "subCategory", float32(200), tempTransaction, []string{"Sub Category 1", "Sub Category 2", "Sub Category 3"})
+	ctrCategory := buildRadioGroupAccordion("Category (Required)", "category", float32(200), tempTransaction, []string{"Compras", "Category 2", "Category 3", "Category 4", "Category 5"})
+	ctrSubCategory := buildRadioGroupAccordion("Sub Category (Required)", "subCategory", float32(200), tempTransaction, []string{"Eletrônicos", "Sub Category 2", "Sub Category 3"})
 	ctrDescription := buildEntryCtr("Description", "description", tempTransaction)
 
 	// Build form
