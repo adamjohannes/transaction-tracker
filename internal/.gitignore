@@ -5,6 +5,9 @@
 !config/
 !config/*
 
+!controller/
+!controller/*
+
 !database/
 !database/*
 
