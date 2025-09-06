@@ -41,6 +41,7 @@ CREATE TABLE public.transactions
     status       bigint                              NOT NULL,
     currency     character varying                   NOT NULL,
     type         bigint                              NOT NULL,
+    essential    boolean                             NOT NULL,
     CONSTRAINT transactions_pkey PRIMARY KEY (id),
     CONSTRAINT transactions_type_fkey FOREIGN KEY (type) REFERENCES public.transaction_types (id),
     CONSTRAINT transactions_status_fkey FOREIGN KEY (status) REFERENCES public.transaction_status (id),
