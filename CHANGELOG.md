@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### 🚀 Features
+
+- *(doc/postgres)* Add script to initialize the database
+- *(domain/transaction)* Add Essential field to transaction
+- *(gui)* Add Essential field
+- *(gui)* Add a temp map to collect the values for the transaction
+
+### 🚜 Refactor
+
+- *(gui)* Refactor category section to be a radio group
+- *(gui)* Set category as required and refactor fields order in UI
+- *(gui)* Replace VBox container by Form
+- *(gui)* Refactor status to radio group
+- *(gui)* Add a generic method to build the radio groups inside an accordion
+- *(gui)* Set category as required and refactor fields order in UI
+- *(gui)* Replace calls to fmt.Println to log.Println
+- *(gui)* Update cancel and save buttons
+- *(doc/postgres)* Update DB SQL init query
+- *(gui)* Add a controller and finish implementation of navigation between the 'home' and 'add' screen
+
+### ⚙️ Miscellaneous Tasks
+
+- *(gui)* Fix typo in 'Amount' label
+- *(gui)* Refactor text data
+- Add doc/ to .gitignore
+- Add inner .gitignore to doc/
+
 ## [0.0.1] - 2025-09-05
 
 ### 🚀 Features
