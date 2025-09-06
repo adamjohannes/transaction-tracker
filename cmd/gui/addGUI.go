@@ -37,7 +37,7 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 	ctrDate := buildDateCtr("Date (Required)", "date", tempTransaction)
 	ctrEssential := buildCheckCtr("Essential", "essential", tempTransaction)
 	ctrType := buildRadioGroupAccordion("Type (Required)", "type", float32(120), tempTransaction, []string{"Debit", "Credit", "Refund"})
-	ctrStatus := buildRadioGroupAccordion("Status (Required)", "status", float32(120), tempTransaction, []string{"PENDING", "COMPLETED", "FAILED"})
+	ctrStatus := buildRadioGroupAccordion("Status (Required)", "status", float32(120), tempTransaction, []string{"Pending", "Completed", "Failed"})
 	ctrCurrency := buildRadioGroupAccordion("Currency (Required)", "currency", float32(120), tempTransaction, []string{"BRL", "USD", "EUR"})
 	ctrCategory := buildRadioGroupAccordion("Category (Required)", "category", float32(200), tempTransaction, categoryNames)
 	ctrSubCategory := buildRadioGroupAccordion("Sub Category (Required)", "subCategory", float32(200), tempTransaction, []string{"Eletrônicos", "Sub Category 2", "Sub Category 3"})
