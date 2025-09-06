@@ -2,28 +2,20 @@ package database
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"monthly-expenses-handler/internal/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PostgresDB struct {
-	config *config.PostgresConfig
-}
+// Connect establishes a new connection pool to the database.
+// It returns the pool or an error if the connection fails.
+func Connect(cfg *config.PostgresConfig) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
 
-func New(config *config.PostgresConfig) *PostgresDB {
-	return &PostgresDB{
-		config: config,
-	}
-}
-
-func (pdb *PostgresDB) Connect() (*pgxpool.Pool, error) {
-	pool, err := pgxpool.New(context.Background(), pdb.config.DatabaseURL)
 	if err != nil {
-		log.Fatalf("Failed to create connection pool: %v", err)
+		return nil, fmt.Errorf("failed to create connection pool: %w", err)
 	}
-	defer pool.Close()
 
-	return pool, err
+	return pool, nil
 }
