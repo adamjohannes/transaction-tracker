@@ -25,7 +25,7 @@ func NewGUI(config *config.GUIConfig) *GUI {
 	g.addWindow = a.NewWindow("Adicionar Transação")
 
 	g.homeWindow.SetContent(makeHomeContent(g))
-	g.addWindow.SetContent(makeAddContent(g, config))
+	g.addWindow.SetContent(makeAddContent(g))
 
 	g.homeWindow.Resize(fyne.NewSize(config.Width, config.Height))
 	g.homeWindow.SetFixedSize(!config.Resizable)

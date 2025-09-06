@@ -3,7 +3,6 @@ package gui
 import (
 	"fmt"
 	"log"
-	"monthly-expenses-handler/internal/config"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -13,7 +12,7 @@ import (
 
 // makeAddContent creates the UI for the "add transaction" screen.
 // It takes the GUI controller to link the Cancel button to the navigation method.
-func makeAddContent(g *GUI, config *config.GUIConfig) fyne.CanvasObject {
+func makeAddContent(g *GUI) fyne.CanvasObject {
 	// Build temp transaction values
 	tempTransaction := make(map[string]any)
 	tempTransaction["amount"] = nil
