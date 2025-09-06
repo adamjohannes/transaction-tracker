@@ -11,13 +11,13 @@ import (
 // Defines the interface for transaction data operations.
 type TransactionController struct {
 	pool *pgxpool.Pool
-	ctx  *context.Context
+	ctx  context.Context
 }
 
 // NewTransactionController
 // Creates a new instance of the transaction controller.
 // It takes the database connection pool as a dependency.
-func NewTransactionController(pool *pgxpool.Pool, ctx *context.Context) *TransactionController {
+func NewTransactionController(pool *pgxpool.Pool, ctx context.Context) *TransactionController {
 	return &TransactionController{
 		pool: pool,
 		ctx:  ctx,
