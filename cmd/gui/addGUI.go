@@ -15,22 +15,18 @@ import (
 func makeAddContent(g *GUI) fyne.CanvasObject {
 	// Build temp transaction values
 	tempTransaction := make(map[string]any)
-	tempTransaction["amount"] = nil
-	tempTransaction["date"] = nil
-	tempTransaction["essential"] = false
-	tempTransaction["status"] = nil
-	tempTransaction["currency"] = nil
-	tempTransaction["category"] = nil
+	resetTransaction(tempTransaction)
 
 	// Build form widgets
-	ctrAmount := amount(tempTransaction)
-	ctrDate := date(tempTransaction)
-	ctrEssential := essential(tempTransaction)
+	ctrAmount := buildEntryCtr("Amount (Required)", "amount", tempTransaction)
+	ctrDate := buildDateCtr("Date (Required)", "date", tempTransaction)
+	ctrEssential := buildCheckCtr("Essential", "essential", tempTransaction)
+	ctrType := buildRadioGroupAccordion("Type (Required)", "type", float32(120), tempTransaction, []string{"Debit", "Credit", "Refund"})
 	ctrStatus := buildRadioGroupAccordion("Status (Required)", "status", float32(120), tempTransaction, []string{"Pending", "Completed", "Failed"})
 	ctrCurrency := buildRadioGroupAccordion("Currency (Required)", "currency", float32(120), tempTransaction, []string{"BRL", "USD", "EUR"})
 	ctrCategory := buildRadioGroupAccordion("Category (Required)", "category", float32(200), tempTransaction, []string{"Category 1", "Category 2", "Category 3", "Category 4", "Category 5"})
 	ctrSubCategory := buildRadioGroupAccordion("Sub Category (Required)", "subCategory", float32(200), tempTransaction, []string{"Sub Category 1", "Sub Category 2", "Sub Category 3"})
-	ctrDescription := description(tempTransaction)
+	ctrDescription := buildEntryCtr("Description", "description", tempTransaction)
 
 	// Build form
 	formContent := &widget.Form{
@@ -38,6 +34,7 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 			{Text: "", Widget: ctrAmount},
 			{Text: "", Widget: ctrDate},
 			{Text: "", Widget: ctrEssential},
+			{Text: "", Widget: ctrType},
 			{Text: "", Widget: ctrStatus},
 			{Text: "", Widget: ctrCurrency},
 			{Text: "", Widget: ctrCategory},
@@ -68,47 +65,53 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 
 	buttons := container.NewGridWithColumns(2, cancelButton, saveButton)
 	scrollCtr := container.NewScroll(formContent)
-	return container.NewBorder(nil, buttons, nil, nil, scrollCtr)
+	title := widget.NewLabel("Adicionar Transação")
+	title.Alignment = fyne.TextAlignCenter
+	title.TextStyle.Bold = true
+	return container.NewBorder(title, buttons, nil, nil, scrollCtr)
 }
 
 // --- Helper functions for creating form widgets ---
 
-func amount(transaction map[string]any) fyne.CanvasObject {
-	lblAmount := widget.NewLabel("Amount: (Required)")
-	entryAmount := widget.NewEntry()
-	entryAmount.OnChanged = func(s string) {
-		transaction["amount"] = s
-	}
-	return container.NewBorder(nil, nil, lblAmount, nil, entryAmount)
+func resetTransaction(transaction map[string]any) {
+	transaction["amount"] = nil
+	transaction["buildDateCtr"] = nil
+	transaction["type"] = nil
+	transaction["buildCheckCtr"] = false
+	transaction["status"] = nil
+	transaction["currency"] = nil
+	transaction["category"] = nil
+	transaction["subCategory"] = nil
+	transaction["description"] = nil
 }
 
-func date(transaction map[string]any) fyne.CanvasObject {
-	lblDate := widget.NewLabel("Date: (Required)")
+func buildEntryCtr(lbl, dbEntry string, transaction map[string]any) fyne.CanvasObject {
+	lblCtr := widget.NewLabel(lbl)
+	entryDescription := widget.NewEntry()
+	entryDescription.OnChanged = func(s string) {
+		transaction[dbEntry] = s
+	}
+	return container.NewBorder(nil, nil, lblCtr, nil, entryDescription)
+}
+
+func buildCheckCtr(lbl, dbEntry string, transaction map[string]any) fyne.CanvasObject {
+	lblCtr := widget.NewLabel(lbl)
+	checkEssential := widget.NewCheck("", func(checked bool) {
+		transaction[dbEntry] = checked
+	})
+	return container.NewBorder(nil, nil, lblCtr, nil, checkEssential)
+}
+
+func buildDateCtr(lbl, dbEntry string, transaction map[string]any) fyne.CanvasObject {
+	lblDate := widget.NewLabel(lbl)
 	entryDate := widget.NewDateEntry()
 	entryDate.OnChanged = func(t *time.Time) {
-		transaction["date"] = t.Format("2006-01-02")
+		transaction[dbEntry] = t.Format("2006-01-02")
 	}
 	return container.NewBorder(nil, nil, lblDate, nil, entryDate)
 }
 
-func essential(transaction map[string]any) fyne.CanvasObject {
-	lblEssential := widget.NewLabel("Essential:")
-	checkEssential := widget.NewCheck("", func(checked bool) {
-		transaction["essential"] = checked
-	})
-	return container.NewBorder(nil, nil, lblEssential, nil, checkEssential)
-}
-
-func description(transaction map[string]any) fyne.CanvasObject {
-	lblDescription := widget.NewLabel("Description:")
-	entryDescription := widget.NewEntry()
-	entryDescription.OnChanged = func(s string) {
-		transaction["description"] = s
-	}
-	return container.NewBorder(nil, nil, lblDescription, nil, entryDescription)
-}
-
-func buildRadioGroupAccordion(lbl string, dbEntry string, minHeight float32, transaction map[string]any, options []string) fyne.CanvasObject {
+func buildRadioGroupAccordion(lbl, dbEntry string, minHeight float32, transaction map[string]any, options []string) fyne.CanvasObject {
 	radioGroup := widget.NewRadioGroup(
 		options,
 		func(s string) {
