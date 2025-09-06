@@ -18,6 +18,20 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 	tempTransaction := make(map[string]any)
 	resetTransaction(tempTransaction)
 
+	// Fetch categories
+	categories, err := g.categoryController.GetAllCategories()
+
+	if err != nil {
+		log.Println(fmt.Sprintf("Failed to load categories: %v", err))
+		dialog.ShowError(err, g.addWindow)
+	}
+
+	// Convert the list of Category objects into a simple list of names for the widget.
+	categoryNames := make([]string, len(categories))
+	for i, cat := range categories {
+		categoryNames[i] = cat.Name
+	}
+
 	// Build form widgets
 	ctrAmount := buildEntryCtr("Amount (Required)", "amount", tempTransaction)
 	ctrDate := buildDateCtr("Date (Required)", "date", tempTransaction)
@@ -25,7 +39,7 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 	ctrType := buildRadioGroupAccordion("Type (Required)", "type", float32(120), tempTransaction, []string{"Debit", "Credit", "Refund"})
 	ctrStatus := buildRadioGroupAccordion("Status (Required)", "status", float32(120), tempTransaction, []string{"PENDING", "COMPLETED", "FAILED"})
 	ctrCurrency := buildRadioGroupAccordion("Currency (Required)", "currency", float32(120), tempTransaction, []string{"BRL", "USD", "EUR"})
-	ctrCategory := buildRadioGroupAccordion("Category (Required)", "category", float32(200), tempTransaction, []string{"Compras", "Category 2", "Category 3", "Category 4", "Category 5"})
+	ctrCategory := buildRadioGroupAccordion("Category (Required)", "category", float32(200), tempTransaction, categoryNames)
 	ctrSubCategory := buildRadioGroupAccordion("Sub Category (Required)", "subCategory", float32(200), tempTransaction, []string{"Eletrônicos", "Sub Category 2", "Sub Category 3"})
 	ctrDescription := buildEntryCtr("Description", "description", tempTransaction)
 

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"monthly-expenses-handler/internal/config"
+	"monthly-expenses-handler/internal/controller/category"
 	"monthly-expenses-handler/internal/controller/transaction"
 
 	"fyne.io/fyne/v2"
@@ -17,6 +18,7 @@ type GUI struct {
 	homeWindow            fyne.Window
 	addWindow             fyne.Window
 	transactionController *transaction.TransactionController
+	categoryController    *category.CategoryController
 }
 
 // NewGUI
@@ -26,6 +28,7 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 	g := &GUI{app: a}
 
 	g.transactionController = transaction.NewTransactionController(pool, context.Background())
+	g.categoryController = category.NewCategoryController(pool, context.Background())
 
 	g.homeWindow = a.NewWindow("Rastreador de Transações")
 	g.addWindow = a.NewWindow("Adicionar Transação")
