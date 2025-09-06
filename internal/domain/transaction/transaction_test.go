@@ -5,6 +5,7 @@ import (
 	"monthly-expenses-handler/internal/domain/currency"
 	"monthly-expenses-handler/internal/domain/status"
 	"monthly-expenses-handler/internal/domain/sub_category"
+	"monthly-expenses-handler/internal/domain/transaction_type"
 	"reflect"
 	"testing"
 	"time"
@@ -12,9 +13,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// TestNew verifies that a new transaction is created with the correct default values.
 func TestNew(t *testing.T) {
-	// --- Arrange ---
 	amount := decimal.NewFromFloat(150.75)
 	cat := category.Build(1, "Food", "Restaurant expenses")
 	subCat := sub_category.Build(10, 1, "Dinner")
@@ -23,88 +22,74 @@ func TestNew(t *testing.T) {
 	st, _ := status.New("Completed")
 	curr, _ := currency.New("BRL")
 	essential := false
+	tt, _ := transaction_type.New("Expense")
 
-	// --- Act ---
-	transaction := New(amount, *cat, *subCat, date, description, *st, *curr, essential)
+	transaction := New(amount, *cat, *subCat, date, description, *st, *curr, essential, *tt)
 
-	// --- Assert ---
 	if transaction == nil {
 		t.Fatal("New() returned a nil transaction")
 	}
 
-	// Check for the default ID
 	if transaction.ID != -1 {
 		t.Errorf("expected ID to be -1, but got %d", transaction.ID)
 	}
-
-	// Check that all other fields were assigned correctly
 	if !transaction.Amount.Equal(amount) {
 		t.Errorf("expected amount %s, but got %s", amount, transaction.Amount)
 	}
 	if !reflect.DeepEqual(transaction.Category, cat) {
 		t.Errorf("expected category %+v, but got %+v", cat, transaction.Category)
 	}
-	if !reflect.DeepEqual(transaction.SubCategory, subCat) {
-		t.Errorf("expected subCategory %+v, but got %+v", subCat, transaction.SubCategory)
-	}
-	if !transaction.Date.Equal(date) {
-		t.Errorf("expected date %v, but got %v", date, transaction.Date)
-	}
-	if transaction.Description != description {
-		t.Errorf("expected description '%s', but got '%s'", description, transaction.Description)
-	}
-	if !reflect.DeepEqual(transaction.Status, st) {
-		t.Errorf("expected status %+v, but got %+v", st, transaction.Status)
-	}
-	if !reflect.DeepEqual(transaction.Currency, curr) {
-		t.Errorf("expected currency %+v, but got %+v", curr, transaction.Currency)
+	if !reflect.DeepEqual(transaction.Type, tt) {
+		t.Errorf("expected type %+v, but got %+v", tt, transaction.Type)
 	}
 }
 
-// TestBuild verifies that a transaction is reconstructed correctly from existing data.
 func TestBuild(t *testing.T) {
-	// --- Arrange ---
-	id := int8(42)
-	amount := decimal.NewFromFloat(99.99)
-	cat := category.Build(2, "Shopping", "Clothing")
-	subCat := sub_category.Build(20, 2, "T-shirt")
-	date := time.Date(2025, time.September, 4, 10, 0, 0, 0, time.UTC)
-	description := "New shirt"
-	st, _ := status.New("Pending")
-	curr, _ := currency.New("USD")
-	essential := true
+	transactionData := map[string]any{
+		"id":          1,
+		"amount":      "99.99",
+		"date":        "2025-09-04",
+		"description": "New shirt",
+		"essential":   true,
+		"type":        "Expense",
+		"status":      "Pending",
+		"currency":    "USD",
+		"category":    "Shopping",
+		"subCategory": "T-shirt",
+	}
 
-	// --- Act ---
-	transaction := Build(id, amount, *cat, *subCat, date, description, *st, *curr, essential)
+	transaction, err := Build(transactionData)
 
-	// --- Assert ---
+	if err != nil {
+		t.Fatalf("Build() returned an unexpected error: %v", err)
+	}
 	if transaction == nil {
 		t.Fatal("Build() returned a nil transaction")
 	}
 
-	// Check that all fields, including the ID, were assigned correctly
-	if transaction.ID != id {
-		t.Errorf("expected ID to be %d, but got %d", id, transaction.ID)
+	if transaction.ID != -1 {
+		t.Errorf("expected ID to be %d, but got %d", -1, transaction.ID)
 	}
-	if !transaction.Amount.Equal(amount) {
-		t.Errorf("expected amount %s, but got %s", amount, transaction.Amount)
+
+	expectedAmount := decimal.NewFromFloat(99.99)
+	if !transaction.Amount.Equal(expectedAmount) {
+		t.Errorf("expected amount %s, but got %s", expectedAmount, transaction.Amount)
 	}
-	if !reflect.DeepEqual(transaction.Category, cat) {
-		t.Errorf("expected category %+v, but got %+v", cat, transaction.Category)
+
+	expectedDate := time.Date(2025, time.September, 4, 0, 0, 0, 0, time.UTC)
+	if !transaction.Date.Equal(expectedDate) {
+		t.Errorf("expected date %v, but got %v", expectedDate, transaction.Date)
 	}
-	if !reflect.DeepEqual(transaction.SubCategory, subCat) {
-		t.Errorf("expected subCategory %+v, but got %+v", subCat, transaction.SubCategory)
+
+	if transaction.Category.Name != "Shopping" {
+		t.Errorf("expected category 'Shopping', but got '%s'", transaction.Category.Name)
 	}
-	if !transaction.Date.Equal(date) {
-		t.Errorf("expected date %v, but got %v", date, transaction.Date)
+
+	if transaction.SubCategory.Name != "T-shirt" {
+		t.Errorf("expected subCategory 'T-shirt', but got '%s'", transaction.SubCategory.Name)
 	}
-	if transaction.Description != description {
-		t.Errorf("expected description '%s', but got '%s'", description, transaction.Description)
-	}
-	if !reflect.DeepEqual(transaction.Status, st) {
-		t.Errorf("expected status %+v, but got %+v", st, transaction.Status)
-	}
-	if !reflect.DeepEqual(transaction.Currency, curr) {
-		t.Errorf("expected currency %+v, but got %+v", curr, transaction.Currency)
+
+	if transaction.Status.Name != "Pending" {
+		t.Errorf("expected status 'Pending', but got '%s'", transaction.Status.Name)
 	}
 }

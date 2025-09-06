@@ -100,7 +100,7 @@ func Build(transaction map[string]any) (*Transaction, error) {
 
 	subCategoryStr, _ := transaction["subCategory"].(string)
 	// The parent ID is unknown here, so we use a placeholder. The repository will handle the lookup.
-	transactionSubcategory, err := sub_category.New(-1, subCategoryStr)
+	transactionSubcategory, err := sub_category.New(0, subCategoryStr)
 	if err != nil {
 		return nil, err
 	}
