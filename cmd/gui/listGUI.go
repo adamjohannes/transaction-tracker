@@ -82,7 +82,7 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 	table.SetColumnWidth(2, 100)
 	table.SetColumnWidth(3, 100)
 	table.SetColumnWidth(4, 120)
-	table.SetColumnWidth(5, 150)
+	table.SetColumnWidth(5, 200)
 	table.SetColumnWidth(6, 200)
 
 	table.ShowHeaderColumn = false
