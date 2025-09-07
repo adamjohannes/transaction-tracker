@@ -18,6 +18,7 @@ type GUI struct {
 	app                   fyne.App
 	homeWindow            fyne.Window
 	addWindow             fyne.Window
+	listWindow            fyne.Window
 	transactionController *transaction.TransactionController
 	categoryController    *category.CategoryController
 	subCategoryController *sub_category.SubCategoryController
@@ -35,16 +36,24 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 
 	g.homeWindow = a.NewWindow("Rastreador de Transações")
 	g.addWindow = a.NewWindow("Adicionar Transação")
+	g.listWindow = a.NewWindow("Listar Transações")
 
 	g.homeWindow.SetContent(makeHomeContent(g))
 	g.addWindow.SetContent(makeAddContent(g))
+	g.listWindow.SetContent(makeListContent(g))
 
 	g.homeWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.homeWindow.SetFixedSize(!guiConfig.Resizable)
 	g.addWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.addWindow.SetFixedSize(!guiConfig.Resizable)
+	g.listWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
+	g.listWindow.SetFixedSize(!guiConfig.Resizable)
 
 	g.addWindow.SetCloseIntercept(func() {
+		g.ShowHomeScreen()
+	})
+
+	g.listWindow.SetCloseIntercept(func() {
 		g.ShowHomeScreen()
 	})
 
@@ -69,8 +78,14 @@ func (g *GUI) ShowAddScreen() {
 	g.homeWindow.Hide()
 }
 
+func (g *GUI) ShowListScreen() {
+	g.listWindow.Show()
+	g.homeWindow.Hide()
+}
+
 // ShowHomeScreen hides the add window and shows the home window.
 func (g *GUI) ShowHomeScreen() {
 	g.homeWindow.Show()
 	g.addWindow.Hide()
+	g.listWindow.Hide()
 }

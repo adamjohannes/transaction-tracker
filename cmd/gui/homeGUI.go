@@ -1,8 +1,6 @@
 package gui
 
 import (
-	"log"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -17,9 +15,7 @@ func makeHomeContent(g *GUI) fyne.CanvasObject {
 
 	addBtn := widget.NewButton("Adicionar Transação", g.ShowAddScreen)
 
-	listBtn := widget.NewButton("Listar Transações", func() {
-		log.Println("List")
-	})
+	listBtn := widget.NewButton("Listar Transações", g.ShowListScreen)
 
 	ctrBtns := container.NewGridWithRows(2, addBtn, listBtn)
 
