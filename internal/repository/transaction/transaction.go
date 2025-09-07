@@ -66,7 +66,7 @@ func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transac
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
 	}
 
-	tx.ID = int8(id)
+	tx.ID = int64(id)
 	return tx, nil
 }
 

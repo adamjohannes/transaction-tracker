@@ -13,7 +13,7 @@ import (
 )
 
 type Transaction struct {
-	ID          int8
+	ID          int64
 	Amount      decimal.Decimal
 	Category    *category.Category
 	SubCategory *sub_category.SubCategory
