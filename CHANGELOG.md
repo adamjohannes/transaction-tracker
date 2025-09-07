@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.5] - 2025-09-07
+
+### 🚀 Features
+
+- *(gui)* Add a refresh button to 'list' view
+- *(gui)* Add a filter button
+- *(scripts)* Add a script to import transactions from a CSV file
+- Add script to compile to android
+- Implement transaction filtering in the 'list' view
+
+### 🐛 Bug Fixes
+
+- *(scripts/importer)* Add check for period
+- Set the value for transaction ID as a big int
+
+### 🚜 Refactor
+
+- *(transaction)* Remove sub category from transaction fields
+- *(gui)* Adjust width for sub category field in list view
+- *(gui)* Adjust width for description field in list view
+
+### 📚 Documentation
+
+- *(scripts/importer)* Add example CSV file for importer
+
+### ⚙️ Miscellaneous Tasks
+
+- Add android-compile.sh to .gitignore
+
 ## [0.0.4] - 2025-09-07
 
 ### 🚀 Features
