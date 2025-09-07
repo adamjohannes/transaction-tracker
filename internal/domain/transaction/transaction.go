@@ -130,7 +130,7 @@ func validateRequiredFields(transaction map[string]any) error {
 
 	requiredFields := []string{
 		"amount", "date", "type", "essential",
-		"status", "currency", "category", "subCategory",
+		"status", "currency", "category",
 	}
 
 	for _, field := range requiredFields {
