@@ -80,8 +80,8 @@ func readCSVFile(filePath string) (header []string, records [][]string, err erro
 		return nil, nil, fmt.Errorf("could not read header row: %w", err)
 	}
 
-	// Read all remaining records into memory
 	records, err = csvReader.ReadAll()
+
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not read data rows: %w", err)
 	}
@@ -96,12 +96,10 @@ func processRecord(ctx context.Context, pool *pgxpool.Pool, record []string, que
 		return nil // Skip empty or invalid rows silently
 	}
 
-	// Map CSV columns to variables
 	date, category, subCategory := record[0], record[1], record[2]
 	amountStr, essentialStr, transactionType := record[3], record[4], record[7]
-
-	// Parse and clean data
 	amount, err := parseAmount(amountStr)
+
 	if err != nil {
 		return fmt.Errorf("could not parse amount '%s': %w", amountStr, err)
 	}
@@ -111,7 +109,6 @@ func processRecord(ctx context.Context, pool *pgxpool.Pool, record []string, que
 		return fmt.Errorf("could not parse 'Essential' value '%s': %w", essentialStr, err)
 	}
 
-	// Execute the insert query
 	_, err = pool.Exec(ctx, query,
 		date, category, subCategory, amount, essential, transactionType,
 	)
@@ -144,8 +141,18 @@ func printSummary(successful, failed int, failedRows [][]string, header []string
 // parseAmount
 // Cleans and converts a currency string to a decimal.
 func parseAmount(amountStr string) (decimal.Decimal, error) {
-	cleanStr := strings.ReplaceAll(amountStr, ".", "")
-	cleanStr = strings.ReplaceAll(cleanStr, ",", ".")
-	cleanStr = strings.TrimSpace(cleanStr)
+	cleanStr := strings.TrimSpace(amountStr)
+
+	// Check if the string uses a comma for the decimal part (e.g., "1.806,46").
+	if strings.Contains(cleanStr, ",") {
+		// If it does, remove periods (which are thousand separators).
+		cleanStr = strings.ReplaceAll(cleanStr, ".", "")
+		// Then, replace the comma with a period for parsing.
+		cleanStr = strings.ReplaceAll(cleanStr, ",", ".")
+	}
+
+	// If no comma is present (e.g., "76.98"), we assume the period is the
+	// decimal separator and do nothing to it.
+
 	return decimal.NewFromString(cleanStr)
 }
