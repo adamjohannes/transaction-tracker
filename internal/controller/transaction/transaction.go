@@ -30,7 +30,7 @@ func NewTransactionController(pool *pgxpool.Pool, ctx context.Context) *Transact
 // ERROR: Will fail if a required field is missing.
 func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) (*domain.Transaction, error) {
 	// Build domain object from the raw map data
-	transaction, err := domain.Build(tempTransaction)
+	transaction, err := domain.BuildTransaction(tempTransaction)
 	if err != nil {
 		return nil, err
 	}

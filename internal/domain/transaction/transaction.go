@@ -45,7 +45,7 @@ func New(
 	}
 }
 
-func Build(transaction map[string]any) (*Transaction, error) {
+func BuildTransaction(transaction map[string]any) (*Transaction, error) {
 	if err := validateRequiredFields(transaction); err != nil {
 		return nil, err
 	}

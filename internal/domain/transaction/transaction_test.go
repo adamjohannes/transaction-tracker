@@ -58,13 +58,13 @@ func TestBuild(t *testing.T) {
 		"subCategory": "T-shirt",
 	}
 
-	transaction, err := Build(transactionData)
+	transaction, err := BuildTransaction(transactionData)
 
 	if err != nil {
-		t.Fatalf("Build() returned an unexpected error: %v", err)
+		t.Fatalf("BuildTransaction() returned an unexpected error: %v", err)
 	}
 	if transaction == nil {
-		t.Fatal("Build() returned a nil transaction")
+		t.Fatal("BuildTransaction() returned a nil transaction")
 	}
 
 	if transaction.ID != -1 {
