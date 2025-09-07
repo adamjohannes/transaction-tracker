@@ -1,8 +1,6 @@
 package gui
 
 import (
-	"fmt"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -14,55 +12,79 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 	lblTitle.TextStyle.Bold = true
 	btnReturn := widget.NewButton("Voltar", g.ShowHomeScreen)
 
-	// - Max number of columns is 10 (9 fields plus the index column)
-	//   - The index column is NOT the row ID in the DB, its just the
-	//     number of the row in the current view
+	sampleData := [][]string{
+		{"100.00", "2025-09-07", "Expense", "USD", "Food", "Groceries", "Bought vegetables"},
+		{"250.00", "2025-09-06", "Expense", "EUR", "Transport", "Fuel", "Gas for car"},
+		{"500.00", "2025-09-05", "Income", "USD", "Salary", "Main Job", "September paycheck"},
+		{"75.50", "2025-09-04", "Expense", "GBP", "Entertainment", "Movies", "Cinema tickets"},
+		{"1200.00", "2025-09-01", "Income", "USD", "Freelance", "Project", "Website development"},
+		{"250.00", "2025-09-06", "Expense", "EUR", "Transport", "Fuel", "Gas for car"},
+		{"500.00", "2025-09-05", "Income", "USD", "Salary", "Main Job", "September paycheck"},
+		{"75.50", "2025-09-04", "Expense", "GBP", "Entertainment", "Movies", "Cinema tickets"},
+		{"1200.00", "2025-09-01", "Income", "USD", "Freelance", "Project", "Website development"},
+		{"250.00", "2025-09-06", "Expense", "EUR", "Transport", "Fuel", "Gas for car"},
+		{"500.00", "2025-09-05", "Income", "USD", "Salary", "Main Job", "September paycheck"},
+		{"75.50", "2025-09-04", "Expense", "GBP", "Entertainment", "Movies", "Cinema tickets"},
+		{"1200.00", "2025-09-01", "Income", "USD", "Freelance", "Project", "Website development"},
+		{"250.00", "2025-09-06", "Expense", "EUR", "Transport", "Fuel", "Gas for car"},
+		{"500.00", "2025-09-05", "Income", "USD", "Salary", "Main Job", "September paycheck"},
+		{"75.50", "2025-09-04", "Expense", "GBP", "Entertainment", "Movies", "Cinema tickets"},
+		{"1200.00", "2025-09-01", "Income", "USD", "Freelance", "Project", "Website development"},
+		{"250.00", "2025-09-06", "Expense", "EUR", "Transport", "Fuel", "Gas for car"},
+		{"500.00", "2025-09-05", "Income", "USD", "Salary", "Main Job", "September paycheck"},
+		{"75.50", "2025-09-04", "Expense", "GBP", "Entertainment", "Movies", "Cinema tickets"},
+		{"1200.00", "2025-09-01", "Income", "USD", "Freelance", "Project", "Website development"},
+		{"250.00", "2025-09-06", "Expense", "EUR", "Transport", "Fuel", "Gas for car"},
+		{"500.00", "2025-09-05", "Income", "USD", "Salary", "Main Job", "September paycheck"},
+		{"75.50", "2025-09-04", "Expense", "GBP", "Entertainment", "Movies", "Cinema tickets"},
+		{"1200.00", "2025-09-01", "Income", "USD", "Freelance", "Project", "Website development"},
+	}
 
-	numCols := 10
-	numRows := 20
-	table := widget.NewTable(
+	headers := []string{
+		"Amount",
+		"Date",
+		"Type",
+		"Currency",
+		"Category",
+		"Sub Category",
+		"Description",
+	}
+
+	table := widget.NewTableWithHeaders(
 		func() (int, int) {
-			return numRows, numCols
+			return len(sampleData), len(headers)
 		},
 		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
+			return widget.NewLabel("")
 		},
 		func(id widget.TableCellID, cell fyne.CanvasObject) {
 			label := cell.(*widget.Label)
-			if id.Row == 0 {
-				switch id.Col {
-				case 0:
-					label.SetText("ID")
-				case 1:
-					label.SetText("Amount")
-				case 2:
-					label.SetText("Date")
-				case 3:
-					label.SetText("Essential")
-				case 4:
-					label.SetText("Type")
-				case 5:
-					label.SetText("Status")
-				case 6:
-					label.SetText("Currency")
-				case 7:
-					label.SetText("Category")
-				case 8:
-					label.SetText("SubCategory")
-				case 9:
-					label.SetText("Description")
-				case 10:
-					label.SetText("Description")
-				}
-				return
-			}
-			label.SetText(fmt.Sprintf("C%d R%d", id.Col+1, id.Row+1))
+			label.SetText(sampleData[id.Row][id.Col])
 		},
 	)
 
-	for i := 0; i < numCols; i++ {
-		table.SetColumnWidth(i, 120)
+	table.CreateHeader = func() fyne.CanvasObject {
+		return widget.NewLabelWithStyle("Header", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 	}
+
+	table.UpdateHeader = func(id widget.TableCellID, cell fyne.CanvasObject) {
+		label := cell.(*widget.Label)
+		if id.Row == -1 && id.Col >= 0 && id.Col < len(headers) {
+			label.SetText(headers[id.Col])
+		}
+	}
+
+	// Set column widths
+	table.SetColumnWidth(0, 100) // Amount
+	table.SetColumnWidth(1, 120) // Date
+	table.SetColumnWidth(2, 100) // Type
+	table.SetColumnWidth(3, 100) // Currency
+	table.SetColumnWidth(4, 120) // Category
+	table.SetColumnWidth(5, 150) // Sub Category
+	table.SetColumnWidth(6, 200) // Description
+
+	// Disable table index header
+	table.ShowHeaderColumn = false
 
 	return container.NewBorder(lblTitle, btnReturn, nil, nil, table)
 }
