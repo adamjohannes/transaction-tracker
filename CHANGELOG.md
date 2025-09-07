@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.3] - 2025-09-07
+
+### 🚀 Features
+
+- *(internal)* Add controller section
+- *(controller/transaction)* Add a controller for Transaction
+- *(repository/transaction)* Add a repository layer for Transaction
+- *(repository/transaction)* Implement method to add transactions to the DB
+- *(repository/transaction)* Implement method to add transactions to the DB
+- *(gui)* Add transaction controller to GUI
+- Connect transaction creation with the database
+- Dynamically fetch categories from the database
+- Dynamically fetch sub categories from the database
+
+### 🐛 Bug Fixes
+
+- *(database)* Adjust logic for interacting with the database
+
+### 🚜 Refactor
+
+- *(gui)* Rename 'home.go' to 'homeGUI.go'
+- *(gui)* Refactor 'add' screen
+- Update transaction handling
+
+### ⚙️ Miscellaneous Tasks
+
+- Add repostory/ to .gitignore
+- Add category/ to .gitignore
+
 ## [0.0.2] - 2025-09-06
 
 ### 🚀 Features
