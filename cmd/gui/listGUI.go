@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -13,7 +14,12 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 	lblTitle := widget.NewLabel("Lista das Transações")
 	lblTitle.Alignment = fyne.TextAlignCenter
 	lblTitle.TextStyle.Bold = true
+
 	btnReturn := widget.NewButton("Voltar", g.ShowHomeScreen)
+	btnRefresh := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameViewRefresh), func() {
+		g.listWindow.SetContent(makeListContent(g))
+	})
+	ctrBtns := container.NewBorder(nil, nil, nil, btnRefresh, btnReturn)
 
 	transactions, err := g.transactionController.GetAllTransactions()
 	if err != nil {
@@ -77,5 +83,5 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 
 	table.ShowHeaderColumn = false
 
-	return container.NewBorder(lblTitle, btnReturn, nil, nil, table)
+	return container.NewBorder(lblTitle, ctrBtns, nil, nil, table)
 }
