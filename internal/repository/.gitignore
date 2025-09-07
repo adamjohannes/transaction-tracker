@@ -5,5 +5,8 @@
 !category/
 !category/*
 
+!sub_category/
+!sub_category/*
+
 !transaction/
 !transaction/*

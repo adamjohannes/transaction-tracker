@@ -18,6 +18,18 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 	tempTransaction := make(map[string]any)
 	resetTransaction(tempTransaction)
 
+	// Build category and sub-category accordions
+	var subCategoryRadioGroup *widget.RadioGroup
+	subCategoryRadioGroup = widget.NewRadioGroup([]string{}, func(s string) {
+		tempTransaction["subCategory"] = s
+	})
+	ctrScrollSubCategory := container.NewScroll(subCategoryRadioGroup)
+	ctrScrollSubCategory.SetMinSize(fyne.NewSize(subCategoryRadioGroup.MinSize().Width, 200))
+	ctrSubCategory := widget.NewAccordion(
+		widget.NewAccordionItem("Sub Category (Required)", ctrScrollSubCategory),
+	)
+	ctrSubCategory.Close(0)
+
 	// Fetch categories
 	categories, err := g.categoryController.GetAllCategories()
 
@@ -28,19 +40,58 @@ func makeAddContent(g *GUI) fyne.CanvasObject {
 
 	// Convert the list of Category objects into a simple list of names for the widget.
 	categoryNames := make([]string, len(categories))
+
 	for i, cat := range categories {
 		categoryNames[i] = cat.Name
 	}
 
-	// Build form widgets
+	categoryRadioGroup := widget.NewRadioGroup(categoryNames, func(selectedCategory string) {
+		tempTransaction["category"] = selectedCategory
+		tempTransaction["subCategory"] = nil
+
+		log.Println(fmt.Sprintf("Category selected: %s. Fetching sub-categories...", selectedCategory))
+
+		// Get filtered sub-categories
+		subCategories, err := g.subCategoryController.GetSubCategoriesByCategory(selectedCategory)
+
+		if err != nil {
+			log.Println(fmt.Sprintf("Failed to load sub-categories: %v", err))
+			dialog.ShowError(err, g.addWindow)
+			return
+		}
+
+		// Build the list of names for the widget
+		subCategoryNames := make([]string, len(subCategories))
+
+		fmt.Println(fmt.Sprintf("Sub-categories length: %v", len(subCategoryNames)))
+		for _, v := range subCategories {
+			fmt.Println(v)
+		}
+
+		for i, subCat := range subCategories {
+			subCategoryNames[i] = subCat.Name
+		}
+
+		// Update the sub-category widget
+		subCategoryRadioGroup.Options = subCategoryNames // Set the new options
+		subCategoryRadioGroup.SetSelected("")            // Clear any old selection
+		subCategoryRadioGroup.Refresh()                  // IMPORTANT: Refresh the UI to show changes
+		ctrSubCategory.Open(0)                           // Open the accordion for the user
+	})
+
+	ctrCategoryScroll := container.NewScroll(categoryRadioGroup)
+	ctrCategoryScroll.SetMinSize(fyne.NewSize(categoryRadioGroup.MinSize().Width, 200))
+	ctrCategory := widget.NewAccordion(
+		widget.NewAccordionItem("Category (Required)", ctrCategoryScroll),
+	)
+
+	// Build the rest of the form widgets
 	ctrAmount := buildEntryCtr("Amount (Required)", "amount", tempTransaction)
 	ctrDate := buildDateCtr("Date (Required)", "date", tempTransaction)
 	ctrEssential := buildCheckCtr("Essential", "essential", tempTransaction)
 	ctrType := buildRadioGroupAccordion("Type (Required)", "type", float32(120), tempTransaction, []string{"Debit", "Credit", "Refund"})
 	ctrStatus := buildRadioGroupAccordion("Status (Required)", "status", float32(120), tempTransaction, []string{"Pending", "Completed", "Failed"})
 	ctrCurrency := buildRadioGroupAccordion("Currency (Required)", "currency", float32(120), tempTransaction, []string{"BRL", "USD", "EUR"})
-	ctrCategory := buildRadioGroupAccordion("Category (Required)", "category", float32(200), tempTransaction, categoryNames)
-	ctrSubCategory := buildRadioGroupAccordion("Sub Category (Required)", "subCategory", float32(200), tempTransaction, []string{"Eletrônicos", "Sub Category 2", "Sub Category 3"})
 	ctrDescription := buildEntryCtr("Description", "description", tempTransaction)
 
 	// Build form
