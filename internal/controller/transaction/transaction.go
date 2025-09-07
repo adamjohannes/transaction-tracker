@@ -46,3 +46,13 @@ func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) 
 
 	return createdTransaction, nil
 }
+
+// GetAllTransactions
+// Fetches all transaction records from the database.
+func (tc *TransactionController) GetAllTransactions() ([]*domain.Transaction, error) {
+	// Initialize repository with database pool
+	repo := repository.NewPostgresRepository(tc.pool)
+
+	// Fetch all transactions.
+	return repo.GetAll(tc.ctx)
+}
