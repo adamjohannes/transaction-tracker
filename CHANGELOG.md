@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.4] - 2025-09-07
+
+### 🚀 Features
+
+- *(gui)* Start to implement the list view
+- Dynamically fetch transactions data from the database in the 'list' view
+
+### 🐛 Bug Fixes
+
+- *(gui)* Refresh the table when opening the 'list' view in order to see the new transactions
+
+### 🚜 Refactor
+
+- *(gui)* Make column headers follow focus
+
 ## [0.0.3] - 2025-09-07
 
 ### 🚀 Features
