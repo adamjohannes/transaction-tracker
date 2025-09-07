@@ -15,7 +15,9 @@ func makeHomeContent(g *GUI) fyne.CanvasObject {
 
 	addBtn := widget.NewButton("Adicionar Transação", g.ShowAddScreen)
 
-	listBtn := widget.NewButton("Listar Transações", g.ShowListScreen)
+	listBtn := widget.NewButton("Listar Transações", func() {
+		g.ShowListScreen(true)
+	})
 
 	ctrBtns := container.NewGridWithRows(2, addBtn, listBtn)
 

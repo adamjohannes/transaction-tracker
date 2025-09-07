@@ -9,7 +9,10 @@ import (
 	"monthly-expenses-handler/internal/domain/sub_category"
 	"monthly-expenses-handler/internal/domain/transaction"
 	"monthly-expenses-handler/internal/domain/transaction_type"
+	"strconv"
+	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -18,6 +21,7 @@ import (
 type Repository interface {
 	Create(ctx context.Context, tx *transaction.Transaction) (*transaction.Transaction, error)
 	GetAll(ctx context.Context) ([]*transaction.Transaction, error)
+	GetFiltered(ctx context.Context, filters *transaction.FilterCriteria) ([]*transaction.Transaction, error)
 }
 
 // postgresRepository
@@ -95,6 +99,126 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*transaction.Transac
 	}
 	defer rows.Close()
 
+	var transactions []*transaction.Transaction
+	for rows.Next() {
+		var tx transaction.Transaction
+		var txType transaction_type.TransactionType
+		var txStatus status.Status
+		var txCurrency currency.Currency
+		var txCategory category.Category
+		var txSubCategory sub_category.SubCategory
+
+		err := rows.Scan(
+			&tx.ID, &tx.Amount, &tx.Date, &tx.Description, &tx.Essential,
+			&txType.ID, &txType.Name,
+			&txStatus.ID, &txStatus.Name,
+			&txCurrency.Code,
+			&txCategory.Id, &txCategory.Name, &txCategory.Description,
+			&txSubCategory.ID, &txSubCategory.ParentID, &txSubCategory.Name,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
+		}
+
+		tx.Type = &txType
+		tx.Status = &txStatus
+		tx.Currency = &txCurrency
+		tx.Category = &txCategory
+		tx.SubCategory = &txSubCategory
+
+		transactions = append(transactions, &tx)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error reading transaction rows: %w", rows.Err())
+	}
+
+	return transactions, nil
+}
+
+// GetFiltered
+// Retrieves transactions based on a dynamic set of criteria.
+func (r *postgresRepository) GetFiltered(ctx context.Context, filters *transaction.FilterCriteria) ([]*transaction.Transaction, error) {
+	baseQuery := `
+		SELECT 
+			t.id, t.amount, t.date, t.description, t.essential,
+			tt.id AS type_id, tt.name AS type_name,
+			ts.id AS status_id, ts.name AS status_name,
+			cur.code AS currency_code,
+			cat.id AS category_id, cat.name AS category_name, cat.description AS category_description,
+			scat.id AS sub_category_id, scat.parent_category AS sub_category_parent_id, scat.name AS sub_category_name
+		FROM transactions t
+		JOIN transaction_types tt ON t.type = tt.id
+		JOIN transaction_status ts ON t.status = ts.id
+		JOIN currencies cur ON t.currency = cur.code
+		JOIN transaction_categories cat ON t.category = cat.id
+		JOIN transaction_sub_categories scat ON t.sub_category = scat.id
+	`
+
+	whereClauses := []string{}
+	args := []any{}
+	argCount := 1
+
+	if filters.CategoryName != nil && *filters.CategoryName != "" {
+		whereClauses = append(whereClauses, "cat.name = $"+strconv.Itoa(argCount))
+		args = append(args, *filters.CategoryName)
+		argCount++
+	}
+	if filters.SubCategoryName != nil && *filters.SubCategoryName != "" {
+		whereClauses = append(whereClauses, "scat.name = $"+strconv.Itoa(argCount))
+		args = append(args, *filters.SubCategoryName)
+		argCount++
+	}
+	if filters.Essential != nil {
+		whereClauses = append(whereClauses, "t.essential = $"+strconv.Itoa(argCount))
+		args = append(args, *filters.Essential)
+		argCount++
+	}
+	if filters.StartDate != nil {
+		whereClauses = append(whereClauses, "t.date >= $"+strconv.Itoa(argCount))
+		args = append(args, *filters.StartDate)
+		argCount++
+	}
+	if filters.EndDate != nil {
+		whereClauses = append(whereClauses, "t.date <= $"+strconv.Itoa(argCount))
+		args = append(args, *filters.EndDate)
+		argCount++
+	}
+	if filters.TypeName != nil && *filters.TypeName != "" {
+		whereClauses = append(whereClauses, "tt.name = $"+strconv.Itoa(argCount))
+		args = append(args, *filters.TypeName)
+		argCount++
+	}
+	if filters.CurrencyCode != nil && *filters.CurrencyCode != "" {
+		whereClauses = append(whereClauses, "cur.code = $"+strconv.Itoa(argCount))
+		args = append(args, *filters.CurrencyCode)
+		argCount++
+	}
+	if filters.StatusName != nil && *filters.StatusName != "" {
+		whereClauses = append(whereClauses, "ts.name = $"+strconv.Itoa(argCount))
+		args = append(args, *filters.StatusName)
+		argCount++
+	}
+
+	finalQuery := baseQuery
+	if len(whereClauses) > 0 {
+		finalQuery += " WHERE " + strings.Join(whereClauses, " AND ")
+	}
+	finalQuery += " ORDER BY t.date DESC"
+
+	rows, err := r.db.Query(ctx, finalQuery, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query filtered transactions: %w", err)
+	}
+	defer rows.Close()
+
+	return scanTransactions(rows)
+}
+
+// scanTransactions
+// Is a helper function that scans rows from a pgx.Rows object into
+// a slice of transaction domain objects. It helps reduce code duplication.
+func scanTransactions(rows pgx.Rows) ([]*transaction.Transaction, error) {
 	var transactions []*transaction.Transaction
 	for rows.Next() {
 		var tx transaction.Transaction

@@ -56,3 +56,10 @@ func (tc *TransactionController) GetAllTransactions() ([]*domain.Transaction, er
 	// Fetch all transactions.
 	return repo.GetAll(tc.ctx)
 }
+
+// GetFilteredTransactions
+// Fetches transactions based on filter criteria.
+func (tc *TransactionController) GetFilteredTransactions(filters *domain.FilterCriteria) ([]*domain.Transaction, error) {
+	repo := repository.NewPostgresRepository(tc.pool)
+	return repo.GetFiltered(tc.ctx, filters)
+}

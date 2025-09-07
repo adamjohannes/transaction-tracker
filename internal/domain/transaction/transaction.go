@@ -144,3 +144,17 @@ func validateRequiredFields(transaction map[string]any) error {
 
 	return nil
 }
+
+// FilterCriteria
+// Holds all possible filters for a transaction query.
+// Pointers are used to indicate optional filter fields.
+type FilterCriteria struct {
+	CategoryName    *string
+	SubCategoryName *string
+	Essential       *bool
+	StartDate       *time.Time
+	EndDate         *time.Time
+	TypeName        *string
+	CurrencyCode    *string
+	StatusName      *string
+}

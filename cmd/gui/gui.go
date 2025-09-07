@@ -19,6 +19,7 @@ type GUI struct {
 	homeWindow            fyne.Window
 	addWindow             fyne.Window
 	listWindow            fyne.Window
+	filterWindow          fyne.Window
 	transactionController *transaction.TransactionController
 	categoryController    *category.CategoryController
 	subCategoryController *sub_category.SubCategoryController
@@ -37,10 +38,12 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 	g.homeWindow = a.NewWindow("Rastreador de Transações")
 	g.addWindow = a.NewWindow("Adicionar Transação")
 	g.listWindow = a.NewWindow("Listar Transações")
+	g.filterWindow = a.NewWindow("Filtrar Transações")
 
 	g.homeWindow.SetContent(makeHomeContent(g))
 	g.addWindow.SetContent(makeAddContent(g))
-	g.listWindow.SetContent(makeListContent(g))
+	g.listWindow.SetContent(makeListContent(g, nil))
+	g.filterWindow.SetContent(makeFilterContent(g))
 
 	g.homeWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.homeWindow.SetFixedSize(!guiConfig.Resizable)
@@ -48,6 +51,8 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 	g.addWindow.SetFixedSize(!guiConfig.Resizable)
 	g.listWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.listWindow.SetFixedSize(!guiConfig.Resizable)
+	g.filterWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
+	g.filterWindow.SetFixedSize(!guiConfig.Resizable)
 
 	g.addWindow.SetCloseIntercept(func() {
 		g.ShowHomeScreen()
@@ -78,10 +83,21 @@ func (g *GUI) ShowAddScreen() {
 	g.homeWindow.Hide()
 }
 
-func (g *GUI) ShowListScreen() {
-	g.listWindow.SetContent(makeListContent(g))
+func (g *GUI) ShowListScreen(hideHome bool) {
+	if hideHome {
+		// If coming from the home screen, refresh the list with all transactions
+		g.listWindow.SetContent(makeListContent(g, nil))
+		g.homeWindow.Hide()
+	}
+
+	// If coming from the filter screen, the content has already been set
 	g.listWindow.Show()
-	g.homeWindow.Hide()
+	g.filterWindow.Hide()
+}
+
+func (g *GUI) ShowFilterScreen() {
+	g.filterWindow.Show()
+	g.listWindow.Hide()
 }
 
 // ShowHomeScreen hides the add window and shows the home window.
@@ -89,4 +105,5 @@ func (g *GUI) ShowHomeScreen() {
 	g.homeWindow.Show()
 	g.addWindow.Hide()
 	g.listWindow.Hide()
+	g.filterWindow.Hide()
 }

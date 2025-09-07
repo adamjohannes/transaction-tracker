@@ -2,7 +2,7 @@ package gui
 
 import (
 	"fmt"
-	"log"
+	domain "monthly-expenses-handler/internal/domain/transaction"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -11,26 +11,30 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func makeListContent(g *GUI) fyne.CanvasObject {
+func makeListContent(g *GUI, transactions []*domain.Transaction) fyne.CanvasObject {
 	lblTitle := widget.NewLabel("Lista das Transações")
 	lblTitle.Alignment = fyne.TextAlignCenter
 	lblTitle.TextStyle.Bold = true
 
 	btnReturn := widget.NewButton("Voltar", g.ShowHomeScreen)
 	btnRefresh := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameViewRefresh), func() {
-		g.listWindow.SetContent(makeListContent(g))
+		g.listWindow.SetContent(makeListContent(g, transactions))
 	})
 	btnFilter := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameSearch), func() {
-		log.Println("user wants to filter transactions")
+		g.ShowFilterScreen()
 	})
 	ctrBtns := container.NewBorder(nil, nil, btnFilter, btnRefresh, btnReturn)
 
-	transactions, err := g.transactionController.GetAllTransactions()
-	if err != nil {
-		go func() {
-			dialog.ShowError(fmt.Errorf("failed to load transactions: %w", err), g.listWindow)
-		}()
-		return container.NewBorder(lblTitle, btnReturn, nil, nil)
+	if transactions == nil {
+		var err error
+		transactions, err = g.transactionController.GetAllTransactions()
+
+		if err != nil {
+			go func() {
+				dialog.ShowError(fmt.Errorf("failed to load transactions: %w", err), g.listWindow)
+			}()
+			return container.NewBorder(lblTitle, btnReturn, nil, nil)
+		}
 	}
 
 	// Convert the slice of Transaction structs into a 2D slice of strings for the table
