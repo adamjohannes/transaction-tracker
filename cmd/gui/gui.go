@@ -79,6 +79,7 @@ func (g *GUI) ShowAddScreen() {
 }
 
 func (g *GUI) ShowListScreen() {
+	g.listWindow.SetContent(makeListContent(g))
 	g.listWindow.Show()
 	g.homeWindow.Hide()
 }
