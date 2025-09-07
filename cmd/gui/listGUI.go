@@ -15,11 +15,8 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 	lblTitle.TextStyle.Bold = true
 	btnReturn := widget.NewButton("Voltar", g.ShowHomeScreen)
 
-	// Fetch real data from the controller
 	transactions, err := g.transactionController.GetAllTransactions()
 	if err != nil {
-		// If there's an error, show it in a dialog and return an empty view
-		// This uses a little trick to show the dialog after the window is visible
 		go func() {
 			dialog.ShowError(fmt.Errorf("failed to load transactions: %w", err), g.listWindow)
 		}()
@@ -48,7 +45,7 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 
 	table := widget.NewTableWithHeaders(
 		func() (int, int) {
-			return len(tableData), len(headers) // Use the dimensions of our fetched data
+			return len(tableData), len(headers)
 		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("")
@@ -59,7 +56,6 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 		},
 	)
 
-	// ... (the rest of the table setup code remains the same)
 	table.CreateHeader = func() fyne.CanvasObject {
 		return widget.NewLabelWithStyle("Header", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 	}
