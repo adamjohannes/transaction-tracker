@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -19,7 +20,10 @@ func makeListContent(g *GUI) fyne.CanvasObject {
 	btnRefresh := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameViewRefresh), func() {
 		g.listWindow.SetContent(makeListContent(g))
 	})
-	ctrBtns := container.NewBorder(nil, nil, nil, btnRefresh, btnReturn)
+	btnFilter := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameSearch), func() {
+		log.Println("user wants to filter transactions")
+	})
+	ctrBtns := container.NewBorder(nil, nil, btnFilter, btnRefresh, btnReturn)
 
 	transactions, err := g.transactionController.GetAllTransactions()
 	if err != nil {
