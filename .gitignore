@@ -1,6 +1,7 @@
 *
 
 !.gitignore
+!android-compile.sh
 !CHANGELOG.md
 !cliff.toml
 !go.mod
