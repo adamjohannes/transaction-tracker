@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -95,10 +96,19 @@ func makeListContent(g *GUI, transactions []*domain.Transaction) fyne.CanvasObje
 	btnRefresh := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameViewRefresh), func() {
 		g.listWindow.SetContent(makeListContent(g, nil))
 	})
-	btnFilter := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameSearch), g.ShowFilterScreen)
-	ctrBtns := container.NewBorder(nil, nil, btnFilter, btnRefresh, btnReturn)
 
-	return container.NewBorder(lblTitle, ctrBtns, nil, nil, scrollableGrid)
+	btnFilter := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameSearch), g.ShowFilterScreen)
+	btnCharts := widget.NewButtonWithIcon("Ver Gráficos", theme.Icon(theme.IconNameSettings), g.ShowDataScreenFromList)
+
+	bottomButtons := container.NewHBox(
+		btnReturn,
+		layout.NewSpacer(),
+		btnFilter,
+		btnRefresh,
+		btnCharts,
+	)
+
+	return container.NewBorder(lblTitle, bottomButtons, nil, nil, scrollableGrid)
 }
 
 // sortTransactions

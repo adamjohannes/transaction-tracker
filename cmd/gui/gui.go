@@ -67,6 +67,10 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 		g.ShowHomeScreen()
 	})
 
+	g.dataWindow.SetCloseIntercept(func() {
+		g.ShowListScreen(false)
+	})
+
 	g.homeWindow.SetCloseIntercept(func() {
 		a.Quit()
 	})
@@ -97,6 +101,7 @@ func (g *GUI) ShowListScreen(hideHome bool) {
 	// If coming from the filter screen, the content has already been set
 	g.listWindow.Show()
 	g.filterWindow.Hide()
+	g.dataWindow.Hide()
 }
 
 func (g *GUI) ShowFilterScreen() {
@@ -104,9 +109,10 @@ func (g *GUI) ShowFilterScreen() {
 	g.listWindow.Hide()
 }
 
-func (g *GUI) ShowDataScreen() {
+func (g *GUI) ShowDataScreenFromList() {
+	g.dataWindow.SetContent(makeDataContent(g))
 	g.dataWindow.Show()
-	g.homeWindow.Hide()
+	g.listWindow.Hide()
 }
 
 // ShowHomeScreen hides the add window and shows the home window.

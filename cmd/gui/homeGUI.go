@@ -6,7 +6,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// makeHomeContent creates the UI for the home screen.
+// makeHomeContent
+// Creates the UI for the home screen.
 // It takes the GUI controller to link button actions to navigation methods.
 func makeHomeContent(g *GUI) fyne.CanvasObject {
 	lblTitle := widget.NewLabel("Rastreador de Transações")
@@ -19,8 +20,7 @@ func makeHomeContent(g *GUI) fyne.CanvasObject {
 		g.ShowListScreen(true)
 	})
 
-	dataBtn := widget.NewButton("Visualizar Dados", g.ShowDataScreen)
-	ctrBtns := container.NewGridWithRows(3, addBtn, listBtn, dataBtn)
+	ctrBtns := container.NewGridWithRows(2, addBtn, listBtn)
 
 	return container.NewBorder(lblTitle, nil, nil, nil, ctrBtns)
 }
