@@ -25,12 +25,12 @@ func makeDataContent(g *GUI) fyne.CanvasObject {
 	creditChart := createPieChart("Credit Transactions", transactionCounts["Credit"])
 	refundChart := createPieChart("Refund Transactions", transactionCounts["Refund"])
 
-	charts := container.NewGridWithColumns(3, debitChart, creditChart, refundChart)
+	charts := container.NewGridWithRows(3, debitChart, creditChart, refundChart)
 	title := widget.NewLabel("Transaction Data")
 	title.Alignment = fyne.TextAlignCenter
 	title.TextStyle.Bold = true
 
-	return container.NewBorder(title, nil, nil, nil, charts)
+	return container.NewBorder(title, nil, nil, nil, container.NewScroll(charts))
 }
 
 func createPieChart(title string, dataMap map[string]int) fyne.CanvasObject {
