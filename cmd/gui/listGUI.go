@@ -29,84 +29,67 @@ func makeListContent(g *GUI, transactions []*domain.Transaction) fyne.CanvasObje
 		}
 	}
 
-	// -1 means no column is sorted initially.
 	var currentSortColumn = -1
 	var isSortAscending = true
-	var table *widget.Table
 
 	headers := []string{"Amount", "Date", "Type", "Currency", "Category", "Sub Category", "Description"}
-	headerButtons := make([]fyne.CanvasObject, len(headers))
+	numCols := len(headers)
+	grid := container.NewGridWithColumns(numCols)
+	scrollableGrid := container.NewScroll(grid)
 
-	updateHeaderLabels := func() {
-		for i, h := range headers {
-			btn := headerButtons[i].(*widget.Button)
-			label := h
-			if i == currentSortColumn {
-				if isSortAscending {
-					label += " ▲" // Ascending order
-				} else {
-					label += " ▼" // Descending order
+	var rebuildGrid func()
+	rebuildGrid = func() {
+		allWidgets := make([]fyne.CanvasObject, 0, (len(transactions)+1)*numCols)
+
+		updateHeaderLabels := func(headerButtons []*widget.Button) {
+			for i, h := range headers {
+				label := h
+				if i == currentSortColumn {
+					if isSortAscending {
+						label += " ▲"
+					} else {
+						label += " ▼"
+					}
 				}
+				headerButtons[i].SetText(label)
 			}
-			btn.SetText(label)
 		}
+
+		headerWidgets := make([]*widget.Button, numCols)
+		for i := range headers {
+			colIndex := i
+			btn := widget.NewButton("", func() {
+				if currentSortColumn == colIndex {
+					isSortAscending = !isSortAscending
+				} else {
+					currentSortColumn = colIndex
+					isSortAscending = true
+				}
+				sortTransactions(transactions, currentSortColumn, isSortAscending)
+				rebuildGrid()
+			})
+			headerWidgets[i] = btn
+			allWidgets = append(allWidgets, btn)
+		}
+		updateHeaderLabels(headerWidgets)
+
+		for _, tx := range transactions {
+			allWidgets = append(allWidgets, widget.NewLabel(tx.Amount.StringFixed(2)))
+			allWidgets = append(allWidgets, widget.NewLabel(tx.Date.Format("2006-01-02")))
+			allWidgets = append(allWidgets, widget.NewLabel(tx.Type.Name))
+			allWidgets = append(allWidgets, widget.NewLabel(tx.Currency.Code))
+			allWidgets = append(allWidgets, widget.NewLabel(tx.Category.Name))
+			allWidgets = append(allWidgets, widget.NewLabel(tx.SubCategory.Name))
+
+			descLabel := widget.NewLabel(tx.Description)
+			descLabel.Truncation = fyne.TextTruncateEllipsis
+			allWidgets = append(allWidgets, descLabel)
+		}
+
+		grid.Objects = allWidgets
+		grid.Refresh()
 	}
-
-	for i, header := range headers {
-		colIndex := i
-		headerButtons[i] = widget.NewButton(header, func() {
-			if currentSortColumn == colIndex {
-				isSortAscending = !isSortAscending // Flip direction
-			} else {
-				currentSortColumn = colIndex // New column, sort ascending
-				isSortAscending = true
-			}
-
-			sortTransactions(transactions, currentSortColumn, isSortAscending)
-			updateHeaderLabels()
-			table.Refresh()
-		})
-	}
-
-	customHeader := container.NewGridWithColumns(len(headers), headerButtons...)
-	table = widget.NewTable(
-		func() (int, int) {
-			return len(transactions), len(headers)
-		},
-		func() fyne.CanvasObject {
-			return widget.NewLabel("")
-		},
-		func(id widget.TableCellID, cell fyne.CanvasObject) {
-			tx := transactions[id.Row]
-			label := cell.(*widget.Label)
-			var value string
-			switch id.Col {
-			case 0:
-				value = tx.Amount.StringFixed(2)
-			case 1:
-				value = tx.Date.Format("2006-01-02")
-			case 2:
-				value = tx.Type.Name
-			case 3:
-				value = tx.Currency.Code
-			case 4:
-				value = tx.Category.Name
-			case 5:
-				value = tx.SubCategory.Name
-			case 6:
-				value = tx.Description
-			}
-			label.SetText(value)
-		},
-	)
-
-	table.SetColumnWidth(0, 100)
-	table.SetColumnWidth(1, 120)
-	table.SetColumnWidth(2, 100)
-	table.SetColumnWidth(3, 100)
-	table.SetColumnWidth(4, 120)
-	table.SetColumnWidth(5, 200)
-	table.SetColumnWidth(6, 400)
+	rebuildGrid()
 
 	btnReturn := widget.NewButton("Voltar", g.ShowHomeScreen)
 	btnRefresh := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameViewRefresh), func() {
@@ -115,9 +98,7 @@ func makeListContent(g *GUI, transactions []*domain.Transaction) fyne.CanvasObje
 	btnFilter := widget.NewButtonWithIcon("", theme.Icon(theme.IconNameSearch), g.ShowFilterScreen)
 	ctrBtns := container.NewBorder(nil, nil, btnFilter, btnRefresh, btnReturn)
 
-	content := container.NewBorder(lblTitle, ctrBtns, nil, nil, container.NewBorder(customHeader, nil, nil, nil, table))
-
-	return content
+	return container.NewBorder(lblTitle, ctrBtns, nil, nil, scrollableGrid)
 }
 
 // sortTransactions
