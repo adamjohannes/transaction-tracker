@@ -23,6 +23,7 @@ type Repository interface {
 	GetAll(ctx context.Context) ([]*transaction.Transaction, error)
 	GetFiltered(ctx context.Context, filters *transaction.FilterCriteria) ([]*transaction.Transaction, error)
 	GetTransactionCountByTypeAndCategory(ctx context.Context) (map[string]map[string]int, error)
+	GetTransactionCount(ctx context.Context, groupBy string) (map[string]map[string]int, error)
 }
 
 // postgresRepository
@@ -292,6 +293,67 @@ func (r *postgresRepository) GetTransactionCountByTypeAndCategory(ctx context.Co
 			results[transactionType] = make(map[string]int)
 		}
 		results[transactionType][categoryName] = transactionCount
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error reading transaction count rows: %w", rows.Err())
+	}
+
+	return results, nil
+}
+
+// GetTransactionCount
+// Retrieves counts grouped by category or sub-category.
+func (r *postgresRepository) GetTransactionCount(ctx context.Context, groupBy string) (map[string]map[string]int, error) {
+	var query string
+	// Dynamically set the query based on the groupBy parameter
+	if groupBy == "sub_category" {
+		query = `
+			SELECT
+				tt.name AS transaction_type,
+				scat.name AS group_name,
+				COUNT(t.id) AS transaction_count
+			FROM transactions t
+			JOIN transaction_types tt ON t.type = tt.id
+			JOIN transaction_sub_categories scat ON t.sub_category = scat.id
+			GROUP BY tt.name, group_name
+			ORDER BY tt.name, group_name;
+		`
+	} else { // Default to grouping by category
+		query = `
+			SELECT
+				tt.name AS transaction_type,
+				tc.name AS group_name,
+				COUNT(t.id) AS transaction_count
+			FROM transactions t
+			JOIN transaction_types tt ON t.type = tt.id
+			JOIN transaction_categories tc ON t.category = tc.id
+			GROUP BY tt.name, group_name
+			ORDER BY tt.name, group_name;
+		`
+	}
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query transaction counts: %w", err)
+	}
+	defer rows.Close()
+
+	results := make(map[string]map[string]int)
+
+	for rows.Next() {
+		var transactionType, groupName string
+		var transactionCount int
+
+		// Scan into groupName, which is an alias for either category or sub-category name
+		if err := rows.Scan(&transactionType, &groupName, &transactionCount); err != nil {
+			return nil, fmt.Errorf("failed to scan transaction count row: %w", err)
+		}
+
+		if _, ok := results[transactionType]; !ok {
+			results[transactionType] = make(map[string]int)
+		}
+		results[transactionType][groupName] = transactionCount
 	}
 
 	if rows.Err() != nil {

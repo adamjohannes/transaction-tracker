@@ -64,9 +64,8 @@ func (tc *TransactionController) GetFilteredTransactions(filters *domain.FilterC
 	return repo.GetFiltered(tc.ctx, filters)
 }
 
-// GetTransactionCountByTypeAndCategory
-// Fetches the transaction count grouped by type and category.
-func (tc *TransactionController) GetTransactionCountByTypeAndCategory() (map[string]map[string]int, error) {
+// GetTransactionCount fetches transaction counts grouped by a specific field.
+func (tc *TransactionController) GetTransactionCount(groupBy string) (map[string]map[string]int, error) {
 	repo := repository.NewPostgresRepository(tc.pool)
-	return repo.GetTransactionCountByTypeAndCategory(tc.ctx)
+	return repo.GetTransactionCount(tc.ctx, groupBy)
 }
