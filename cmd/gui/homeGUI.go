@@ -19,7 +19,8 @@ func makeHomeContent(g *GUI) fyne.CanvasObject {
 		g.ShowListScreen(true)
 	})
 
-	ctrBtns := container.NewGridWithRows(2, addBtn, listBtn)
+	dataBtn := widget.NewButton("Visualizar Dados", g.ShowDataScreen)
+	ctrBtns := container.NewGridWithRows(3, addBtn, listBtn, dataBtn)
 
 	return container.NewBorder(lblTitle, nil, nil, nil, ctrBtns)
 }

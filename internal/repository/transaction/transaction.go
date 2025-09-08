@@ -22,6 +22,7 @@ type Repository interface {
 	Create(ctx context.Context, tx *transaction.Transaction) (*transaction.Transaction, error)
 	GetAll(ctx context.Context) ([]*transaction.Transaction, error)
 	GetFiltered(ctx context.Context, filters *transaction.FilterCriteria) ([]*transaction.Transaction, error)
+	GetTransactionCountByTypeAndCategory(ctx context.Context) (map[string]map[string]int, error)
 }
 
 // postgresRepository
@@ -254,4 +255,48 @@ func scanTransactions(rows pgx.Rows) ([]*transaction.Transaction, error) {
 	}
 
 	return transactions, nil
+}
+
+// GetTransactionCountByTypeAndCategory
+// Retrieves the number of transactions for each category, grouped by transaction type.
+func (r *postgresRepository) GetTransactionCountByTypeAndCategory(ctx context.Context) (map[string]map[string]int, error) {
+	query := `
+		SELECT
+			tt.name AS transaction_type,
+			tc.name AS category_name,
+			COUNT(t.id) AS transaction_count
+		FROM transactions t
+		JOIN transaction_types tt ON t.type = tt.id
+		JOIN transaction_categories tc ON t.category = tc.id
+		GROUP BY tt.name, tc.name
+		ORDER BY tt.name, category_name;
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query transaction counts: %w", err)
+	}
+	defer rows.Close()
+
+	results := make(map[string]map[string]int)
+
+	for rows.Next() {
+		var transactionType, categoryName string
+		var transactionCount int
+
+		if err := rows.Scan(&transactionType, &categoryName, &transactionCount); err != nil {
+			return nil, fmt.Errorf("failed to scan transaction count row: %w", err)
+		}
+
+		if _, ok := results[transactionType]; !ok {
+			results[transactionType] = make(map[string]int)
+		}
+		results[transactionType][categoryName] = transactionCount
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error reading transaction count rows: %w", rows.Err())
+	}
+
+	return results, nil
 }

@@ -20,6 +20,7 @@ type GUI struct {
 	addWindow             fyne.Window
 	listWindow            fyne.Window
 	filterWindow          fyne.Window
+	dataWindow            fyne.Window
 	transactionController *transaction.TransactionController
 	categoryController    *category.CategoryController
 	subCategoryController *sub_category.SubCategoryController
@@ -39,11 +40,13 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 	g.addWindow = a.NewWindow("Adicionar Transação")
 	g.listWindow = a.NewWindow("Listar Transações")
 	g.filterWindow = a.NewWindow("Filtrar Transações")
+	g.dataWindow = a.NewWindow("Gráficos das Transações")
 
 	g.homeWindow.SetContent(makeHomeContent(g))
 	g.addWindow.SetContent(makeAddContent(g))
 	g.listWindow.SetContent(makeListContent(g, nil))
 	g.filterWindow.SetContent(makeFilterContent(g))
+	g.dataWindow.SetContent(makeDataContent(g))
 
 	g.homeWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.homeWindow.SetFixedSize(!guiConfig.Resizable)
@@ -53,6 +56,8 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 	g.listWindow.SetFixedSize(!guiConfig.Resizable)
 	g.filterWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.filterWindow.SetFixedSize(!guiConfig.Resizable)
+	g.dataWindow.Resize(fyne.NewSize(guiConfig.Height, guiConfig.Height))
+	g.dataWindow.SetFixedSize(!guiConfig.Resizable)
 
 	g.addWindow.SetCloseIntercept(func() {
 		g.ShowHomeScreen()
@@ -77,7 +82,6 @@ func (g *GUI) Start() {
 
 // --- Navigation Methods ---
 
-// ShowAddScreen hides the home window and shows the add window.
 func (g *GUI) ShowAddScreen() {
 	g.addWindow.Show()
 	g.homeWindow.Hide()
@@ -100,10 +104,16 @@ func (g *GUI) ShowFilterScreen() {
 	g.listWindow.Hide()
 }
 
+func (g *GUI) ShowDataScreen() {
+	g.dataWindow.Show()
+	g.homeWindow.Hide()
+}
+
 // ShowHomeScreen hides the add window and shows the home window.
 func (g *GUI) ShowHomeScreen() {
 	g.homeWindow.Show()
 	g.addWindow.Hide()
 	g.listWindow.Hide()
 	g.filterWindow.Hide()
+	g.dataWindow.Hide()
 }

@@ -5,6 +5,7 @@ go 1.24
 require (
 	fyne.io/fyne/v2 v2.6.3
 	github.com/jackc/pgx/v5 v5.7.5
+	github.com/s-daehling/fyne-charts v0.0.0-20250908172354-66f4edecb485
 	github.com/shopspring/decimal v1.4.0
 	golang.org/x/net v0.38.0
 )
@@ -13,6 +14,7 @@ require (
 	fyne.io/systray v1.11.0 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/fredbi/uri v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fyne-io/gl-js v0.2.0 // indirect
@@ -42,7 +44,7 @@ require (
 	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
-	golang.org/x/image v0.24.0 // indirect
+	golang.org/x/image v0.25.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
