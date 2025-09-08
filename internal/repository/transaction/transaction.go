@@ -100,7 +100,7 @@ func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transac
 			(SELECT id FROM transaction_status WHERE name = $6),
 			(SELECT code FROM currencies WHERE code = $7),
 			(SELECT id FROM transaction_categories WHERE name = $8),
-			(SELECT id FROM transaction_sub_categories WHERE name = $9)
+			(SELECT id FROM transaction_sub_categories WHERE name = $9 AND parent_category = (SELECT id FROM transaction_categories WHERE name = $8))
 		) 
 		RETURNING id`
 
