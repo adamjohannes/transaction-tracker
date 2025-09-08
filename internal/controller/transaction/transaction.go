@@ -69,3 +69,10 @@ func (tc *TransactionController) GetTransactionCount(groupBy string) (map[string
 	repo := repository.NewPostgresRepository(tc.pool)
 	return repo.GetTransactionCount(tc.ctx, groupBy)
 }
+
+// GetSubCategoryAmounts
+// Forwards the call to the repository.
+func (tc *TransactionController) GetSubCategoryAmounts() ([]repository.SubCategoryAmount, error) {
+	repo := repository.NewPostgresRepository(tc.pool)
+	return repo.GetSubCategoryAmounts(tc.ctx)
+}

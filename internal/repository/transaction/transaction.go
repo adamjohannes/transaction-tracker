@@ -14,6 +14,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 // Repository
@@ -24,6 +25,53 @@ type Repository interface {
 	GetFiltered(ctx context.Context, filters *transaction.FilterCriteria) ([]*transaction.Transaction, error)
 	GetTransactionCountByTypeAndCategory(ctx context.Context) (map[string]map[string]int, error)
 	GetTransactionCount(ctx context.Context, groupBy string) (map[string]map[string]int, error)
+	GetSubCategoryAmounts(ctx context.Context) ([]SubCategoryAmount, error)
+}
+
+// SubCategoryAmount
+// Holds the result of our new query
+type SubCategoryAmount struct {
+	TransactionType string
+	CategoryName    string
+	SubCategoryName string
+	TotalAmount     decimal.Decimal
+}
+
+// GetSubCategoryAmounts
+// Fetches the sum of amounts grouped by type, category, and sub-category.
+func (r *postgresRepository) GetSubCategoryAmounts(ctx context.Context) ([]SubCategoryAmount, error) {
+	query := `
+		SELECT
+			tt.name AS transaction_type,
+			tc.name AS category_name,
+			scat.name AS sub_category_name,
+			SUM(t.amount) AS total_amount
+		FROM transactions t
+		JOIN transaction_types tt ON t.type = tt.id
+		JOIN transaction_categories tc ON t.category = tc.id
+		JOIN transaction_sub_categories scat ON t.sub_category = scat.id
+		GROUP BY tt.name, tc.name, scat.name
+		ORDER BY tt.name, tc.name, scat.name;
+	`
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query sub-category amounts: %w", err)
+	}
+	defer rows.Close()
+
+	var results []SubCategoryAmount
+	for rows.Next() {
+		var item SubCategoryAmount
+		if err := rows.Scan(&item.TransactionType, &item.CategoryName, &item.SubCategoryName, &item.TotalAmount); err != nil {
+			return nil, fmt.Errorf("failed to scan sub-category amount row: %w", err)
+		}
+		results = append(results, item)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error reading sub-category amount rows: %w", rows.Err())
+	}
+	return results, nil
 }
 
 // postgresRepository
