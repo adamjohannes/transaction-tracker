@@ -10,7 +10,7 @@ func main() {
 	pool := database.ConnectDB()
 	defer pool.Close()
 
-	guiConfig := config.NewGUIConfig(400, 800, false)
+	guiConfig := config.NewGUIConfig(400, 800, true)
 	g := gui.NewGUI(guiConfig, pool)
 	g.Start()
 }
