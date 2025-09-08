@@ -21,21 +21,26 @@ func makeDataContent(g *GUI) fyne.CanvasObject {
 		return container.NewCenter(widget.NewLabel("Error loading data"))
 	}
 
-	debitChart := createPieChart("Debit Transactions", transactionCounts["Debit"])
-	creditChart := createPieChart("Credit Transactions", transactionCounts["Credit"])
-	refundChart := createPieChart("Refund Transactions", transactionCounts["Refund"])
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Debit", createPieChart("Debit Transactions by Category", transactionCounts["Debit"])),
+		container.NewTabItem("Credit", createPieChart("Credit Transactions by Category", transactionCounts["Credit"])),
+		container.NewTabItem("Refund", createPieChart("Refund Transactions by Category", transactionCounts["Refund"])),
+	)
 
-	charts := container.NewGridWithRows(3, debitChart, creditChart, refundChart)
 	title := widget.NewLabel("Transaction Data")
 	title.Alignment = fyne.TextAlignCenter
 	title.TextStyle.Bold = true
 
-	return container.NewBorder(title, nil, nil, nil, container.NewScroll(charts))
+	return container.NewBorder(title, nil, nil, nil, tabs)
 }
 
 func createPieChart(title string, dataMap map[string]int) fyne.CanvasObject {
 	pieChart := chart.NewPolarProportionalChart()
 	pieChart.SetTitle(title)
+
+	if len(dataMap) == 0 {
+		return container.NewCenter(widget.NewLabel("No data available for this transaction type."))
+	}
 
 	var chartData []data.ProportionalDataPoint
 	for category, count := range dataMap {
