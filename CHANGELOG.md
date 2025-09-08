@@ -2,54 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.5] - 2025-09-07
+## [0.0.6] - 2025-09-08
 
 ### 🚀 Features
 
-- *(gui)* Add a refresh button to 'list' view
-- *(gui)* Add a filter button
-- *(scripts)* Add a script to import transactions from a CSV file
-- Add script to compile to android
-- Implement transaction filtering in the 'list' view
-
-### 🐛 Bug Fixes
-
-- *(scripts/importer)* Add check for period
-- Set the value for transaction ID as a big int
-
-### 🚜 Refactor
-
-- *(transaction)* Remove sub category from transaction fields
-- *(gui)* Adjust width for sub category field in list view
-- *(gui)* Adjust width for description field in list view
-
-### 📚 Documentation
-
-- *(scripts/importer)* Add example CSV file for importer
-
-### ⚙️ Miscellaneous Tasks
-
-- Add android-compile.sh to .gitignore
-
-## [0.0.4] - 2025-09-07
-
-### 🚀 Features
-
-- *(gui)* Start to implement the list view
-- Dynamically fetch transactions data from the database in the 'list' view
-
-### 🐛 Bug Fixes
-
-- *(gui)* Refresh the table when opening the 'list' view in order to see the new transactions
-
-### 🚜 Refactor
-
-- *(gui)* Make column headers follow focus
-
-## [0.0.3] - 2025-09-07
-
-### 🚀 Features
-
+- *(doc/postgres)* Add script to initialize the database
+- *(domain/transaction)* Add Essential field to transaction
+- *(gui)* Add Essential field
+- *(gui)* Add a temp map to collect the values for the transaction
 - *(internal)* Add controller section
 - *(controller/transaction)* Add a controller for Transaction
 - *(repository/transaction)* Add a repository layer for Transaction
@@ -59,30 +19,26 @@ All notable changes to this project will be documented in this file.
 - Connect transaction creation with the database
 - Dynamically fetch categories from the database
 - Dynamically fetch sub categories from the database
+- *(gui)* Start to implement the list view
+- Dynamically fetch transactions data from the database in the 'list' view
+- *(gui)* Add a refresh button to 'list' view
+- *(gui)* Add a filter button
+- *(scripts)* Add a script to import transactions from a CSV file
+- Add script to compile to android
+- Implement transaction filtering in the 'list' view
+- *(gui)* Add sorting methods to the header buttons
+- Implement a charts view
+- *(gui)* Implement a separation by tabs for viewing Debit, Credit and Refund transactions
+- Add a combo box to 'data' view to alternate between listing the categories and sub categories
+- Add a combo box to cycle between categories and sub categories in the 'data' view
 
 ### 🐛 Bug Fixes
 
 - *(database)* Adjust logic for interacting with the database
-
-### 🚜 Refactor
-
-- *(gui)* Rename 'home.go' to 'homeGUI.go'
-- *(gui)* Refactor 'add' screen
-- Update transaction handling
-
-### ⚙️ Miscellaneous Tasks
-
-- Add repostory/ to .gitignore
-- Add category/ to .gitignore
-
-## [0.0.2] - 2025-09-06
-
-### 🚀 Features
-
-- *(doc/postgres)* Add script to initialize the database
-- *(domain/transaction)* Add Essential field to transaction
-- *(gui)* Add Essential field
-- *(gui)* Add a temp map to collect the values for the transaction
+- *(gui)* Refresh the table when opening the 'list' view in order to see the new transactions
+- *(scripts/importer)* Add check for period
+- Set the value for transaction ID as a big int
+- *(repository/transaction)* Adjust sub query for getting sub category name when inserting new transactions to the DB
 
 ### 🚜 Refactor
 
@@ -96,6 +52,20 @@ All notable changes to this project will be documented in this file.
 - *(gui)* Update cancel and save buttons
 - *(doc/postgres)* Update DB SQL init query
 - *(gui)* Add a controller and finish implementation of navigation between the 'home' and 'add' screen
+- *(gui)* Rename 'home.go' to 'homeGUI.go'
+- *(gui)* Refactor 'add' screen
+- Update transaction handling
+- *(gui)* Make column headers follow focus
+- *(transaction)* Remove sub category from transaction fields
+- *(gui)* Adjust width for sub category field in list view
+- *(gui)* Adjust width for description field in list view
+- *(gui)* Make the sorting buttons align with the table's content
+- *(gui)* Insert the charts in a scrollable container
+- Create a button inside the 'list' view to open the 'charts' view
+
+### 📚 Documentation
+
+- *(scripts/importer)* Add example CSV file for importer
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -103,6 +73,9 @@ All notable changes to this project will be documented in this file.
 - *(gui)* Refactor text data
 - Add doc/ to .gitignore
 - Add inner .gitignore to doc/
+- Add repostory/ to .gitignore
+- Add category/ to .gitignore
+- Add android-compile.sh to .gitignore
 
 ## [0.0.1] - 2025-09-05
 
