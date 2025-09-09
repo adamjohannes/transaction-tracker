@@ -75,7 +75,8 @@ The database connection details are configured using environment variables. The 
 * `DB_PORT`
 * `DB_NAME`
 
-Once your PostgreSQL server is running, create a database and run the [initialization script](doc/postgres/initialize_db.sql) to set up the required
+Once your PostgreSQL server is running, create a database and run
+the [initialization script](doc/postgres/initialize_db.sql) to set up the required
 tables.
 
 ### 2. Run the Application
