@@ -56,7 +56,7 @@ func NewGUI(guiConfig *config.GUIConfig, pool *pgxpool.Pool) *GUI {
 	g.listWindow.SetFixedSize(!guiConfig.Resizable)
 	g.filterWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.filterWindow.SetFixedSize(!guiConfig.Resizable)
-	g.dataWindow.Resize(fyne.NewSize(guiConfig.Height, guiConfig.Height))
+	g.dataWindow.Resize(fyne.NewSize(guiConfig.Width, guiConfig.Height))
 	g.dataWindow.SetFixedSize(!guiConfig.Resizable)
 
 	g.addWindow.SetCloseIntercept(func() {
