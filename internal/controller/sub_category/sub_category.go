@@ -30,3 +30,10 @@ func (scc *SubCategoryController) GetSubCategoriesByCategory(categoryName string
 	repo := repository.NewPostgresRepository(scc.pool)
 	return repo.GetByParentCategoryName(scc.ctx, categoryName)
 }
+
+// GetAllSubCategories
+// Fetches all sub-categories from the repository.
+func (scc *SubCategoryController) GetAllSubCategories() ([]*domain.SubCategory, error) {
+	repo := repository.NewPostgresRepository(scc.pool)
+	return repo.GetAll(scc.ctx)
+}
