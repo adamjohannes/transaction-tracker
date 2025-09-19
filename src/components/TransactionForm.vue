@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useTransactionStore } from '@/stores/transactions';
-import type { NewTransactionPayload } from '@/services/api';
 
 const store = useTransactionStore();
 
-const newTransaction = ref<NewTransactionPayload>({
+const newTransaction = ref({
   Amount: '',
   Date: new Date().toISOString().split('T')[0],
   Type: '',
@@ -50,7 +49,7 @@ async function handleSubmit() {
     <form v-else @submit.prevent="handleSubmit">
       <div class="form-grid">
         <input v-model="newTransaction.Description" placeholder="Description" required />
-        <input v-model.number="newTransaction.Amount" type="number" step="0.01" placeholder="Amount" required />
+        <input v-model="newTransaction.Amount" type="number" step="0.01" placeholder="Amount" required />
         <input v-model="newTransaction.Date" type="date" required />
 
         <select v-model="newTransaction.Category" required>

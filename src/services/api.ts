@@ -41,15 +41,15 @@ export interface TransactionType {
 
 // Interface for the transaction creation payload from the form
 export interface NewTransactionPayload {
-  Amount: string;
-  Date: string;
-  Essential: boolean;
-  Description: string;
-  Type: string;
-  Status: string;
-  Currency: string;
-  Category: string;
-  SubCategory: string;
+  amount: string;
+  date: string;
+  essential: boolean;
+  description: string;
+  type: string;
+  status: string;
+  currency: string;
+  category: string;
+  subCategory: string;
 }
 
 const apiClient = axios.create({

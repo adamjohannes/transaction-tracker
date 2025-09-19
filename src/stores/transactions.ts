@@ -10,6 +10,19 @@ import {
   type NewTransactionPayload
 } from '@/services/api';
 
+// Helper type for the form's internal data structure (PascalCase)
+type TransactionFormData = {
+  Amount: string | number;
+  Date: string;
+  Essential: boolean;
+  Description: string;
+  Type: string;
+  Status: string;
+  Currency: string;
+  Category: string;
+  SubCategory: string;
+};
+
 export const useTransactionStore = defineStore('transactions', {
   state: () => ({
     transactions: [] as Transaction[],
@@ -38,11 +51,23 @@ export const useTransactionStore = defineStore('transactions', {
       }
     },
 
-    async addTransaction(newTransaction: NewTransactionPayload) {
+    async addTransaction(formData: TransactionFormData) {
       this.isLoading = true;
       this.error = null;
       try {
-        await transactionService.createTransaction(newTransaction);
+        // Transform the form data to the required API payload
+        const payload: NewTransactionPayload = {
+          amount: String(formData.Amount),
+          date: formData.Date,
+          description: formData.Description,
+          category: formData.Category,
+          subCategory: formData.SubCategory,
+          type: formData.Type,
+          status: formData.Status,
+          currency: formData.Currency,
+          essential: formData.Essential,
+        };
+        await transactionService.createTransaction(payload);
         await this.fetchTransactions(); // Refresh list after adding
       } catch (err) {
         this.error = 'Failed to add transaction.';

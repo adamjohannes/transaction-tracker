@@ -33,17 +33,17 @@ onMounted(() => {
       </thead>
       <tbody>
       <tr v-for="tx in store.transactions" :key="tx.ID">
-        <td>{{ tx.Date.split('T')[0] }}</td>
+        <td>{{ tx.Date?.split('T')[0] }}</td>
         <td>{{ tx.Description }}</td>
-        <td>{{ tx.Category.name }} > {{ tx.SubCategory.Name }}</td>
+        <td>{{ tx.Category?.name }} > {{ tx.SubCategory?.Name }}</td>
         <td
           :class="{
-              credit: tx.Type.name === 'Credit',
-              debit: tx.Type.name === 'Debit',
-              refund: tx.Type.name === 'Refund',
+              credit: tx.Type?.name === 'Credit',
+              debit: tx.Type?.name === 'Debit',
+              refund: tx.Type?.name === 'Refund',
             }"
         >
-          {{ tx.Currency.Code }}
+          {{ tx.Currency?.Code }}
           {{ store.areAmountsVisible ? tx.Amount : '---' }}
         </td>
       </tr>
