@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2025-09-19
+
+### 🚀 Features
+
+- Add axios dependency for HTTP handling
+- *(services)* Add API client service
+- *(stores)* Add transactions store
+- *(components)* Add transaction form component
+- *(components)* Add transaction list component
+- Add transaction form and transaction list
+- Add icons for secrecy feature
+- Add a button to hide and show the transactions amount
+- Add a new interface for holding the new transactions
+
+### 🐛 Bug Fixes
+
+- Adjust the values used to build the transactions table
+- Adjust the hide/show button
+- Adjust the values being sent to the API
+
+### 🚜 Refactor
+
+- Moved everything to 'backend/'
+- Move icons
+- Rename icons
+- *(icons)* Replace icons
+- Move frontend project to 'frontend'
+
 ## [0.1.1] - 2025-09-19
 
 ### 🚀 Features
