@@ -6,8 +6,5 @@
 !api/
 !api/*
 
-!gui/
-!gui/*
-
 !scripts/
 !scripts/*
