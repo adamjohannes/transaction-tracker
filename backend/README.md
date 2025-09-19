@@ -73,9 +73,11 @@ go run cmd/main.go
 
 ---
 
-## 🔌 Headless API Endpoints
+## 🔌 API Endpoints
 
-When running in server mode, the following endpoints are available.
+For a detailed and complete API specification, you can view the official [OpenAPI](doc/openapi.yaml) documentation.
+
+When running, the following endpoints are available.
 
 ### Create a Transaction
 
