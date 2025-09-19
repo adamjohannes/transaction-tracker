@@ -54,7 +54,7 @@ func BuildTransaction(transaction map[string]any) (*Transaction, error) {
 	amountStr, _ := transaction["amount"].(string)
 	amount, err := decimal.NewFromString(amountStr)
 	if err != nil {
-		return nil, fmt.Errorf("invalid amount format: %w", err)
+		return nil, fmt.Errorf("invalid amount format: %w - amount = %v", err, transaction["amount"])
 	}
 
 	// --- Date ---
