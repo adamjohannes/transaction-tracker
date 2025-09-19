@@ -20,6 +20,7 @@ export const useTransactionStore = defineStore('transactions', {
     currencies: [] as Currency[],
     transactionTypes: [] as TransactionType[],
     isLoadingOptions: false,
+    areAmountsVisible: true,
   }),
 
   actions: {
@@ -86,6 +87,10 @@ export const useTransactionStore = defineStore('transactions', {
       } finally {
         this.isLoadingOptions = false;
       }
+    },
+
+    toggleAmountVisibility() {
+      this.areAmountsVisible = !this.areAmountsVisible;
     },
   },
 });

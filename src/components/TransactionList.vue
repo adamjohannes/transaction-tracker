@@ -35,7 +35,8 @@ onMounted(() => {
               refund: tx.Type.name === 'Refund',
             }"
         >
-          {{ tx.Currency.Code }} {{ tx.Amount }}
+          {{ tx.Currency.Code }}
+          {{ store.areAmountsVisible ? tx.Amount : '---' }}
         </td>
       </tr>
       </tbody>
