@@ -171,23 +171,6 @@ curl http://localhost:8080/types
 
 ---
 
-## 📦 Building and Packaging
-
-### Desktop (Windows, macOS, Linux)
-
-You can create a standalone executable using the `fyne` command:
-
-### Android
-
-An Android APK can be built using the provided script. This requires having the Android SDK and NDK set up as per the
-Fyne documentation.
-
-```bash
-./android-compile.sh
-```
-
----
-
 ## 📥 CSV Importer Script
 
 The project includes a script to import transactions from a CSV file.
