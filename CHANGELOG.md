@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2025-09-19
+
+### 🚀 Features
+
+- *(repository/sub_category)* Add method to get all sub categories
+- *(repository/status)* Add repository layer for status
+- *(repository/currency)* Add repository layer for currency
+- *(repository/transaction_type)* Add repository layer for transaction types
+- *(controller/sub_category)* Add controller method to fetch all sub categories
+- *(controller/status)* Add controller layer for status
+- *(controller/currency)* Add controller layer for currency
+- *(controller/transaction_type)* Add controller layer for transaction types
+- *(api/handlers)* Add handler for categories
+- *(api/handlers)* Add handler for sub categories
+- *(api/handlers)* Add a single file for storing Status, Currency and Type lookup methods
+- Add new endpoints to router
+
+### 📚 Documentation
+
+- Add new endpoints
+
 ## [0.1.0] - 2025-09-19
 
 ### 🚀 Features
