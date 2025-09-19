@@ -11,6 +11,7 @@ import (
 // Repository
 // Defines the interface for sub-category data operations.
 type Repository interface {
+	GetAll(ctx context.Context) ([]*domain.SubCategory, error)
 	GetByParentCategoryName(ctx context.Context, categoryName string) ([]*domain.SubCategory, error)
 }
 
@@ -24,6 +25,33 @@ type postgresRepository struct {
 // Creates a new instance of the sub-category repository.
 func NewPostgresRepository(db *pgxpool.Pool) Repository {
 	return &postgresRepository{db: db}
+}
+
+// GetAll
+// Retrieves all sub-category records from the database.
+func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.SubCategory, error) {
+	query := `SELECT id, parent_category, name FROM transaction_sub_categories ORDER BY name`
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query sub-categories: %w", err)
+	}
+	defer rows.Close()
+
+	var subCategories []*domain.SubCategory
+	for rows.Next() {
+		var id, parentID int8
+		var name string
+		if err := rows.Scan(&id, &parentID, &name); err != nil {
+			return nil, fmt.Errorf("failed to scan sub-category row: %w", err)
+		}
+		subCategories = append(subCategories, domain.Build(id, parentID, name))
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error reading sub-category rows: %w", rows.Err())
+	}
+
+	return subCategories, nil
 }
 
 // GetByParentCategoryName
