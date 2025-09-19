@@ -26,21 +26,18 @@ watch(
   }
 );
 
-// Fetch all static options when the component is mounted
 onMounted(() => {
-  store.fetchFormOptions();
+  store.fetchFormOptions(); // Fetch all static options when the component is mounted
 });
 
-// Handle form submission
 async function handleSubmit() {
-  // Basic validation
   if (!newTransaction.value.amount || !newTransaction.value.category) {
     alert('Please fill in all required fields.');
     return;
   }
   await store.addTransaction({ ...newTransaction.value });
 
-  // Reset some fields after submission
+  // Reset fields after submission
   newTransaction.value.amount = '';
   newTransaction.value.description = '';
   newTransaction.value.category = '';
@@ -67,24 +64,24 @@ async function handleSubmit() {
 
         <select v-model="newTransaction.subCategory" :disabled="!newTransaction.category || store.subCategories.length === 0">
           <option disabled value="">Select a Sub-Category</option>
-          <option v-for="subCat in store.subCategories" :key="subCat.id" :value="subCat.name">
-            {{ subCat.name }}
+          <option v-for="subCat in store.subCategories" :key="subCat.ID" :value="subCat.Name">
+            {{ subCat.Name }}
           </option>
         </select>
 
         <select v-model="newTransaction.type" required>
           <option disabled value="">Select a Type</option>
-          <option v-for="t in store.transactionTypes" :key="t" :value="t">{{ t }}</option>
+          <option v-for="t in store.transactionTypes" :key="t.id" :value="t.name">{{ t.name }}</option>
         </select>
 
         <select v-model="newTransaction.status" required>
           <option disabled value="">Select a Status</option>
-          <option v-for="s in store.statuses" :key="s" :value="s">{{ s }}</option>
+          <option v-for="s in store.statuses" :key="s.id" :value="s.name">{{ s.name }}</option>
         </select>
 
         <select v-model="newTransaction.currency" required>
           <option disabled value="">Select a Currency</option>
-          <option v-for="c in store.currencies" :key="c" :value="c">{{ c }}</option>
+          <option v-for="c in store.currencies" :key="c.Code" :value="c.Code">{{ c.Code }}</option>
         </select>
       </div>
 

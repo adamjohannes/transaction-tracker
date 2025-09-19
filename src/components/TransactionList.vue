@@ -4,7 +4,6 @@ import { onMounted } from 'vue';
 
 const store = useTransactionStore();
 
-// Fetch transactions when the component is first mounted
 onMounted(() => {
   store.fetchTransactions();
 });
@@ -25,12 +24,18 @@ onMounted(() => {
       </tr>
       </thead>
       <tbody>
-      <tr v-for="tx in store.transactions" :key="tx.id">
-        <td>{{ tx.date }}</td>
-        <td>{{ tx.description }}</td>
-        <td>{{ tx.category }} > {{ tx.subCategory }}</td>
-        <td :class="tx.type === 'Credit' ? 'credit' : 'debit'">
-          {{ tx.currency }} {{ tx.amount }}
+      <tr v-for="tx in store.transactions" :key="tx.ID">
+        <td>{{ tx.Date.split('T')[0] }}</td>
+        <td>{{ tx.Description }}</td>
+        <td>{{ tx.Category.name }} > {{ tx.SubCategory.Name }}</td>
+        <td
+          :class="{
+              credit: tx.Type.name === 'Credit',
+              debit: tx.Type.name === 'Debit',
+              refund: tx.Type.name === 'Refund',
+            }"
+        >
+          {{ tx.Currency.Code }} {{ tx.Amount }}
         </td>
       </tr>
       </tbody>
@@ -40,10 +45,31 @@ onMounted(() => {
 </template>
 
 <style scoped>
-table { width: 100%; border-collapse: collapse; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-th { background-color: #f2f2f2; }
-.credit { color: green; }
-.debit { color: red; }
-.error { color: red; font-weight: bold; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+th {
+  background-color: #f2f2f2;
+}
+.credit {
+  color: #28a745;
+  font-weight: bold;
+}
+.debit {
+  color: #dc3545;
+}
+.refund {
+  color: #007bff;
+}
+.error {
+  color: red;
+  font-weight: bold;
+}
 </style>

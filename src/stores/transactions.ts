@@ -3,22 +3,22 @@ import {
   transactionService,
   type Transaction,
   type Category,
-  type SubCategory
+  type SubCategory,
+  type Status,
+  type Currency,
+  type TransactionType
 } from '@/services/api';
 
 export const useTransactionStore = defineStore('transactions', {
   state: () => ({
-    // State for transactions list
     transactions: [] as Transaction[],
     isLoading: false,
     error: null as string | null,
-
-    // State for form options
     categories: [] as Category[],
     subCategories: [] as SubCategory[],
-    statuses: [] as string[],
-    currencies: [] as string[],
-    transactionTypes: [] as string[],
+    statuses: [] as Status[],
+    currencies: [] as Currency[],
+    transactionTypes: [] as TransactionType[],
     isLoadingOptions: false,
   }),
 

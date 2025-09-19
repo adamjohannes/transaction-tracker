@@ -1,16 +1,16 @@
 import axios from 'axios';
 
 export interface Transaction {
-  id?: number;
-  amount: string;
-  date: string;
-  type: string;        // Will be populated by the API
-  essential: boolean;
-  status: string;      // Will be populated by the API
-  currency: string;    // Will be populated by the API
-  category: string;    // Will be populated by the API
-  subCategory: string; // Will be populated by the API
-  description: string;
+  ID: number;
+  Amount: string;
+  Date: string;
+  Type: TransactionType;     // Will be populated by the API
+  Essential: boolean;
+  Status: string;            // Will be populated by the API
+  Currency: Currency;        // Will be populated by the API
+  Category: Category;        // Will be populated by the API
+  SubCategory: SubCategory;  // Will be populated by the API
+  Description: string;
 }
 
 export interface Category {
@@ -20,8 +20,22 @@ export interface Category {
 }
 
 export interface SubCategory {
+  ID: number;
+  ParentID: number;
+  Name: string;
+}
+
+export interface Status {
   id: number;
-  parent_category: number;
+  name: string;
+}
+
+export interface Currency {
+  Code: string;
+}
+
+export interface TransactionType {
+  id: number;
   name: string;
 }
 
@@ -54,17 +68,17 @@ export const transactionService = {
   },
 
   // GET /status
-  getStatuses(): Promise<string[]> {
+  getStatuses(): Promise<Status[]> {
     return apiClient.get('/status').then(res => res.data);
   },
 
   // GET /currencies
-  getCurrencies(): Promise<string[]> {
+  getCurrencies(): Promise<Currency[]> {
     return apiClient.get('/currencies').then(res => res.data);
   },
 
   // GET /types
-  getTransactionTypes(): Promise<string[]> {
+  getTransactionTypes(): Promise<TransactionType[]> {
     return apiClient.get('/types').then(res => res.data);
   },
 };
