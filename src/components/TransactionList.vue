@@ -76,7 +76,6 @@ onMounted(() => {
 .visibility-toggle:hover {
   background-color: #f0f0f0;
 }
-/* Style the SVG element inside the span rendered by v-html */
 .visibility-toggle span :deep(svg) {
   width: 20px;
   height: 20px;

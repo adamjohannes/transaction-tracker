@@ -6,7 +6,8 @@ import {
   type SubCategory,
   type Status,
   type Currency,
-  type TransactionType
+  type TransactionType,
+  type NewTransactionPayload
 } from '@/services/api';
 
 export const useTransactionStore = defineStore('transactions', {
@@ -37,7 +38,7 @@ export const useTransactionStore = defineStore('transactions', {
       }
     },
 
-    async addTransaction(newTransaction: Transaction) {
+    async addTransaction(newTransaction: NewTransactionPayload) {
       this.isLoading = true;
       this.error = null;
       try {

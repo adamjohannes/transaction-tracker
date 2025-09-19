@@ -4,12 +4,12 @@ export interface Transaction {
   ID: number;
   Amount: string;
   Date: string;
-  Type: TransactionType;     // Will be populated by the API
+  Type: TransactionType;
   Essential: boolean;
-  Status: string;            // Will be populated by the API
-  Currency: Currency;        // Will be populated by the API
-  Category: Category;        // Will be populated by the API
-  SubCategory: SubCategory;  // Will be populated by the API
+  Status: Status;
+  Currency: Currency;
+  Category: Category;
+  SubCategory: SubCategory;
   Description: string;
 }
 
@@ -39,6 +39,19 @@ export interface TransactionType {
   name: string;
 }
 
+// Interface for the transaction creation payload from the form
+export interface NewTransactionPayload {
+  Amount: string;
+  Date: string;
+  Essential: boolean;
+  Description: string;
+  Type: string;
+  Status: string;
+  Currency: string;
+  Category: string;
+  SubCategory: string;
+}
+
 const apiClient = axios.create({
   baseURL: 'http://localhost:8080',
   headers: {
@@ -53,7 +66,7 @@ export const transactionService = {
   },
 
   // POST /transactions
-  createTransaction(transactionData: Transaction): Promise<Transaction> {
+  createTransaction(transactionData: NewTransactionPayload): Promise<Transaction> {
     return apiClient.post('/transactions', transactionData).then(res => res.data);
   },
 

@@ -1,47 +1,45 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useTransactionStore } from '@/stores/transactions';
-import type { Transaction } from '@/services/api';
+import type { NewTransactionPayload } from '@/services/api';
 
 const store = useTransactionStore();
 
-const newTransaction = ref<Transaction>({
-  amount: '',
-  date: new Date().toISOString().split('T')[0],
-  type: '',
-  essential: true,
-  status: '',
-  currency: '',
-  category: '',
-  subCategory: '',
-  description: '',
+const newTransaction = ref<NewTransactionPayload>({
+  Amount: '',
+  Date: new Date().toISOString().split('T')[0],
+  Type: '',
+  Essential: true,
+  Status: '',
+  Currency: '',
+  Category: '',
+  SubCategory: '',
+  Description: '',
 });
 
 watch(
-  () => newTransaction.value.category,
+  () => newTransaction.value.Category,
   (newCategoryName) => {
-    // When category changes, reset sub-category and fetch new options
-    newTransaction.value.subCategory = '';
+    newTransaction.value.SubCategory = '';
     store.fetchSubCategories(newCategoryName);
   }
 );
 
 onMounted(() => {
-  store.fetchFormOptions(); // Fetch all static options when the component is mounted
+  store.fetchFormOptions();
 });
 
 async function handleSubmit() {
-  if (!newTransaction.value.amount || !newTransaction.value.category) {
+  if (!newTransaction.value.Amount || !newTransaction.value.Category) {
     alert('Please fill in all required fields.');
     return;
   }
   await store.addTransaction({ ...newTransaction.value });
 
-  // Reset fields after submission
-  newTransaction.value.amount = '';
-  newTransaction.value.description = '';
-  newTransaction.value.category = '';
-  newTransaction.value.subCategory = '';
+  newTransaction.value.Amount = '';
+  newTransaction.value.Description = '';
+  newTransaction.value.Category = '';
+  newTransaction.value.SubCategory = '';
 }
 </script>
 
@@ -51,35 +49,35 @@ async function handleSubmit() {
     <div v-if="store.isLoadingOptions" class="loading">Loading form data...</div>
     <form v-else @submit.prevent="handleSubmit">
       <div class="form-grid">
-        <input v-model="newTransaction.description" placeholder="Description" required />
-        <input v-model.number="newTransaction.amount" type="number" step="0.01" placeholder="Amount" required />
-        <input v-model="newTransaction.date" type="date" required />
+        <input v-model="newTransaction.Description" placeholder="Description" required />
+        <input v-model.number="newTransaction.Amount" type="number" step="0.01" placeholder="Amount" required />
+        <input v-model="newTransaction.Date" type="date" required />
 
-        <select v-model="newTransaction.category" required>
+        <select v-model="newTransaction.Category" required>
           <option disabled value="">Select a Category</option>
           <option v-for="cat in store.categories" :key="cat.id" :value="cat.name">
             {{ cat.name }}
           </option>
         </select>
 
-        <select v-model="newTransaction.subCategory" :disabled="!newTransaction.category || store.subCategories.length === 0">
+        <select v-model="newTransaction.SubCategory" :disabled="!newTransaction.Category || store.subCategories.length === 0">
           <option disabled value="">Select a Sub-Category</option>
           <option v-for="subCat in store.subCategories" :key="subCat.ID" :value="subCat.Name">
             {{ subCat.Name }}
           </option>
         </select>
 
-        <select v-model="newTransaction.type" required>
+        <select v-model="newTransaction.Type" required>
           <option disabled value="">Select a Type</option>
           <option v-for="t in store.transactionTypes" :key="t.id" :value="t.name">{{ t.name }}</option>
         </select>
 
-        <select v-model="newTransaction.status" required>
+        <select v-model="newTransaction.Status" required>
           <option disabled value="">Select a Status</option>
           <option v-for="s in store.statuses" :key="s.id" :value="s.name">{{ s.name }}</option>
         </select>
 
-        <select v-model="newTransaction.currency" required>
+        <select v-model="newTransaction.Currency" required>
           <option disabled value="">Select a Currency</option>
           <option v-for="c in store.currencies" :key="c.Code" :value="c.Code">{{ c.Code }}</option>
         </select>
