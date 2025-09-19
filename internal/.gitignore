@@ -16,3 +16,6 @@
 
 !repository/
 !repository/*
+
+!status/
+!status/*

@@ -8,5 +8,8 @@
 !sub_category/
 !sub_category/*
 
+!status/
+!status/*
+
 !transaction/
 !transaction/*
