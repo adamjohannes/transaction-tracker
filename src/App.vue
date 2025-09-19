@@ -1,11 +1,23 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import TransactionList from '@/components/TransactionList.vue';
+import TransactionForm from '@/components/TransactionForm.vue';
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <main>
+    <h1>Transaction Tracker</h1>
+    <TransactionForm />
+    <hr />
+    <TransactionList />
+  </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+main {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+hr { margin: 20px 0; }
+</style>
