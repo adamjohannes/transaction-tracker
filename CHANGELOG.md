@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.6] - 2025-09-08
+## [0.1.0] - 2025-09-19
 
 ### 🚀 Features
 
@@ -11,16 +11,29 @@ All notable changes to this project will be documented in this file.
 - *(gui)* Implement a separation by tabs for viewing Debit, Credit and Refund transactions
 - Add a combo box to 'data' view to alternate between listing the categories and sub categories
 - Add a combo box to cycle between categories and sub categories in the 'data' view
+- *(api)* Add headless API mode
 
 ### 🐛 Bug Fixes
 
 - *(repository/transaction)* Adjust sub query for getting sub category name when inserting new transactions to the DB
+- Adjust 'data' view min width
 
 ### 🚜 Refactor
 
 - *(gui)* Make the sorting buttons align with the table's content
 - *(gui)* Insert the charts in a scrollable container
 - Create a button inside the 'list' view to open the 'charts' view
+- Adjust icon path
+- *(api)* Initialize API with CLI options
+
+### 📚 Documentation
+
+- Add README.md file
+- Add API docs
+
+### ⚙️ Miscellaneous Tasks
+
+- Add README.md to .gitignore
 
 ## [0.0.5] - 2025-09-07
 
