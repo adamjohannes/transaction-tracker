@@ -1,6 +1,7 @@
 *
 
 !.gitignore
+!openapi.yaml
 
 !postgres/
 !postgres/*

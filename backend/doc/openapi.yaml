@@ -1,0 +1,330 @@
+openapi: 3.0.3
+info:
+  title: "Transaction Tracker API"
+  description: "A headless RESTful API server for managing personal financial transactions. It provides a robust backend to create, view, and manage expenses and income programmatically."
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080"
+    description: "Local development server"
+
+paths:
+  /transactions:
+    get:
+      summary: "List All Transactions"
+      description: "Retrieves a list of all transaction records from the database, ordered by date in descending order."
+      tags:
+        - Transactions
+      responses:
+        '200':
+          description: "A successful response containing a list of transactions."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: "Create a Transaction"
+      description: "Creates a new transaction record in the database."
+      tags:
+        - Transactions
+      requestBody:
+        description: "Transaction object that needs to be added to the database."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+            example:
+              amount: "125.50"
+              date: "2025-09-19"
+              type: "Debit"
+              essential: true
+              status: "Completed"
+              currency: "BRL"
+              category: "Supermercado"
+              subCategory: "Feira"
+              description: "Weekly groceries"
+      responses:
+        '201':
+          description: "Transaction created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /categories:
+    get:
+      summary: "List All Categories"
+      description: "Retrieves a list of all available transaction categories."
+      tags:
+        - "Lookups"
+      responses:
+        '200':
+          description: "A list of categories."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /categories/{category_name}/sub-categories:
+    get:
+      summary: "List Sub-Categories by Parent Category"
+      description: "Retrieves a list of sub-categories that belong to a specific parent category."
+      tags:
+        - "Lookups"
+      parameters:
+        - name: category_name
+          in: path
+          required: true
+          description: "The name of the parent category to filter by."
+          schema:
+            type: string
+          example: "Supermercado"
+      responses:
+        '200':
+          description: "A list of sub-categories."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubCategory'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /sub-categories:
+    get:
+      summary: "List All Sub-Categories"
+      description: "Retrieves a list of all transaction sub-categories."
+      tags:
+        - "Lookups"
+      responses:
+        '200':
+          description: "A list of all sub-categories."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubCategory'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /status:
+    get:
+      summary: "List All Statuses"
+      description: "Retrieves all possible transaction statuses (e.g., 'Completed', 'Pending')."
+      tags:
+        - "Lookups"
+      responses:
+        '200':
+          description: "A list of transaction statuses."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Status'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /currencies:
+    get:
+      summary: "List All Currencies"
+      description: "Retrieves all supported currencies (e.g., 'BRL', 'USD')."
+      tags:
+        - "Lookups"
+      responses:
+        '200':
+          description: "A list of currencies."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /types:
+    get:
+      summary: "List All Transaction Types"
+      description: "Retrieves all possible transaction types (e.g., 'Debit', 'Credit')."
+      tags:
+        - "Lookups"
+      responses:
+        '200':
+          description: "A list of transaction types."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionType'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    TransactionRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+          description: "The transaction amount in a decimal string format."
+          example: "125.50"
+        date:
+          type: string
+          format: date
+          description: "The date of the transaction in YYYY-MM-DD format."
+          example: "2025-09-19"
+        type:
+          type: string
+          description: "The type of transaction (e.g., 'Debit', 'Credit')."
+          example: "Debit"
+        essential:
+          type: boolean
+          description: "Indicates if the transaction was for an essential item."
+          example: true
+        status:
+          type: string
+          description: "The status of the transaction (e.g., 'Completed', 'Pending')."
+          example: "Completed"
+        currency:
+          type: string
+          description: "The 3-letter currency code (ISO 4217)."
+          example: "BRL"
+        category:
+          type: string
+          description: "The name of the main transaction category."
+          example: "Supermercado"
+        subCategory:
+          type: string
+          description: "The name of the transaction sub-category."
+          example: "Feira"
+        description:
+          type: string
+          description: "An optional description for the transaction."
+          example: "Weekly groceries"
+      required:
+        - amount
+        - date
+        - type
+        - essential
+        - status
+        - currency
+        - category
+
+    Transaction:
+      type: object
+      properties:
+        ID:
+          type: integer
+          format: int64
+          description: "The unique identifier for the transaction."
+        Amount:
+          type: string
+          description: "The transaction amount in a decimal string format."
+        Date:
+          type: string
+          format: date-time
+          description: "The date and time of the transaction."
+        Description:
+          type: string
+          description: "A description of the transaction."
+        Essential:
+          type: boolean
+          description: "Indicates if the transaction was for an essential item."
+        Type:
+          $ref: '#/components/schemas/TransactionType'
+        Status:
+          $ref: '#/components/schemas/Status'
+        Currency:
+          $ref: '#/components/schemas/Currency'
+        Category:
+          $ref: '#/components/schemas/Category'
+        SubCategory:
+          $ref: '#/components/schemas/SubCategory'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    SubCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        parent_category_id:
+          type: integer
+        name:
+          type: string
+
+    Status:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    Currency:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "The 3-letter currency code (ISO 4217)."
+
+    TransactionType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "A description of the error."
+
+  responses:
+    BadRequest:
+      description: "Bad Request. The server could not understand the request due to invalid syntax."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid request payload"
+    InternalServerError:
+      description: "Internal Server Error. The server encountered an unexpected condition."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Could not retrieve items"
+
+tags:
+  - name: Transactions
+    description: "Operations related to creating and retrieving financial transactions."
+  - name: Lookups
+    description: "Endpoints for retrieving supplementary data like categories, statuses, and currencies."
