@@ -2,38 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.0] - 2025-09-19
+## [unreleased]
 
 ### 🚀 Features
 
-- Add axios dependency for HTTP handling
-- *(services)* Add API client service
-- *(stores)* Add transactions store
-- *(components)* Add transaction form component
-- *(components)* Add transaction list component
-- Add transaction form and transaction list
-- Add icons for secrecy feature
-- Add a button to hide and show the transactions amount
-- Add a new interface for holding the new transactions
-
-### 🐛 Bug Fixes
-
-- Adjust the values used to build the transactions table
-- Adjust the hide/show button
-- Adjust the values being sent to the API
-
-### 🚜 Refactor
-
-- Moved everything to 'backend/'
-- Move icons
-- Rename icons
-- *(icons)* Replace icons
-- Move frontend project to 'frontend'
-
-## [0.1.1] - 2025-09-19
-
-### 🚀 Features
-
+- *(api)* Add headless API mode
 - *(repository/sub_category)* Add method to get all sub categories
 - *(repository/status)* Add repository layer for status
 - *(repository/currency)* Add repository layer for currency
@@ -46,12 +19,64 @@ All notable changes to this project will be documented in this file.
 - *(api/handlers)* Add handler for sub categories
 - *(api/handlers)* Add a single file for storing Status, Currency and Type lookup methods
 - Add new endpoints to router
+- Add axios dependency for HTTP handling
+- *(services)* Add API client service
+- *(stores)* Add transactions store
+- *(components)* Add transaction form component
+- *(components)* Add transaction list component
+- Add transaction form and transaction list
+- Add icons for secrecy feature
+- Add a button to hide and show the transactions amount
+- Add a new interface for holding the new transactions
+- *(workflows)* Add a single pipeline to build and validate both projects
+- Add a Dockerfile to containerize the project
+- Add a Dockerfile to containerize the frontend section
+- Add new custom favicon
+- Add docker-compose.yml
+- *(frontend)* Add adjustable sorting
+- Add a basic filter tool
+
+### 🐛 Bug Fixes
+
+- Adjust 'data' view min width
+- Adjust the values used to build the transactions table
+- Adjust the hide/show button
+- Adjust the values being sent to the API
+- *(workflows)* Cd into backend before trying to run go tests
+- *(workflows)* Cd into backend before trying to build
+- *(workflows)* Adjust file path
+
+### 🚜 Refactor
+
+- Adjust icon path
+- *(api)* Initialize API with CLI options
+- Moved everything to 'backend/'
+- Move icons
+- Rename icons
+- *(icons)* Replace icons
+- Move frontend project to 'frontend'
+- *(workflows)* Adjust Go pipeline to only build the API
 
 ### 📚 Documentation
 
+- Add README.md file
+- Add API docs
 - Add new endpoints
+- Remove documentation related to Fyne and Go GUI from README.md
+- Remove documentation related to Android from README.md
+- Add OpenAPI documentation
+- Add a reference to the OpenAPI doc in README.md
+- *(frontend)* Rewrite README.md for the frontend section
+- Add root level README.md
 
-## [0.1.0] - 2025-09-19
+### ⚙️ Miscellaneous Tasks
+
+- Add README.md to .gitignore
+- Removed everything related to Fyne and Go GUI
+- Remove old icon
+- *(workflows)* Remove ci pipeline
+
+## [0.0.6] - 2025-09-08
 
 ### 🚀 Features
 
@@ -60,29 +85,16 @@ All notable changes to this project will be documented in this file.
 - *(gui)* Implement a separation by tabs for viewing Debit, Credit and Refund transactions
 - Add a combo box to 'data' view to alternate between listing the categories and sub categories
 - Add a combo box to cycle between categories and sub categories in the 'data' view
-- *(api)* Add headless API mode
 
 ### 🐛 Bug Fixes
 
 - *(repository/transaction)* Adjust sub query for getting sub category name when inserting new transactions to the DB
-- Adjust 'data' view min width
 
 ### 🚜 Refactor
 
 - *(gui)* Make the sorting buttons align with the table's content
 - *(gui)* Insert the charts in a scrollable container
 - Create a button inside the 'list' view to open the 'charts' view
-- Adjust icon path
-- *(api)* Initialize API with CLI options
-
-### 📚 Documentation
-
-- Add README.md file
-- Add API docs
-
-### ⚙️ Miscellaneous Tasks
-
-- Add README.md to .gitignore
 
 ## [0.0.5] - 2025-09-07
 
