@@ -19,7 +19,7 @@ viewing, sorting, and filtering transactions.
 
 This project leverages a modern frontend technology stack for a robust and maintainable application.
 
-- **Framework**: Vue 3 (using Composition API with `<script setup>`)
+- **Framework**: Vue 3
 - **Language**: TypeScript
 - **State Management**: Pinia
 - **Build Tool**: Vite
@@ -37,17 +37,10 @@ Follow these instructions to get the project up and running on your local machin
 - Node.js (`^20.19.0` or `>=22.12.0`)
 - npm (comes with Node.js)
 
-### Installation
-
-1. Clone the repository to your local machine:
-   ```sh
-   git clone <repository-url>
-   cd transaction-tracker-v2
-   ```
-2. Install the project dependencies:
-   ```sh
-   npm install
-   ```
+```
+$ cd transaction-tracker/frontend
+$ npm install
+```
 
 ### Running the Application
 
@@ -70,19 +63,6 @@ Follow these instructions to get the project up and running on your local machin
    ```sh
    npm run lint
    ```
-
-### Backend API Requirement
-
-This is a frontend-only application. For full functionality, it requires a backend API server running and accessible at
-`http://localhost:8080`. The API must provide the following endpoints as defined in `src/services/api.ts`:
-
-- `GET /transactions`
-- `POST /transactions`
-- `GET /categories`
-- `GET /categories/{category_name}/sub-categories`
-- `GET /status`
-- `GET /currencies`
-- `GET /types`
 
 ## 🐳 Deployment with Docker
 
