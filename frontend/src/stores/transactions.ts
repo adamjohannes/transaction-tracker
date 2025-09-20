@@ -25,6 +25,15 @@ type TransactionFormData = {
 
 type SortableKeys = 'Date' | 'Description' | 'Category' | 'Amount';
 
+const initialFiltersState = {
+  startDate: '',
+  endDate: '',
+  categories: [] as string[],
+  subCategories: [] as string[],
+  statuses: [] as string[],
+  types: [] as string[],
+};
+
 export const useTransactionStore = defineStore('transactions', {
   state: () => ({
     transactions: [] as Transaction[],
@@ -39,20 +48,56 @@ export const useTransactionStore = defineStore('transactions', {
     areAmountsVisible: true,
     sortKey: null as SortableKeys | null,
     sortOrder: 'asc' as 'asc' | 'desc',
+    filters: { ...initialFiltersState },
   }),
 
   getters: {
-    sortedTransactions(state): Transaction[] {
-      if (!state.sortKey) {
-        return state.transactions;
+    // Getter to apply filters to the raw transaction list
+    filteredTransactions(state): Transaction[] {
+      return state.transactions.filter(tx => {
+        const txDate = new Date(tx.Date?.split('T')[0]);
+
+        // Date Range Filter
+        if (state.filters.startDate && txDate < new Date(state.filters.startDate)) {
+          return false;
+        }
+        if (state.filters.endDate && txDate > new Date(state.filters.endDate)) {
+          return false;
+        }
+        // Specific Date: if start date is set but no end date, it works as a specific date filter
+        if (state.filters.startDate && !state.filters.endDate && txDate.getTime() !== new Date(state.filters.startDate).getTime()) {
+          return false;
+        }
+
+        // Multi-select Filters
+        if (state.filters.categories.length > 0 && !state.filters.categories.includes(tx.Category?.name)) {
+          return false;
+        }
+        if (state.filters.subCategories.length > 0 && !state.filters.subCategories.includes(tx.SubCategory?.Name)) {
+          return false;
+        }
+        if (state.filters.statuses.length > 0 && !state.filters.statuses.includes(tx.Status?.name)) {
+          return false;
+        }
+        if (state.filters.types.length > 0 && !state.filters.types.includes(tx.Type?.name)) {
+          return false;
+        }
+
+        return true; // Include transaction if all checks pass
+      });
+    },
+
+    // Getter to sort the already-filtered list
+    sortedTransactions(): Transaction[] {
+      const transactionsToSort = this.filteredTransactions;
+
+      if (!this.sortKey) {
+        return transactionsToSort;
       }
 
-      // Return a new sorted array without mutating the original
-      return [...state.transactions].sort((a, b) => {
+      return [...transactionsToSort].sort((a, b) => {
         let valA, valB;
-
-        // Assign values based on the sort key
-        switch (state.sortKey) {
+        switch (this.sortKey) {
           case 'Date':
             valA = new Date(a.Date || 0).getTime();
             valB = new Date(b.Date || 0).getTime();
@@ -60,11 +105,11 @@ export const useTransactionStore = defineStore('transactions', {
           case 'Description':
             valA = a.Description.toLowerCase();
             valB = b.Description.toLowerCase();
-            return state.sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            return this.sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
           case 'Category':
             valA = `${a.Category?.name}${a.SubCategory?.Name}`.toLowerCase();
             valB = `${b.Category?.name}${b.SubCategory?.Name}`.toLowerCase();
-            return state.sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            return this.sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
           case 'Amount':
             valA = parseFloat(a.Amount);
             valB = parseFloat(b.Amount);
@@ -72,14 +117,27 @@ export const useTransactionStore = defineStore('transactions', {
           default:
             return 0;
         }
-
-        // Handle numeric and date sorting
-        return state.sortOrder === 'asc' ? valA - valB : valB - valA;
+        return this.sortOrder === 'asc' ? valA - valB : valB - valA;
       });
     },
   },
 
   actions: {
+    // Filter actions
+    updateFilters(newFilters: Partial<typeof initialFiltersState>) {
+      this.filters = { ...this.filters, ...newFilters };
+      if (newFilters.categories && newFilters.categories.length > 0) {
+        this.fetchSubCategories(newFilters.categories[0]);
+      } else if (newFilters.categories && newFilters.categories.length === 0) {
+        this.subCategories = [];
+      }
+    },
+    clearFilters() {
+      this.filters = { ...initialFiltersState };
+      this.subCategories = [];
+    },
+
+    // Data and UI actions
     async fetchTransactions() {
       this.isLoading = true;
       this.error = null;
@@ -92,12 +150,10 @@ export const useTransactionStore = defineStore('transactions', {
         this.isLoading = false;
       }
     },
-
     async addTransaction(formData: TransactionFormData) {
       this.isLoading = true;
       this.error = null;
       try {
-        // Transform the form data to the required API payload
         const payload: NewTransactionPayload = {
           amount: String(formData.Amount),
           date: formData.Date,

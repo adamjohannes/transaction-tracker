@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TransactionList from '@/components/TransactionList.vue';
 import TransactionForm from '@/components/TransactionForm.vue';
+import TransactionFilter from '@/components/TransactionFilter.vue';
 </script>
 
 <template>
@@ -8,6 +9,7 @@ import TransactionForm from '@/components/TransactionForm.vue';
     <h1>Transaction Tracker</h1>
     <TransactionForm />
     <hr />
+    <TransactionFilter /> <hr />
     <TransactionList />
   </main>
 </template>
