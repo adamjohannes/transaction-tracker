@@ -25,14 +25,34 @@ onMounted(() => {
     <table v-else-if="store.transactions.length > 0">
       <thead>
       <tr>
-        <th>Date</th>
-        <th>Description</th>
-        <th>Category</th>
-        <th>Amount</th>
+        <th>
+          <button class="sort-button" @click="store.setSort('Date')">
+            Date
+            <span v-if="store.sortKey === 'Date'">{{ store.sortOrder === 'asc' ? '▲' : '▼' }}</span>
+          </button>
+        </th>
+        <th>
+          <button class="sort-button" @click="store.setSort('Description')">
+            Description
+            <span v-if="store.sortKey === 'Description'">{{ store.sortOrder === 'asc' ? '▲' : '▼' }}</span>
+          </button>
+        </th>
+        <th>
+          <button class="sort-button" @click="store.setSort('Category')">
+            Category
+            <span v-if="store.sortKey === 'Category'">{{ store.sortOrder === 'asc' ? '▲' : '▼' }}</span>
+          </button>
+        </th>
+        <th>
+          <button class="sort-button" @click="store.setSort('Amount')">
+            Amount
+            <span v-if="store.sortKey === 'Amount'">{{ store.sortOrder === 'asc' ? '▲' : '▼' }}</span>
+          </button>
+        </th>
       </tr>
       </thead>
       <tbody>
-      <tr v-for="tx in store.transactions" :key="tx.ID">
+      <tr v-for="tx in store.sortedTransactions" :key="tx.ID">
         <td>{{ tx.Date?.split('T')[0] }}</td>
         <td>{{ tx.Description }}</td>
         <td>{{ tx.Category?.name }} > {{ tx.SubCategory?.Name }}</td>
@@ -84,7 +104,6 @@ table {
   width: 100%;
   border-collapse: collapse;
 }
-th,
 td {
   border: 1px solid #ddd;
   padding: 8px;
@@ -92,6 +111,31 @@ td {
 }
 th {
   background-color: #f2f2f2;
+  border: 1px solid #ddd;
+  padding: 0;
+  text-align: left;
+}
+.sort-button {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: bold;
+  padding: 8px;
+  text-align: left;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+.sort-button:hover {
+  background-color: #e6e6e6;
+}
+.sort-button span {
+  margin-left: 8px;
+  min-width: 12px;
+  display: inline-block;
 }
 .credit {
   color: #28a745;

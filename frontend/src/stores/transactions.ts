@@ -23,6 +23,8 @@ type TransactionFormData = {
   SubCategory: string;
 };
 
+type SortableKeys = 'Date' | 'Description' | 'Category' | 'Amount';
+
 export const useTransactionStore = defineStore('transactions', {
   state: () => ({
     transactions: [] as Transaction[],
@@ -35,7 +37,47 @@ export const useTransactionStore = defineStore('transactions', {
     transactionTypes: [] as TransactionType[],
     isLoadingOptions: false,
     areAmountsVisible: true,
+    sortKey: null as SortableKeys | null,
+    sortOrder: 'asc' as 'asc' | 'desc',
   }),
+
+  getters: {
+    sortedTransactions(state): Transaction[] {
+      if (!state.sortKey) {
+        return state.transactions;
+      }
+
+      // Return a new sorted array without mutating the original
+      return [...state.transactions].sort((a, b) => {
+        let valA, valB;
+
+        // Assign values based on the sort key
+        switch (state.sortKey) {
+          case 'Date':
+            valA = new Date(a.Date || 0).getTime();
+            valB = new Date(b.Date || 0).getTime();
+            break;
+          case 'Description':
+            valA = a.Description.toLowerCase();
+            valB = b.Description.toLowerCase();
+            return state.sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+          case 'Category':
+            valA = `${a.Category?.name}${a.SubCategory?.Name}`.toLowerCase();
+            valB = `${b.Category?.name}${b.SubCategory?.Name}`.toLowerCase();
+            return state.sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+          case 'Amount':
+            valA = parseFloat(a.Amount);
+            valB = parseFloat(b.Amount);
+            break;
+          default:
+            return 0;
+        }
+
+        // Handle numeric and date sorting
+        return state.sortOrder === 'asc' ? valA - valB : valB - valA;
+      });
+    },
+  },
 
   actions: {
     async fetchTransactions() {
@@ -117,6 +159,21 @@ export const useTransactionStore = defineStore('transactions', {
 
     toggleAmountVisibility() {
       this.areAmountsVisible = !this.areAmountsVisible;
+    },
+
+    setSort(key: SortableKeys) {
+      if (this.sortKey === key) {
+        // Same key, cycle through [asc -> desc -> inactive]
+        if (this.sortOrder === 'asc') {
+          this.sortOrder = 'desc';
+        } else {
+          this.sortKey = null; // Go to inactive state
+        }
+      } else {
+        // New key, start with ascending
+        this.sortKey = key;
+        this.sortOrder = 'asc';
+      }
     },
   },
 });
