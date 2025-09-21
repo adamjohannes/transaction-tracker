@@ -32,7 +32,7 @@ func StartServer(pool *pgxpool.Pool, logger *slog.Logger) {
 	typeController := transaction_type.NewTypeController(pool, ctx)
 
 	// -- Initialize Handlers --
-	txHandler := handlers.NewTransactionHandler(txController)
+	txHandler := handlers.NewTransactionHandler(txController, logger)
 	categoryHandler := handlers.NewCategoryHandler(categoryController)
 	subCategoryHandler := handlers.NewSubCategoryHandler(subCategoryController)
 	statusHandler := handlers.NewStatusHandler(statusController)

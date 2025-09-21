@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"monthly-expenses-handler/internal/controller/transaction"
@@ -12,12 +12,13 @@ import (
 // Holds the transaction controller.
 type TransactionHandler struct {
 	controller *transaction.TransactionController
+	logger     *slog.Logger
 }
 
 // NewTransactionHandler
 // Creates a new handler with the necessary dependencies.
-func NewTransactionHandler(c *transaction.TransactionController) *TransactionHandler {
-	return &TransactionHandler{controller: c}
+func NewTransactionHandler(c *transaction.TransactionController, l *slog.Logger) *TransactionHandler {
+	return &TransactionHandler{controller: c, logger: l}
 }
 
 // CreateTransaction
@@ -30,13 +31,17 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	h.logger.Info("Attempting to create a new transaction", "payload", requestBody)
+
 	createdTx, err := h.controller.NewTransaction(requestBody)
 	if err != nil {
 		// TODO: Check for validation error (400) or server error (500)
-		log.Printf("Error creating transaction: %v", err)
+		h.logger.Error("Failed to create transaction", "error", err, "payload", requestBody)
 		respondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	h.logger.Info("Successfully created transaction", "transaction_id", createdTx.ID)
 
 	respondWithJSON(w, http.StatusCreated, createdTx)
 }
@@ -45,12 +50,16 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 // Handles fetching all transactions.
 // Method: GET /transactions
 func (h *TransactionHandler) ListTransactions(w http.ResponseWriter, r *http.Request) {
+	h.logger.Info("Attempting to fetch all transactions")
+
 	transactions, err := h.controller.GetAllTransactions()
 	if err != nil {
-		log.Printf("Error fetching transactions: %v", err)
+		h.logger.Error("Failed to fetch transactions", "error", err)
 		respondWithError(w, http.StatusInternalServerError, "Could not retrieve transactions")
 		return
 	}
+
+	h.logger.Info("Successfully fetched all transactions", "count", len(transactions))
 
 	respondWithJSON(w, http.StatusOK, transactions)
 }
