@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"monthly-expenses-handler/internal/controller/sub_category"
@@ -9,21 +9,27 @@ import (
 
 type SubCategoryHandler struct {
 	controller *sub_category.SubCategoryController
+	logger     *slog.Logger
 }
 
-func NewSubCategoryHandler(c *sub_category.SubCategoryController) *SubCategoryHandler {
-	return &SubCategoryHandler{controller: c}
+func NewSubCategoryHandler(c *sub_category.SubCategoryController, l *slog.Logger) *SubCategoryHandler {
+	return &SubCategoryHandler{controller: c, logger: l}
 }
 
 // ListAllSubCategories
 // Method: GET /sub-categories
 func (h *SubCategoryHandler) ListAllSubCategories(w http.ResponseWriter, r *http.Request) {
+	h.logger.Info("Attempting to fetch all sub categories")
+
 	subCategories, err := h.controller.GetAllSubCategories()
 	if err != nil {
-		log.Printf("Error fetching all sub-categories: %v", err)
+		h.logger.Error("Failed to fetch sub categories", "error", err)
 		respondWithError(w, http.StatusInternalServerError, "Could not retrieve sub-categories")
 		return
 	}
+
+	h.logger.Info("Successfully fetched all sub categories", "count", len(subCategories))
+
 	respondWithJSON(w, http.StatusOK, subCategories)
 }
 
@@ -36,11 +42,16 @@ func (h *SubCategoryHandler) ListSubCategoriesByCategory(w http.ResponseWriter, 
 		return
 	}
 
+	h.logger.Info("Attempting to fetch sub categories related to a parent category", "parent_category", r.PathValue("category_name"))
+
 	subCategories, err := h.controller.GetSubCategoriesByCategory(categoryName)
 	if err != nil {
-		log.Printf("Error fetching sub-categories for %s: %v", categoryName, err)
+		h.logger.Error("Failed to fetch sub categories", "parent_category", r.PathValue("category_name"), "error", err)
 		respondWithError(w, http.StatusInternalServerError, "Could not retrieve sub-categories")
 		return
 	}
+
+	h.logger.Info("Successfully fetched sub categories", "parent_category", r.PathValue("category_name"), "count", len(subCategories))
+
 	respondWithJSON(w, http.StatusOK, subCategories)
 }
