@@ -35,9 +35,9 @@ func StartServer(pool *pgxpool.Pool, logger *slog.Logger) {
 	txHandler := handlers.NewTransactionHandler(txController, logger)
 	categoryHandler := handlers.NewCategoryHandler(categoryController, logger)
 	subCategoryHandler := handlers.NewSubCategoryHandler(subCategoryController, logger)
-	statusHandler := handlers.NewStatusHandler(statusController)
-	currencyHandler := handlers.NewCurrencyHandler(currencyController)
-	typeHandler := handlers.NewTypeHandler(typeController)
+	statusHandler := handlers.NewStatusHandler(statusController, logger)
+	currencyHandler := handlers.NewCurrencyHandler(currencyController, logger)
+	typeHandler := handlers.NewTypeHandler(typeController, logger)
 
 	// -- Register Routes --
 	// Transaction routes
