@@ -2,11 +2,93 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2025-09-21
+
+### 🚀 Features
+
+- *(frontend)* Add an icon to the title
+- Develop a more sophisticated logging tool
+- Add improved logging to transaction handler
+- Add improved logging to categories handler
+- Add improved logging to sub categories handler
+- Add improved logging to status, currencies, and types handlers
+- Add improved logging to database initializer
+
+### 🚜 Refactor
+
+- Adjust gradient colors
+- Add combo boxes to transaction filter
+- *(stores)* Enable amounts secrecy as default
+
 ## [1.1.0] - 2025-09-20
 
 ### 🚀 Features
 
-- *(api)* Add headless API mode
+- *(workflows)* Add a single pipeline to build and validate both projects
+- Add a Dockerfile to containerize the project
+- Add a Dockerfile to containerize the frontend section
+- Add new custom favicon
+- Add docker-compose.yml
+- *(frontend)* Add adjustable sorting
+- Add a basic filter tool
+
+### 🐛 Bug Fixes
+
+- *(workflows)* Cd into backend before trying to run go tests
+- *(workflows)* Cd into backend before trying to build
+- *(workflows)* Adjust file path
+
+### 🚜 Refactor
+
+- *(workflows)* Adjust Go pipeline to only build the API
+
+### 📚 Documentation
+
+- Remove documentation related to Fyne and Go GUI from README.md
+- Remove documentation related to Android from README.md
+- Add OpenAPI documentation
+- Add a reference to the OpenAPI doc in README.md
+- *(frontend)* Rewrite README.md for the frontend section
+- Add root level README.md
+
+### ⚙️ Miscellaneous Tasks
+
+- Removed everything related to Fyne and Go GUI
+- Remove old icon
+- *(workflows)* Remove ci pipeline
+
+## [1.0.0] - 2025-09-19
+
+### 🚀 Features
+
+- Add axios dependency for HTTP handling
+- *(services)* Add API client service
+- *(stores)* Add transactions store
+- *(components)* Add transaction form component
+- *(components)* Add transaction list component
+- Add transaction form and transaction list
+- Add icons for secrecy feature
+- Add a button to hide and show the transactions amount
+- Add a new interface for holding the new transactions
+
+### 🐛 Bug Fixes
+
+- Adjust the values used to build the transactions table
+- Adjust the hide/show button
+- Adjust the values being sent to the API
+
+### 🚜 Refactor
+
+- Moved everything to 'backend/'
+- Move icons
+- Rename icons
+- *(icons)* Replace icons
+- Move frontend project to 'frontend'
+
+## [0.1.1] - 2025-09-19
+
+### 🚀 Features
+
 - *(repository/sub_category)* Add method to get all sub categories
 - *(repository/status)* Add repository layer for status
 - *(repository/currency)* Add repository layer for currency
@@ -19,62 +101,34 @@ All notable changes to this project will be documented in this file.
 - *(api/handlers)* Add handler for sub categories
 - *(api/handlers)* Add a single file for storing Status, Currency and Type lookup methods
 - Add new endpoints to router
-- Add axios dependency for HTTP handling
-- *(services)* Add API client service
-- *(stores)* Add transactions store
-- *(components)* Add transaction form component
-- *(components)* Add transaction list component
-- Add transaction form and transaction list
-- Add icons for secrecy feature
-- Add a button to hide and show the transactions amount
-- Add a new interface for holding the new transactions
-- *(workflows)* Add a single pipeline to build and validate both projects
-- Add a Dockerfile to containerize the project
-- Add a Dockerfile to containerize the frontend section
-- Add new custom favicon
-- Add docker-compose.yml
-- *(frontend)* Add adjustable sorting
-- Add a basic filter tool
+
+### 📚 Documentation
+
+- Add new endpoints
+
+## [0.1.0] - 2025-09-19
+
+### 🚀 Features
+
+- *(api)* Add headless API mode
 
 ### 🐛 Bug Fixes
 
 - Adjust 'data' view min width
-- Adjust the values used to build the transactions table
-- Adjust the hide/show button
-- Adjust the values being sent to the API
-- *(workflows)* Cd into backend before trying to run go tests
-- *(workflows)* Cd into backend before trying to build
-- *(workflows)* Adjust file path
 
 ### 🚜 Refactor
 
 - Adjust icon path
 - *(api)* Initialize API with CLI options
-- Moved everything to 'backend/'
-- Move icons
-- Rename icons
-- *(icons)* Replace icons
-- Move frontend project to 'frontend'
-- *(workflows)* Adjust Go pipeline to only build the API
 
 ### 📚 Documentation
 
 - Add README.md file
 - Add API docs
-- Add new endpoints
-- Remove documentation related to Fyne and Go GUI from README.md
-- Remove documentation related to Android from README.md
-- Add OpenAPI documentation
-- Add a reference to the OpenAPI doc in README.md
-- *(frontend)* Rewrite README.md for the frontend section
-- Add root level README.md
 
 ### ⚙️ Miscellaneous Tasks
 
 - Add README.md to .gitignore
-- Removed everything related to Fyne and Go GUI
-- Remove old icon
-- *(workflows)* Remove ci pipeline
 
 ## [0.0.6] - 2025-09-08
 
