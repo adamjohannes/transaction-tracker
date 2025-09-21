@@ -9,7 +9,7 @@ import (
 func main() {
 	log := logger.New()
 
-	pool := database.ConnectDB()
+	pool := database.ConnectDB(log)
 	defer pool.Close()
 
 	api.StartServer(pool, log)

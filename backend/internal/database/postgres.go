@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,7 +11,7 @@ import (
 
 // ConnectDB establishes a connection pool to the PostgreSQL database.
 // It builds the connection URI from individual environment variables.
-func ConnectDB() *pgxpool.Pool {
+func ConnectDB(logger *slog.Logger) *pgxpool.Pool {
 	user := getEnv("DB_USER", "postgres")
 	password := getEnv("DB_PASSWORD", "password")
 	host := getEnv("DB_HOST", "localhost")
@@ -22,19 +22,21 @@ func ConnectDB() *pgxpool.Pool {
 	dbURL := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", user, password, host, port, dbname)
 
 	// Log the connection details for debugging (without the password)
-	log.Printf("Attempting to connect to: postgresql://%s:***@%s:%s/%s", user, host, port, dbname)
+	logger.Info("Attempting to connect to database", "url", fmt.Sprintf("postgresql://%s:***@%s:%s/%s", user, host, port, dbname))
 
 	pool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		log.Fatalf("Unable to create connection pool: %v\n", err)
+		logger.Error("Unable to create connection pool", "error", err)
+		panic(err)
 	}
 
 	// Verify the connection
 	if err := pool.Ping(context.Background()); err != nil {
-		log.Fatalf("Unable to connect to database: %v\n", err)
+		logger.Error("Unable to connect to database", "error", err)
+		panic(err)
 	}
 
-	fmt.Println("Successfully connected to the database!")
+	logger.Info("Successfully connected to the database")
 	return pool
 }
 
