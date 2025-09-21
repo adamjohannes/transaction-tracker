@@ -45,7 +45,7 @@ export const useTransactionStore = defineStore('transactions', {
     currencies: [] as Currency[],
     transactionTypes: [] as TransactionType[],
     isLoadingOptions: false,
-    areAmountsVisible: true,
+    areAmountsVisible: false,
     sortKey: null as SortableKeys | null,
     sortOrder: 'asc' as 'asc' | 'desc',
     filters: { ...initialFiltersState },
