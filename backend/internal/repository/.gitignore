@@ -8,6 +8,9 @@
 !currency/
 !currency/*
 
+!log/
+!log/*
+
 !sub_category/
 !sub_category/*
 
