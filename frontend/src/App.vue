@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import TransactionList from '@/components/TransactionList.vue';
-import TransactionForm from '@/components/TransactionForm.vue';
 import TransactionFilter from '@/components/TransactionFilter.vue';
+import TransactionForm from '@/components/TransactionForm.vue';
+import TransactionIcon from '@/assets/icons/transaction.svg?raw';
+import TransactionList from '@/components/TransactionList.vue';
 </script>
 
 <template>
   <header class="app-header">
     <div class="logo">
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4Z"/></svg>
+      <span v-html="TransactionIcon"></span>
       <h1>Transaction Tracker</h1>
     </div>
   </header>
@@ -70,9 +71,12 @@ body {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+}
+
+.logo span svg {
+  width: 30px;
+  height: 30px;
+  color: #17B978;
 }
 
 .container {
