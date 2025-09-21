@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"monthly-expenses-handler/internal/controller/category"
@@ -9,18 +9,24 @@ import (
 
 type CategoryHandler struct {
 	controller *category.CategoryController
+	logger     *slog.Logger
 }
 
-func NewCategoryHandler(c *category.CategoryController) *CategoryHandler {
-	return &CategoryHandler{controller: c}
+func NewCategoryHandler(c *category.CategoryController, l *slog.Logger) *CategoryHandler {
+	return &CategoryHandler{controller: c, logger: l}
 }
 
 func (h *CategoryHandler) ListCategories(w http.ResponseWriter, r *http.Request) {
+	h.logger.Info("Attempting to fetch all categories")
+
 	categories, err := h.controller.GetAllCategories()
 	if err != nil {
-		log.Printf("Error fetching categories: %v", err)
+		h.logger.Error("Failed to fetch categories", "error", err)
 		respondWithError(w, http.StatusInternalServerError, "Could not retrieve categories")
 		return
 	}
+
+	h.logger.Info("Successfully fetched all categories", "count", len(categories))
+
 	respondWithJSON(w, http.StatusOK, categories)
 }
