@@ -2,7 +2,8 @@ package api
 
 import (
 	"context"
-	"log"
+	"log/slog"
+	"monthly-expenses-handler/internal/middleware"
 	"net/http"
 
 	"monthly-expenses-handler/cmd/api/handlers"
@@ -18,7 +19,7 @@ import (
 
 // StartServer
 // Initializes and runs the headless API server.
-func StartServer(pool *pgxpool.Pool) {
+func StartServer(pool *pgxpool.Pool, logger *slog.Logger) {
 	ctx := context.Background()
 	mux := http.NewServeMux()
 
@@ -53,10 +54,14 @@ func StartServer(pool *pgxpool.Pool) {
 	mux.HandleFunc("GET /currencies", currencyHandler.ListCurrencies)
 	mux.HandleFunc("GET /types", typeHandler.ListTypes)
 
+	// Middleware
+	var handler http.Handler = mux
+	handler = middleware.LoggingMiddleware(handler, logger)
+
 	// Start the HTTP server
 	port := "8080"
-	log.Printf("🚀 Starting API server on http://localhost:%s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
-		log.Fatalf("❌ Could not start server: %s\n", err)
+	logger.Info("🚀 Starting API server", "port", port)
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
+		logger.Error("Could not start server", "error", err)
 	}
 }
