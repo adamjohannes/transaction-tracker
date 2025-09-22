@@ -57,7 +57,7 @@ normalization. This structure makes it easy to manage and query financial data.
 
 ## 🚀 Getting Started
 
-### Prerequisites & Configuration
+### Prerequisites & Configuration 
 
 - Go (version 1.24 or later)
 - A running PostgreSQL instance
