@@ -5,6 +5,10 @@ import (
 	"log/slog"
 	"monthly-expenses-handler/internal/middleware"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"monthly-expenses-handler/cmd/api/handlers"
 	"monthly-expenses-handler/internal/controller/category"
@@ -58,10 +62,41 @@ func StartServer(pool *pgxpool.Pool, logger *slog.Logger) {
 	var handler http.Handler = mux
 	handler = middleware.LoggingMiddleware(handler, logger)
 
-	// Start the HTTP server
 	port := "8080"
-	logger.Info("🚀 Starting API server", "port", port)
-	if err := http.ListenAndServe(":"+port, handler); err != nil {
-		logger.Error("Could not start server", "error", err)
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: handler,
+	}
+
+	// Channel to listen for errors from the server
+	serverErrors := make(chan error, 1)
+	go func() {
+		logger.Info("🚀 Starting API server", "port", port)
+		serverErrors <- server.ListenAndServe()
+	}()
+
+	// Channel to listen for interrupt signals from the OS
+	shutdownChan := make(chan os.Signal, 1)
+	signal.Notify(shutdownChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Block until a signal or a server error is received
+	select {
+	case err := <-serverErrors:
+		if err != nil && err != http.ErrServerClosed {
+			logger.Error("Server error", "error", err)
+		}
+	case sig := <-shutdownChan:
+		logger.Info("Shutdown signal received", "signal", sig)
+
+		// Create a context with a 10-second timeout for shutdown
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		// Attempt to gracefully shut down the server
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			logger.Error("Graceful shutdown failed", "error", err)
+		} else {
+			logger.Info("Server shut down gracefully")
+		}
 	}
 }
