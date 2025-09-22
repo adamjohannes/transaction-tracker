@@ -1,98 +1,74 @@
 package config
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
-func TestNew(t *testing.T) {
-	// Table-driven tests to cover all validation scenarios.
-	testCases := []struct {
-		name             string
-		inputURL         string
-		inputName        string
-		inputUser        string
-		inputPassword    string
-		expectError      bool
-		expectedErrorMsg string
-	}{
-		{
-			name:          "Successful case with valid data",
-			inputURL:      "localhost:5432",
-			inputName:     "expenses_db",
-			inputUser:     "admin",
-			inputPassword: "secure_password",
-			expectError:   false,
-		},
-		{
-			name:             "Error case with empty URL",
-			inputURL:         "",
-			inputName:        "expenses_db",
-			inputUser:        "admin",
-			inputPassword:    "secure_password",
-			expectError:      true,
-			expectedErrorMsg: "postgres url required",
-		},
-		{
-			name:             "Error case with empty database name",
-			inputURL:         "localhost:5432",
-			inputName:        "",
-			inputUser:        "admin",
-			inputPassword:    "secure_password",
-			expectError:      true,
-			expectedErrorMsg: "postgres database name required",
-		},
-		{
-			name:             "Error case with empty username",
-			inputURL:         "localhost:5432",
-			inputName:        "expenses_db",
-			inputUser:        "",
-			inputPassword:    "secure_password",
-			expectError:      true,
-			expectedErrorMsg: "postgres username required",
-		},
-		{
-			name:             "Error case with empty password",
-			inputURL:         "localhost:5432",
-			inputName:        "expenses_db",
-			inputUser:        "admin",
-			inputPassword:    "",
-			expectError:      true,
-			expectedErrorMsg: "postgres password required",
-		},
-	}
+func TestLoad(t *testing.T) {
+	// --- Test Case 1: Successful load with all variables set ---
+	t.Run("Successful load", func(t *testing.T) {
+		// Set environment variables for the test
+		os.Setenv("DB_HOST", "testhost")
+		os.Setenv("DB_PORT", "1234")
+		os.Setenv("DB_USER", "testuser")
+		os.Setenv("DB_PASSWORD", "testpass")
+		os.Setenv("DB_NAME", "testdb")
+		// Unset them after the test
+		defer func() {
+			os.Unsetenv("DB_HOST")
+			os.Unsetenv("DB_PORT")
+			os.Unsetenv("DB_USER")
+			os.Unsetenv("DB_PASSWORD")
+			os.Unsetenv("DB_NAME")
+		}()
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			config, err := NewPostgresConfig(tc.inputURL, tc.inputName, tc.inputUser, tc.inputPassword)
+		cfg, err := Load()
+		if err != nil {
+			t.Fatalf("expected no error, but got %v", err)
+		}
+		if cfg.Host != "testhost" {
+			t.Errorf("expected host 'testhost', got '%s'", cfg.Host)
+		}
+		if cfg.User != "testuser" {
+			t.Errorf("expected user 'testuser', got '%s'", cfg.User)
+		}
+	})
 
-			if tc.expectError {
-				if err == nil {
-					t.Fatal("expected an error but got none")
-				}
-				if err.Error() != tc.expectedErrorMsg {
-					t.Errorf("expected error message '%s' but got '%s'", tc.expectedErrorMsg, err.Error())
-				}
-				if config != nil {
-					t.Error("expected config to be nil on error")
-				}
-			} else { // No error expected
-				if err != nil {
-					t.Fatalf("did not expect an error but got: %v", err)
-				}
-				if config == nil {
-					t.Fatal("expected a config instance but got nil")
-				}
-				if config.DatabaseURL != tc.inputURL {
-					t.Errorf("expected DatabaseURL '%s', but got '%s'", tc.inputURL, config.DatabaseURL)
-				}
-				if config.DatabaseName != tc.inputName {
-					t.Errorf("expected DatabaseName '%s', but got '%s'", tc.inputName, config.DatabaseName)
-				}
-				if config.DatabaseUser != tc.inputUser {
-					t.Errorf("expected DatabaseUser '%s', but got '%s'", tc.inputUser, config.DatabaseUser)
-				}
-				if config.DatabasePass != tc.inputPassword {
-					t.Errorf("expected DatabasePass to be a non-empty string, but it was empty")
-				}
-			}
-		})
-	}
+	// --- Test Case 2: Error on missing essential variable ---
+	t.Run("Error on missing variable", func(t *testing.T) {
+		// Ensure a critical variable is not set
+		os.Unsetenv("DB_USER")
+
+		_, err := Load()
+		if err == nil {
+			t.Fatal("expected an error for missing config, but got none")
+		}
+	})
+
+	// --- Test Case 3: Successful load with fallback values ---
+	t.Run("Successful load with fallbacks", func(t *testing.T) {
+		// Set only the required variables
+		os.Setenv("DB_HOST", "testhost")
+		os.Setenv("DB_USER", "testuser")
+		os.Setenv("DB_PASSWORD", "testpass")
+		os.Setenv("DB_NAME", "testdb")
+		// Unset the optional one
+		os.Unsetenv("DB_PORT")
+		defer func() {
+			os.Unsetenv("DB_HOST")
+			os.Unsetenv("DB_USER")
+			os.Unsetenv("DB_PASSWORD")
+			os.Unsetenv("DB_NAME")
+		}()
+
+		cfg, err := Load()
+		if err != nil {
+			t.Fatalf("expected no error, but got %v", err)
+		}
+		// Check that the port has fallen back to the default
+		if cfg.Port != "5432" {
+			t.Errorf("expected fallback port '5432', got '%s'", cfg.Port)
+		}
+	})
 }
