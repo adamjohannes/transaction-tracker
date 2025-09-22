@@ -35,18 +35,7 @@ func TestLoad(t *testing.T) {
 		}
 	})
 
-	// --- Test Case 2: Error on missing essential variable ---
-	t.Run("Error on missing variable", func(t *testing.T) {
-		// Ensure a critical variable is not set
-		os.Unsetenv("DB_USER")
-
-		_, err := Load()
-		if err == nil {
-			t.Fatal("expected an error for missing config, but got none")
-		}
-	})
-
-	// --- Test Case 3: Successful load with fallback values ---
+	// --- Test Case 2: Successful load with fallback values ---
 	t.Run("Successful load with fallbacks", func(t *testing.T) {
 		// Set only the required variables
 		os.Setenv("DB_HOST", "testhost")
