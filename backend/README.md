@@ -38,30 +38,46 @@ The project follows a clean, layered architecture to separate concerns and impro
 - **Domain Layer (`internal/domain`)**: Defines the core data structures (entities) of the application, such as
   `Transaction` and `Category`.
 
+### 🗄️ Database Schema
+
+The database is designed with a core transactions table linked to several lookup tables for data consistency and
+normalization. This structure makes it easy to manage and query financial data.
+
+- `transactions`: This is the central table that stores individual financial records. It includes the amount, date, and
+  foreign keys that link to the various lookup tables below.
+- `transaction_categories` & `transaction_sub_categories`: These tables define the classification of transactions. Each
+  sub-category (e.g., "Groceries") belongs to a parent category (e.g., "Supermarket").
+- `transaction_types`: A simple lookup table that defines the nature of the transaction (e.g., 'Debit', 'Credit').
+- `transaction_status`: A lookup table for the state of a transaction (e.g., 'Completed', 'Pending').
+- `currencies`: Stores the supported currency codes (e.g., 'BRL', 'USD').
+- `app_logs`: Contains structured application logs, including the log level, message, and attributes, written directly
+  from the application's logger.
+
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Prerequisites & Configuration
 
 - Go (version 1.24 or later)
 - A running PostgreSQL instance
 
-### 1. Database Setup
-
-The database connection details are configured using environment variables. The application will look for the following:
+This project uses environment variables for configuration. A template is provided in the `.env.example` file. To get
+started, copy it to a new `.env` file and update it with your database credentials. Most tools that work with Go will
+load
+this file automatically.
 
 ```bash
-export DB_USER=[DB_USER]
-export DB_PASSWORD=[DB_PASSWORD]
-export DB_HOST=[DB_HOST]
-export DB_PORT=[DB_PORT]
-export DB_NAME=[DB_NAME]
+cp .env.example .env
 ```
 
-Once your PostgreSQL server is running, create a database and run
-the [initialization script](doc/postgres/initialize_db.sql) to set up the required
-tables.
+**Note**: If these environment variables are not set, the application will fall back to default values suitable for a
+local Postgres instance.
+
+### 1. Database Initialization
+
+Once your PostgreSQL server is running and configured, create a database and run
+the [initialization script](doc/postgres/initialize_db.sql) to set up the required tables.
 
 ### 2. Run API Server
 
