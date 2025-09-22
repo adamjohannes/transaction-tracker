@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"monthly-expenses-handler/internal/config"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -10,14 +11,9 @@ import (
 
 // ConnectDB establishes a connection pool to the PostgreSQL database.
 // It builds the connection URI from individual environment variables.
-func ConnectDB() (*pgxpool.Pool, error) {
-	user := getEnv("DB_USER", "postgres")
-	password := getEnv("DB_PASSWORD", "password")
-	host := getEnv("DB_HOST", "localhost")
-	port := getEnv("DB_PORT", "5432")
-	dbname := getEnv("DB_NAME", "postgres")
-
-	dbURL := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", user, password, host, port, dbname)
+func ConnectDB(cfg *config.PostgresConfig) (*pgxpool.Pool, error) {
+	// Build the connection string from the config struct
+	dbURL := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
 
 	pool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {

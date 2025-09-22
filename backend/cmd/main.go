@@ -3,12 +3,18 @@ package main
 import (
 	"log"
 	"monthly-expenses-handler/cmd/api"
+	"monthly-expenses-handler/internal/config"
 	"monthly-expenses-handler/internal/database"
 	"monthly-expenses-handler/internal/logger"
 )
 
 func main() {
-	pool, err := database.ConnectDB()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Could not load configuration: %v", err)
+	}
+
+	pool, err := database.ConnectDB(cfg)
 	if err != nil {
 		log.Fatalf("Could not connect to the database: %v", err)
 	}

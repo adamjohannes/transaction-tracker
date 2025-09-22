@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"monthly-expenses-handler/internal/config"
 	"monthly-expenses-handler/internal/database"
 	"os"
 	"strconv"
@@ -20,6 +21,11 @@ func main() {
 		log.Fatalf("Usage: go run %s <path_to_csv_file>", os.Args[0])
 	}
 
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Could not load configuration: %v", err)
+	}
+
 	csvFilePath := os.Args[1]
 	log.Printf("🚀 Starting CSV import process for file: %s", csvFilePath)
 
@@ -30,7 +36,7 @@ func main() {
 	}
 
 	// Connect to the database
-	pool, err := database.ConnectDB()
+	pool, err := database.ConnectDB(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
