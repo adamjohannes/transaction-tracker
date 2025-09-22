@@ -1,4 +1,3 @@
-// File: scripts/importer/main.go
 package main
 
 import (
@@ -7,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"monthly-expenses-handler/internal/database"
-	"monthly-expenses-handler/internal/logger"
 	"os"
 	"strconv"
 	"strings"
@@ -17,7 +15,6 @@ import (
 )
 
 func main() {
-	logger := logger.New()
 
 	if len(os.Args) != 2 {
 		log.Fatalf("Usage: go run %s <path_to_csv_file>", os.Args[0])
@@ -33,7 +30,10 @@ func main() {
 	}
 
 	// Connect to the database
-	pool := database.ConnectDB(logger)
+	pool, err := database.ConnectDB()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer pool.Close()
 
 	// Process each record
