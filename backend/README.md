@@ -93,8 +93,6 @@ go run cmd/main.go
 
 For a detailed and complete API specification, you can view the official [OpenAPI](doc/openapi.yaml) documentation.
 
-When running, the following endpoints are available.
-
 ### Create a Transaction
 
 - Endpoint: `POST /transactions`
@@ -133,7 +131,7 @@ curl http://localhost:8080/transactions
 
 The project includes a script to import transactions from a CSV file.
 
-- Usage:
+### Usage:
 
 ```bash
 go run cmd/scripts/importer/main.go <path_to_your_csv_file>
