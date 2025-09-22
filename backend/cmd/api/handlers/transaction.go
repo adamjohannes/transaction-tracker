@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 
+	"monthly-expenses-handler/internal/apierror"
 	"monthly-expenses-handler/internal/controller/transaction"
 )
 
@@ -35,9 +37,16 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 
 	createdTx, err := h.controller.NewTransaction(requestBody)
 	if err != nil {
-		// TODO: Check for validation error (400) or server error (500)
 		h.logger.Error("Failed to create transaction", "error", err, "payload", requestBody)
-		respondWithError(w, http.StatusBadRequest, err.Error())
+
+		var validationErr *apierror.ValidationError
+		if errors.As(err, &validationErr) {
+			// If the error is a ValidationError, it's a client error (400)
+			respondWithError(w, http.StatusBadRequest, validationErr.Error())
+		} else {
+			// Otherwise, it's an unexpected server error (500)
+			respondWithError(w, http.StatusInternalServerError, "Could not create transaction due to a server error")
+		}
 		return
 	}
 

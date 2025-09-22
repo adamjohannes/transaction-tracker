@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	"fmt"
+	"monthly-expenses-handler/internal/apierror"
 	"monthly-expenses-handler/internal/domain/category"
 	"monthly-expenses-handler/internal/domain/currency"
 	"monthly-expenses-handler/internal/domain/status"
@@ -54,18 +54,21 @@ func BuildTransaction(transaction map[string]any) (*Transaction, error) {
 	amountStr, _ := transaction["amount"].(string)
 	amount, err := decimal.NewFromString(amountStr)
 	if err != nil {
-		return nil, fmt.Errorf("invalid amount format: %w - amount = %v", err, transaction["amount"])
+		return nil, apierror.NewValidationError("invalid amount format: %v", transaction["amount"])
 	}
 
 	// --- Date ---
 	dateStr, _ := transaction["date"].(string)
 	date, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
-		return nil, fmt.Errorf("invalid date format: %w", err)
+		return nil, apierror.NewValidationError("invalid date format, use YYYY-MM-DD")
 	}
 
 	// --- Essential ---
-	essential, _ := transaction["essential"].(bool)
+	essential, ok := transaction["essential"].(bool)
+	if !ok {
+		return nil, apierror.NewValidationError("field 'essential' must be a boolean (true/false)")
+	}
 
 	// --- Description (Optional) ---
 	description := ""
@@ -125,7 +128,7 @@ func BuildTransaction(transaction map[string]any) (*Transaction, error) {
 // Validates if all required fields are present in the transaction.
 func validateRequiredFields(transaction map[string]any) error {
 	if transaction == nil {
-		return fmt.Errorf("transaction is required")
+		return apierror.NewValidationError("transaction payload is required")
 	}
 
 	requiredFields := []string{
@@ -134,11 +137,13 @@ func validateRequiredFields(transaction map[string]any) error {
 	}
 
 	for _, field := range requiredFields {
-		if val, ok := transaction[field]; !ok || val == nil {
-			return fmt.Errorf("%s is required", field)
+		val, ok := transaction[field]
+		if !ok || val == nil {
+			return apierror.NewValidationError("field '%s' is required", field)
 		}
-		if strVal, ok := transaction[field].(string); ok && strVal == "" {
-			return fmt.Errorf("%s is required", field)
+		// Check for empty strings as well
+		if strVal, ok := val.(string); ok && strVal == "" {
+			return apierror.NewValidationError("field '%s' cannot be empty", field)
 		}
 	}
 
