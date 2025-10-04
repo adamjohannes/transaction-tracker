@@ -11,6 +11,7 @@ import {
   PointElement,
   CategoryScale,
   type ChartData,
+  type ChartOptions,
 } from 'chart.js';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, PointElement, CategoryScale);
@@ -53,7 +54,7 @@ const chartDataObject = computed<ChartData<'line'>>(() => ({
   ],
 }));
 
-const chartOptions = computed(() => ({
+const chartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -63,7 +64,10 @@ const chartOptions = computed(() => ({
     title: {
       display: true,
       text: `${capitalizedType.value} Totals per Day of the Week`,
-      font: { size: 16, weight: '600' },
+      font: {
+        size: 16,
+        weight: 'bold',
+      },
       padding: { bottom: 16 }
     }
   },

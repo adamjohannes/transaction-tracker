@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Pie } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, type ChartData } from 'chart.js';
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, type ChartData, type ChartOptions } from 'chart.js';
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -11,7 +11,7 @@ const props = defineProps<{
   transactionType: 'debit' | 'credit' | 'refund';
 }>();
 
-const chartOptions = {
+const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -19,11 +19,14 @@ const chartOptions = {
     title: {
       display: true,
       text: props.title,
-      font: { size: 16, weight: '600' },
+      font: {
+        size: 16,
+        weight: 'bold',
+      },
       padding: { bottom: 16 }
     }
   },
-};
+}));
 
 const pieColors = [
   '#3b82f6', '#f97316', '#ec4899', '#14b8a6', '#8b5cf6',
@@ -39,7 +42,7 @@ const categorySummary = computed(() => {
   const labels = props.chartData.labels ?? [];
   const data = props.chartData.datasets[0]?.data ?? [];
 
-  const zipped = labels.map((label, i) => ({
+  const zipped = (labels as string[]).map((label, i) => ({
     label,
     value: data[i] as number,
   }));
@@ -96,21 +99,18 @@ const categorySummary = computed(() => {
   background-color: #fafbfd;
   min-height: 500px;
 }
-
 .content-wrapper {
   display: grid;
   grid-template-columns: 2fr 3fr;
   gap: 2rem;
   align-items: center;
 }
-
 .chart-area {
   position: relative;
   height: 250px;
   max-width: 250px;
   margin: 0 auto;
 }
-
 .total-display {
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
@@ -127,7 +127,6 @@ const categorySummary = computed(() => {
   font-weight: 700;
   line-height: 1.2;
 }
-
 .summary-area ul {
   list-style: none;
   padding: 0;
@@ -144,7 +143,6 @@ const categorySummary = computed(() => {
   align-items: center;
   font-size: 0.9rem;
 }
-
 .category-info {
   display: flex;
   align-items: center;
@@ -157,7 +155,6 @@ const categorySummary = computed(() => {
   border-radius: 50%;
   flex-shrink: 0;
 }
-
 .category-stats {
   display: flex;
   align-items: baseline;
@@ -176,7 +173,6 @@ const categorySummary = computed(() => {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
-
 .no-data-view {
   text-align: center;
   padding: 3rem 1rem;
