@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2025-10-04
+
+### 🚀 Features
+
+- Add app_logs table
+- Add repository for logs
+- Add a logger layer to post logs to the app_logs table in the DB
+- *(api)* Implement a basic graceful shutdown
+- *(api)* Add methods to improve error handling
+- Add helper functions
+- Add an application structure to hold all dependencies
+- Add a view for dashboards
+- Add a method to create the charts
+- Add routes for the transaction list and for the dashboard
+- Fetch data when mounting
+- Create a component for the category breakdown chart
+- Add a method to process a sub categories breakdown chart
+- Add a sub categories breakdown chart
+- Add methods for getting transactions related to days of the week
+- Add a chart to display transactions by day of the week
+- Insert the new DailySpendingChart component in the dashboards view
+
+### 🐛 Bug Fixes
+
+- Adjust importer script
+
+### 🚜 Refactor
+
+- Adjust the program to post logs to the database
+- Adjust the Postgres configuration structure to load settings directly from environment variables
+- Use the new configuration structure for connecting to the database
+- *(api)* Separate the handlres from the router
+- Adjust main function to use dependency injection
+- Add the navigation through the views
+- Display the transaction filter to the right of the list
+- Keep the transaction form and filter visible even while scrolling
+- Make the components stick to the screen border to give the list more space to render the elements
+- Adopt a modern design for the dashboards
+
+### 📚 Documentation
+
+- Add an example of the expected .env file
+- Add a basic explanation of the database schema and how the project uses the environment variables
+- Adjust a few API endpoints specification
+- Remove unnecessary endpoints from README
+
+### ⚙️ Miscellaneous Tasks
+
+- Add chart.js and vue-chartjs dependencies
+
 ## [1.2.0] - 2025-09-21
 
 ### 🚀 Features
