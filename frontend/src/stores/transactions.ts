@@ -34,6 +34,24 @@ const initialFiltersState = {
   types: [] as string[],
 };
 
+function processChartData(transactions: Transaction[], typeName: string) {
+  const categoryTotals = transactions
+    .filter(tx => tx.Type?.name.toLowerCase() === typeName)
+    .reduce((accumulator, tx) => {
+      const category = tx.Category?.name || 'Uncategorized';
+      const amount = parseFloat(tx.Amount);
+      if (!isNaN(amount)) {
+        accumulator[category] = (accumulator[category] || 0) + amount;
+      }
+      return accumulator;
+    }, {} as Record<string, number>);
+
+  const labels = Object.keys(categoryTotals);
+  const data = Object.values(categoryTotals);
+
+  return { labels, data };
+}
+
 export const useTransactionStore = defineStore('transactions', {
   state: () => ({
     transactions: [] as Transaction[],
@@ -119,6 +137,16 @@ export const useTransactionStore = defineStore('transactions', {
         }
         return this.sortOrder === 'asc' ? valA - valB : valB - valA;
       });
+    },
+
+    debitChartData(state) {
+      return processChartData(this.filteredTransactions, 'debit');
+    },
+    creditChartData(state) {
+      return processChartData(this.filteredTransactions, 'credit');
+    },
+    refundChartData(state) {
+      return processChartData(this.filteredTransactions, 'refund');
     },
   },
 
