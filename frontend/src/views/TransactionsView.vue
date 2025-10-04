@@ -6,25 +6,29 @@ import TransactionList from '@/components/TransactionList.vue';
 
 <template>
   <div class="layout-grid">
-    <aside class="controls-column">
+    <aside class="form-column">
       <TransactionForm />
-      <TransactionFilter />
     </aside>
+
     <section class="list-column">
       <TransactionList />
     </section>
+
+    <aside class="filter-column">
+      <TransactionFilter />
+    </aside>
   </div>
 </template>
 
 <style scoped>
 .layout-grid {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 350px 1fr 350px;
   gap: 2rem;
   align-items: flex-start;
 }
 
-.controls-column {
+.form-column {
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -34,7 +38,13 @@ import TransactionList from '@/components/TransactionList.vue';
   min-width: 0;
 }
 
-@media (max-width: 900px) {
+.filter-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (max-width: 1200px) {
   .layout-grid {
     grid-template-columns: 1fr;
   }
