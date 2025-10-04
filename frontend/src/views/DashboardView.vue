@@ -2,14 +2,39 @@
 import { ref, computed, watch } from 'vue';
 import { useTransactionStore } from '@/stores/transactions';
 import CategoryBreakdownChart from '@/components/CategoryBreakdownChart.vue';
+import DailySpendingChart from '@/components/DailySpendingChart.vue';
 import type { ChartData } from 'chart.js';
 
 const store = useTransactionStore();
 type ChartType = 'debit' | 'credit' | 'refund';
 
-// Create separate state for each chart's active type
+// State for Pie Charts
 const mainChartType = ref<ChartType>('debit');
 const subChartType = ref<ChartType>('debit');
+
+// State for Line Chart Filter
+const dailyFilterDates = ref({
+  startDate: store.dailySpendingFilter.startDate,
+  endDate: store.dailySpendingFilter.endDate,
+});
+
+watch(dailyFilterDates, (newDates) => {
+  store.updateDailySpendingFilter(newDates);
+}, { deep: true });
+
+function clearDailyFilter() {
+  store.clearDailySpendingFilter();
+  dailyFilterDates.value.startDate = '';
+  dailyFilterDates.value.endDate = '';
+}
+
+// Use a read-only computed for the value
+const dailyChartType = computed(() => store.dailySpendingChartType);
+
+// Create an explicit method to call the store action
+function setDailySpendingChartType(type: ChartType) {
+  store.setDailySpendingChartType(type);
+}
 
 const pieColors = [
   '#3b82f6', '#f97316', '#ec4899', '#14b8a6', '#8b5cf6',
@@ -26,31 +51,21 @@ const createChartDataObject = (chartData: { labels: string[], data: number[] }):
   }],
 });
 
-const mainChartData = computed(() => {
-  let data;
-
-  // Use mainChartType to select the correct getter
-  switch (mainChartType.value) {
-    case 'credit': data = store.creditChartData; break;
-    case 'refund': data = store.refundChartData; break;
-    default: data = store.debitChartData; break;
-  }
-  return createChartDataObject(data);
+// Computed properties for Pie Charts
+const mainChartData = computed(() => createChartDataObject(
+  mainChartType.value === 'credit' ? store.creditChartData :
+    mainChartType.value === 'refund' ? store.refundChartData :
+      store.debitChartData
+));
+const subCategoryChartData = computed(() => createChartDataObject(
+  subChartType.value === 'credit' ? store.creditSubCategoryChartData :
+    subChartType.value === 'refund' ? store.refundSubCategoryChartData :
+      store.debitSubCategoryChartData
+));
+const selectedCategory = computed({
+  get: () => store.selectedCategoryForDashboard,
+  set: (value) => store.setSelectedCategoryForDashboard(value)
 });
-
-const subCategoryChartData = computed(() => {
-  let data;
-
-  // Use subChartType to select the correct getter
-  switch (subChartType.value) {
-    case 'credit': data = store.creditSubCategoryChartData; break;
-    case 'refund': data = store.refundSubCategoryChartData; break;
-    default: data = store.debitSubCategoryChartData; break;
-  }
-  return createChartDataObject(data);
-});
-
-// Automatically select the first available category when the list changes
 watch(() => store.availableCategoriesInFiltered, (newCategories) => {
   if (newCategories.length > 0 && !store.selectedCategoryForDashboard) {
     store.setSelectedCategoryForDashboard(newCategories[0]);
@@ -59,10 +74,9 @@ watch(() => store.availableCategoriesInFiltered, (newCategories) => {
   }
 }, { immediate: true });
 
-const selectedCategory = computed({
-  get: () => store.selectedCategoryForDashboard,
-  set: (value) => store.setSelectedCategoryForDashboard(value)
-});
+// Computed property for Line Chart
+const dailySpendingData = computed(() => store.dailySpendingChartData);
+
 </script>
 
 <template>
@@ -76,6 +90,28 @@ const selectedCategory = computed({
 
     <div class="card-body">
       <div class="charts-grid">
+        <div class="chart-wrapper full-width">
+          <div class="chart-controls space-between">
+            <div class="date-filters">
+              <div class="form-group">
+                <label for="line-start-date">Start Date</label>
+                <input id="line-start-date" type="date" v-model="dailyFilterDates.startDate" />
+              </div>
+              <div class="form-group">
+                <label for="line-end-date">End Date</label>
+                <input id="line-end-date" type="date" v-model="dailyFilterDates.endDate" />
+              </div>
+              <button @click="clearDailyFilter" class="clear-button">Clear</button>
+            </div>
+            <div class="segmented-control">
+              <button @click="setDailySpendingChartType('debit')" :class="{ active: dailyChartType === 'debit' }">Debits</button>
+              <button @click="setDailySpendingChartType('credit')" :class="{ active: dailyChartType === 'credit' }">Credits</button>
+              <button @click="setDailySpendingChartType('refund')" :class="{ active: dailyChartType === 'refund' }">Refunds</button>
+            </div>
+          </div>
+          <DailySpendingChart :chart-data="dailySpendingData" :transaction-type="dailyChartType" />
+        </div>
+
         <div class="chart-wrapper">
           <div class="chart-controls">
             <div class="segmented-control">
@@ -133,7 +169,6 @@ const selectedCategory = computed({
   box-shadow: var(--shadow-md);
   overflow: hidden;
 }
-
 .card-header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--border-color);
@@ -149,15 +184,9 @@ const selectedCategory = computed({
   width: fit-content;
 }
 .segmented-control button {
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-secondary);
+  background: transparent; border: none; border-radius: 4px;
+  padding: 0.5rem 1rem; font-family: inherit; font-size: 0.875rem;
+  font-weight: 600; cursor: pointer; color: var(--text-secondary);
   transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .segmented-control button.active {
@@ -170,58 +199,73 @@ const selectedCategory = computed({
   padding: 2rem;
   background-color: var(--bg-main);
 }
-
 .charts-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 2rem;
 }
-
+.chart-wrapper.full-width {
+  grid-column: 1 / -1;
+}
 .chart-controls {
   margin-bottom: 1rem;
   display: flex;
   justify-content: flex-end;
 }
-
+/* New helper class for space-between layout */
+.chart-controls.space-between {
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
 .sub-category-header {
   justify-content: space-between;
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 1rem;
 }
-
 .sub-cat-select-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex-grow: 1;
+  display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;
 }
-
-.sub-cat-select-group label {
-  font-weight: 600;
-  font-size: 1rem;
-}
+.sub-cat-select-group label { font-weight: 600; font-size: 1rem; }
 
 #category-select {
-  width: 100%;
-  max-width: 400px;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-family: inherit;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background-color: var(--bg-card);
+  width: 100%; max-width: 400px; padding: 0.75rem; font-size: 1rem;
+  font-family: inherit; border: 1px solid var(--border-color);
+  border-radius: 6px; background-color: var(--bg-card);
 }
-
 .select-prompt {
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  background-color: #fafbfd;
-  min-height: 500px;
+  border: 1px solid var(--border-color); border-radius: var(--radius);
+  background-color: #fafbfd; min-height: 500px; display: flex;
+  align-items: center; justify-content: center;
+  color: var(--text-secondary); font-weight: 500;
+}
+.date-filters {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  font-weight: 500;
+  align-items: flex-end;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+.form-group label {
+  display: block; font-size: 0.875rem; font-weight: 500;
+  color: var(--text-secondary); margin-bottom: 0.5rem;
+}
+.form-group input[type="date"] {
+  padding: 0.5rem; font-family: inherit; border-radius: 6px;
+  border: 1px solid var(--border-color); background-color: var(--bg-card);
+}
+.clear-button {
+  padding: 0.5rem 1rem; font-family: inherit; font-weight: 500;
+  border-radius: 6px; border: 1px solid var(--border-color);
+  background-color: var(--bg-card); cursor: pointer;
+  transition: background-color 0.2s;
+  height: fit-content;
+}
+.clear-button:hover { background-color: #f1f5f9; }
+@media (max-width: 900px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
