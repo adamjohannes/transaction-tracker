@@ -1,13 +1,13 @@
-import { defineStore } from 'pinia';
+import {defineStore} from 'pinia';
 import {
-  transactionService,
-  type Transaction,
   type Category,
-  type SubCategory,
-  type Status,
   type Currency,
-  type TransactionType,
-  type NewTransactionPayload
+  type NewTransactionPayload,
+  type Status,
+  type SubCategory,
+  type Transaction,
+  transactionService,
+  type TransactionType
 } from '@/services/api';
 
 // Helper type for the form's internal data structure (PascalCase)
@@ -49,12 +49,12 @@ function processCategoryChartData(transactions: Transaction[], typeName: string)
   const labels = Object.keys(categoryTotals);
   const data = Object.values(categoryTotals);
 
-  return { labels, data };
+  return {labels, data};
 }
 
 function processSubCategoryChartData(transactions: Transaction[], typeName: string, selectedCategory: string | null) {
   if (!selectedCategory) {
-    return { labels: [], data: [] };
+    return {labels: [], data: []};
   }
 
   const subCategoryTotals = transactions
@@ -71,7 +71,7 @@ function processSubCategoryChartData(transactions: Transaction[], typeName: stri
   const labels = Object.keys(subCategoryTotals);
   const data = Object.values(subCategoryTotals);
 
-  return { labels, data };
+  return {labels, data};
 }
 
 export const useTransactionStore = defineStore('transactions', {
@@ -88,8 +88,13 @@ export const useTransactionStore = defineStore('transactions', {
     areAmountsVisible: false,
     sortKey: null as SortableKeys | null,
     sortOrder: 'asc' as 'asc' | 'desc',
-    filters: { ...initialFiltersState },
+    filters: {...initialFiltersState},
     selectedCategoryForDashboard: null as string | null,
+    dailySpendingFilter: {
+      startDate: '',
+      endDate: '',
+    },
+    dailySpendingChartType: 'debit' as 'debit' | 'credit' | 'refund',
   }),
 
   getters: {
@@ -97,45 +102,21 @@ export const useTransactionStore = defineStore('transactions', {
     filteredTransactions(state): Transaction[] {
       return state.transactions.filter(tx => {
         const txDate = new Date(tx.Date?.split('T')[0]);
-
-        // Date Range Filter
-        if (state.filters.startDate && txDate < new Date(state.filters.startDate)) {
-          return false;
-        }
-        if (state.filters.endDate && txDate > new Date(state.filters.endDate)) {
-          return false;
-        }
-        // Specific Date: if start date is set but no end date, it works as a specific date filter
-        if (state.filters.startDate && !state.filters.endDate && txDate.getTime() !== new Date(state.filters.startDate).getTime()) {
-          return false;
-        }
-
-        // Multi-select Filters
-        if (state.filters.categories.length > 0 && !state.filters.categories.includes(tx.Category?.name)) {
-          return false;
-        }
-        if (state.filters.subCategories.length > 0 && !state.filters.subCategories.includes(tx.SubCategory?.Name)) {
-          return false;
-        }
-        if (state.filters.statuses.length > 0 && !state.filters.statuses.includes(tx.Status?.name)) {
-          return false;
-        }
-        if (state.filters.types.length > 0 && !state.filters.types.includes(tx.Type?.name)) {
-          return false;
-        }
-
-        return true; // Include transaction if all checks pass
+        if (state.filters.startDate && txDate < new Date(state.filters.startDate)) return false;
+        if (state.filters.endDate && txDate > new Date(state.filters.endDate)) return false;
+        if (state.filters.startDate && !state.filters.endDate && txDate.getTime() !== new Date(state.filters.startDate).getTime()) return false;
+        if (state.filters.categories.length > 0 && !state.filters.categories.includes(tx.Category?.name)) return false;
+        if (state.filters.subCategories.length > 0 && !state.filters.subCategories.includes(tx.SubCategory?.Name)) return false;
+        if (state.filters.statuses.length > 0 && !state.filters.statuses.includes(tx.Status?.name)) return false;
+        if (state.filters.types.length > 0 && !state.filters.types.includes(tx.Type?.name)) return false;
+        return true;
       });
     },
 
     // Getter to sort the already-filtered list
     sortedTransactions(): Transaction[] {
       const transactionsToSort = this.filteredTransactions;
-
-      if (!this.sortKey) {
-        return transactionsToSort;
-      }
-
+      if (!this.sortKey) return transactionsToSort;
       return [...transactionsToSort].sort((a, b) => {
         let valA, valB;
         switch (this.sortKey) {
@@ -162,26 +143,12 @@ export const useTransactionStore = defineStore('transactions', {
       });
     },
 
-    debitChartData() {
-      return processCategoryChartData(this.filteredTransactions, 'debit');
-    },
-    creditChartData() {
-      return processCategoryChartData(this.filteredTransactions, 'credit');
-    },
-    refundChartData() {
-      return processCategoryChartData(this.filteredTransactions, 'refund');
-    },
-
-    debitSubCategoryChartData(state) {
-      return processSubCategoryChartData(this.filteredTransactions, 'debit', state.selectedCategoryForDashboard);
-    },
-    creditSubCategoryChartData(state) {
-      return processSubCategoryChartData(this.filteredTransactions, 'credit', state.selectedCategoryForDashboard);
-    },
-    refundSubCategoryChartData(state) {
-      return processSubCategoryChartData(this.filteredTransactions, 'refund', state.selectedCategoryForDashboard);
-    },
-
+    debitChartData: (state) => processCategoryChartData(state.transactions, 'debit'),
+    creditChartData: (state) => processCategoryChartData(state.transactions, 'credit'),
+    refundChartData: (state) => processCategoryChartData(state.transactions, 'refund'),
+    debitSubCategoryChartData: (state) => processSubCategoryChartData(state.transactions, 'debit', state.selectedCategoryForDashboard),
+    creditSubCategoryChartData: (state) => processSubCategoryChartData(state.transactions, 'credit', state.selectedCategoryForDashboard),
+    refundSubCategoryChartData: (state) => processSubCategoryChartData(state.transactions, 'refund', state.selectedCategoryForDashboard),
     availableCategoriesInFiltered(): string[] {
       const categorySet = new Set<string>();
       this.filteredTransactions.forEach(tx => {
@@ -190,7 +157,33 @@ export const useTransactionStore = defineStore('transactions', {
         }
       });
       return Array.from(categorySet).sort();
-    }
+    },
+
+    dailySpendingChartData(state): { labels: string[], data: number[] } {
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dailyTotals = new Array(7).fill(0);
+
+      const transactionsToProcess = state.transactions.filter(tx => {
+        if (tx.Type?.name.toLowerCase() !== state.dailySpendingChartType) return false;
+        const txDate = new Date(tx.Date?.split('T')[0]);
+        if (state.dailySpendingFilter.startDate && txDate < new Date(state.dailySpendingFilter.startDate)) return false;
+        if (state.dailySpendingFilter.endDate && txDate > new Date(state.dailySpendingFilter.endDate)) return false;
+        return true;
+      });
+
+      transactionsToProcess.forEach(tx => {
+        const dayIndex = new Date(tx.Date).getUTCDay();
+        const amount = parseFloat(tx.Amount);
+        if (!isNaN(amount)) {
+          dailyTotals[dayIndex] += amount;
+        }
+      });
+
+      return {
+        labels: daysOfWeek,
+        data: dailyTotals,
+      };
+    },
   },
 
   actions: {
@@ -302,9 +295,20 @@ export const useTransactionStore = defineStore('transactions', {
         this.sortOrder = 'asc';
       }
     },
-
     setSelectedCategoryForDashboard(categoryName: string | null) {
       this.selectedCategoryForDashboard = categoryName;
-    }
+    },
+
+    updateDailySpendingFilter(dates: { startDate?: string, endDate?: string }) {
+      if (dates.startDate !== undefined) this.dailySpendingFilter.startDate = dates.startDate;
+      if (dates.endDate !== undefined) this.dailySpendingFilter.endDate = dates.endDate;
+    },
+    clearDailySpendingFilter() {
+      this.dailySpendingFilter.startDate = '';
+      this.dailySpendingFilter.endDate = '';
+    },
+    setDailySpendingChartType(type: 'debit' | 'credit' | 'refund') {
+      this.dailySpendingChartType = type;
+    },
   },
 });
