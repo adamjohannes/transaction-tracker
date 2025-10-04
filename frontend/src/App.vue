@@ -1,6 +1,15 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
+import { useTransactionStore } from '@/stores/transactions';
 import TransactionIcon from '@/assets/icons/transaction.svg?raw';
+
+const store = useTransactionStore();
+
+onMounted(() => {
+  store.fetchTransactions();
+  store.fetchFormOptions();
+});
 </script>
 
 <template>
