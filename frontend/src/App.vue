@@ -1,27 +1,23 @@
 <script setup lang="ts">
-import TransactionFilter from '@/components/TransactionFilter.vue';
-import TransactionForm from '@/components/TransactionForm.vue';
+import { RouterLink, RouterView } from 'vue-router';
 import TransactionIcon from '@/assets/icons/transaction.svg?raw';
-import TransactionList from '@/components/TransactionList.vue';
 </script>
 
 <template>
   <header class="app-header">
-    <div class="logo">
-      <span v-html="TransactionIcon"></span>
-      <h1>Transaction Tracker</h1>
+    <div class="logo-area">
+      <div class="logo">
+        <span v-html="TransactionIcon"></span>
+        <h1>Transaction Tracker</h1>
+      </div>
+      <nav class="main-nav">
+        <RouterLink to="/">Transactions</RouterLink>
+        <RouterLink to="/dashboard">Dashboard</RouterLink>
+      </nav>
     </div>
   </header>
   <main class="container">
-    <div class="layout-grid">
-      <aside class="controls-column">
-        <TransactionForm />
-        <TransactionFilter />
-      </aside>
-      <section class="list-column">
-        <TransactionList />
-      </section>
-    </div>
+    <RouterView />
   </main>
 </template>
 
@@ -61,6 +57,12 @@ body {
   margin-bottom: 2rem;
 }
 
+.logo-area {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -85,26 +87,28 @@ body {
   padding: 0 2rem;
 }
 
-.layout-grid {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 2rem;
-  align-items: flex-start;
-}
-
-.controls-column {
+.main-nav {
   display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  gap: 0.5rem;
+  margin-left: 2rem;
 }
 
-.list-column {
-  min-width: 0;
+.main-nav a {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-@media (max-width: 900px) {
-  .layout-grid {
-    grid-template-columns: 1fr;
-  }
+.main-nav a:hover {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}
+
+.main-nav a.router-link-exact-active {
+  background-image: var(--primary-gradient);
+  color: white;
 }
 </style>
