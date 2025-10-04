@@ -1,108 +1,67 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useTransactionStore } from '@/stores/transactions';
-import { Pie } from 'vue-chartjs';
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  type ChartData,
-} from 'chart.js';
-
-ChartJS.register(Title, Tooltip, Legend, ArcElement);
+import CategoryBreakdownChart from '@/components/CategoryBreakdownChart.vue';
+import type { ChartData } from 'chart.js';
 
 const store = useTransactionStore();
 type ChartType = 'debit' | 'credit' | 'refund';
-const activeType = ref<ChartType>('debit');
 
-// Base options for the chart
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
-};
+// Create separate state for each chart's active type
+const mainChartType = ref<ChartType>('debit');
+const subChartType = ref<ChartType>('debit');
 
 const pieColors = [
-  '#3b82f6', // Blue
-  '#f97316', // Orange
-  '#ec4899', // Pink
-  '#14b8a6', // Teal
-  '#8b5cf6', // Purple
-  '#eab308', // Yellow
-  '#ef4444', // Red
-  '#0ea5e9', // Sky Blue
-  '#10b981', // Green
-  '#64748b', // Slate
+  '#3b82f6', '#f97316', '#ec4899', '#14b8a6', '#8b5cf6',
+  '#eab308', '#ef4444', '#0ea5e9', '#10b981', '#64748b'
 ];
-
-function sortChartData(chartData: { labels: string[], data: number[] }) {
-  const zipped = chartData.labels.map((label, i) => ({
-    label,
-    value: chartData.data[i]
-  }));
-
-  zipped.sort((a, b) => b.value - a.value);
-
-  const sortedLabels = zipped.map(item => item.label);
-  const sortedData = zipped.map(item => item.value);
-
-  return { labels: sortedLabels, data: sortedData };
-}
 
 const createChartDataObject = (chartData: { labels: string[], data: number[] }): ChartData<'pie'> => ({
   labels: chartData.labels,
   datasets: [{
     backgroundColor: pieColors,
     data: chartData.data,
-    borderWidth: 1,
-    borderColor: 'var(--bg-card)',
+    borderWidth: 2,
+    borderColor: '#fafbfd',
   }],
 });
 
-const debitData = computed(() => {
-  const sorted = sortChartData(store.debitChartData);
-  return createChartDataObject(sorted);
-});
-const creditData = computed(() => {
-  const sorted = sortChartData(store.creditChartData);
-  return createChartDataObject(sorted);
-});
-const refundData = computed(() => {
-  const sorted = sortChartData(store.refundChartData);
-  return createChartDataObject(sorted);
-});
+const mainChartData = computed(() => {
+  let data;
 
-const activeChartData = computed(() => {
-  switch (activeType.value) {
-    case 'credit': return creditData.value;
-    case 'refund': return refundData.value;
-    default: return debitData.value;
+  // Use mainChartType to select the correct getter
+  switch (mainChartType.value) {
+    case 'credit': data = store.creditChartData; break;
+    case 'refund': data = store.refundChartData; break;
+    default: data = store.debitChartData; break;
   }
+  return createChartDataObject(data);
 });
 
-const totalAmount = computed(() => {
-  return activeChartData.value.datasets[0].data.reduce((sum, value) => sum + value, 0);
+const subCategoryChartData = computed(() => {
+  let data;
+
+  // Use subChartType to select the correct getter
+  switch (subChartType.value) {
+    case 'credit': data = store.creditSubCategoryChartData; break;
+    case 'refund': data = store.refundSubCategoryChartData; break;
+    default: data = store.debitSubCategoryChartData; break;
+  }
+  return createChartDataObject(data);
 });
 
-const categorySummary = computed(() => {
-  const total = totalAmount.value;
-  if (total === 0) return [];
+// Automatically select the first available category when the list changes
+watch(() => store.availableCategoriesInFiltered, (newCategories) => {
+  if (newCategories.length > 0 && !store.selectedCategoryForDashboard) {
+    store.setSelectedCategoryForDashboard(newCategories[0]);
+  } else if (newCategories.length === 0) {
+    store.setSelectedCategoryForDashboard(null);
+  }
+}, { immediate: true });
 
-  const labels = activeChartData.value.labels ?? [];
-  const data = activeChartData.value.datasets[0].data ?? [];
-
-  return labels.map((label, index) => ({
-    name: label,
-    color: pieColors[index % pieColors.length],
-    amount: data[index],
-    percentage: ((data[index] / total) * 100).toFixed(1),
-  }));
+const selectedCategory = computed({
+  get: () => store.selectedCategoryForDashboard,
+  set: (value) => store.setSelectedCategoryForDashboard(value)
 });
 </script>
 
@@ -110,48 +69,57 @@ const categorySummary = computed(() => {
   <div class="dashboard-card">
     <div class="card-header">
       <div class="header-text">
-        <h2>Category Breakdown</h2>
-        <p>An overview of your transactions by category.</p>
-      </div>
-      <div class="segmented-control">
-        <button @click="activeType = 'debit'" :class="{ active: activeType === 'debit' }">Debits</button>
-        <button @click="activeType = 'credit'" :class="{ active: activeType === 'credit' }">Credits</button>
-        <button @click="activeType = 'refund'" :class="{ active: activeType === 'refund' }">Refunds</button>
+        <h2>Breakdown Dashboards</h2>
+        <p>An overview of your transactions by category and sub-category.</p>
       </div>
     </div>
 
     <div class="card-body">
-      <div v-if="totalAmount > 0" class="dashboard-content">
-        <div class="chart-area">
-          <Transition name="fade" mode="out-in">
-            <Pie :data="activeChartData" :options="chartOptions" :key="activeType" />
-          </Transition>
-        </div>
-        <div class="summary-area">
-          <div class="total-display">
-            <span>Total {{ activeType }}s</span>
-            <strong>{{ new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount) }}</strong>
+      <div class="charts-grid">
+        <div class="chart-wrapper">
+          <div class="chart-controls">
+            <div class="segmented-control">
+              <button @click="mainChartType = 'debit'" :class="{ active: mainChartType === 'debit' }">Debits</button>
+              <button @click="mainChartType = 'credit'" :class="{ active: mainChartType === 'credit' }">Credits</button>
+              <button @click="mainChartType = 'refund'" :class="{ active: mainChartType === 'refund' }">Refunds</button>
+            </div>
           </div>
-          <h3>Breakdown</h3>
-          <ul>
-            <li v-for="item in categorySummary" :key="item.name">
-              <div class="category-info">
-                <span class="color-dot" :style="{ backgroundColor: item.color }"></span>
-                {{ item.name }}
-              </div>
-              <div class="category-stats">
-                <span class="percentage">{{ item.percentage }}%</span>
-                <span class="amount">{{ new Intl.NumberFormat().format(item.amount) }}</span>
-              </div>
-            </li>
-          </ul>
+          <CategoryBreakdownChart
+            title="Overall Category Breakdown"
+            :chart-data="mainChartData"
+            :transaction-type="mainChartType"
+            :key="`main-${mainChartType}`"
+          />
         </div>
-      </div>
-      <div v-else class="no-data-view">
-        <div class="icon">📊</div>
-        <h3>No Data to Display</h3>
-        <p>There are no {{ activeType }} transactions for the current filters.</p>
-        <p>Try adjusting the filters on the Transactions page.</p>
+
+        <div class="chart-wrapper">
+          <div class="chart-controls sub-category-header">
+            <div class="sub-cat-select-group">
+              <label for="category-select">Sub-Category Breakdown For:</label>
+              <select id="category-select" v-model="selectedCategory">
+                <option :value="null" disabled>-- Select a Category --</option>
+                <option v-for="cat in store.availableCategoriesInFiltered" :key="cat" :value="cat">
+                  {{ cat }}
+                </option>
+              </select>
+            </div>
+            <div class="segmented-control">
+              <button @click="subChartType = 'debit'" :class="{ active: subChartType === 'debit' }">Debits</button>
+              <button @click="subChartType = 'credit'" :class="{ active: subChartType === 'credit' }">Credits</button>
+              <button @click="subChartType = 'refund'" :class="{ active: subChartType === 'refund' }">Refunds</button>
+            </div>
+          </div>
+          <CategoryBreakdownChart
+            v-if="store.selectedCategoryForDashboard"
+            :title="`'${store.selectedCategoryForDashboard}' Breakdown`"
+            :chart-data="subCategoryChartData"
+            :transaction-type="subChartType"
+            :key="`sub-${store.selectedCategoryForDashboard}-${subChartType}`"
+          />
+          <div v-else class="select-prompt">
+            <p>Please select a category above to see its breakdown.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -167,33 +135,19 @@ const categorySummary = computed(() => {
 }
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
   padding: 1.5rem;
   border-bottom: 1px solid var(--border-color);
 }
-
-.header-text h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.header-text p {
-  margin: 0.25rem 0 0;
-  color: var(--text-secondary);
-}
+.header-text h2 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+.header-text p { margin: 0.25rem 0 0; color: var(--text-secondary); }
 
 .segmented-control {
   display: flex;
   background-color: var(--bg-main);
   border-radius: 6px;
   padding: 4px;
+  width: fit-content;
 }
-
 .segmented-control button {
   background: transparent;
   border: none;
@@ -206,7 +160,6 @@ const categorySummary = computed(() => {
   color: var(--text-secondary);
   transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
-
 .segmented-control button.active {
   background-color: var(--bg-card);
   color: var(--text-primary);
@@ -214,141 +167,61 @@ const categorySummary = computed(() => {
 }
 
 .card-body {
-  padding: 1.5rem;
+  padding: 2rem;
+  background-color: var(--bg-main);
 }
 
-.dashboard-content {
+.charts-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 2rem;
-  align-items: center;
-  min-height: 400px;
 }
 
-.chart-area {
-  position: relative;
-  height: 400px;
-}
-
-.total-display {
-  text-align: left;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.total-display span {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  text-transform: capitalize;
-}
-
-.total-display strong {
-  display: block;
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.summary-area h3 {
-  margin-top: 0;
+.chart-controls {
   margin-bottom: 1rem;
-  font-weight: 600;
+  display: flex;
+  justify-content: flex-end;
 }
 
-.summary-area ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
+.sub-category-header {
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
-.summary-area li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-}
-
-.category-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 500;
-}
-
-.color-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.category-stats {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-
-.percentage {
-  font-weight: 600;
-  color: var(--text-primary);
-  background-color: var(--bg-main);
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  min-width: 45px;
-  text-align: right;
-}
-
-.amount {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-
-.no-data-view {
-  text-align: center;
-  padding: 3rem 1rem;
-  min-height: 400px;
+.sub-cat-select-group {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.sub-cat-select-group label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+#category-select {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-card);
+}
+
+.select-prompt {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: #fafbfd;
+  min-height: 500px;
+  display: flex;
   align-items: center;
-}
-
-.no-data-view .icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.no-data-view h3 {
-  font-size: 1.25rem;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.no-data-view p {
+  justify-content: center;
   color: var(--text-secondary);
-  margin: 0.25rem;
-  max-width: 300px;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 900px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
+  font-weight: 500;
 }
 </style>
