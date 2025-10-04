@@ -34,7 +34,7 @@ const initialFiltersState = {
   types: [] as string[],
 };
 
-function processChartData(transactions: Transaction[], typeName: string) {
+function processCategoryChartData(transactions: Transaction[], typeName: string) {
   const categoryTotals = transactions
     .filter(tx => tx.Type?.name.toLowerCase() === typeName)
     .reduce((accumulator, tx) => {
@@ -48,6 +48,28 @@ function processChartData(transactions: Transaction[], typeName: string) {
 
   const labels = Object.keys(categoryTotals);
   const data = Object.values(categoryTotals);
+
+  return { labels, data };
+}
+
+function processSubCategoryChartData(transactions: Transaction[], typeName: string, selectedCategory: string | null) {
+  if (!selectedCategory) {
+    return { labels: [], data: [] };
+  }
+
+  const subCategoryTotals = transactions
+    .filter(tx => tx.Type?.name.toLowerCase() === typeName && tx.Category?.name === selectedCategory)
+    .reduce((accumulator, tx) => {
+      const subCategory = tx.SubCategory?.Name || 'Uncategorized';
+      const amount = parseFloat(tx.Amount);
+      if (!isNaN(amount)) {
+        accumulator[subCategory] = (accumulator[subCategory] || 0) + amount;
+      }
+      return accumulator;
+    }, {} as Record<string, number>);
+
+  const labels = Object.keys(subCategoryTotals);
+  const data = Object.values(subCategoryTotals);
 
   return { labels, data };
 }
@@ -67,6 +89,7 @@ export const useTransactionStore = defineStore('transactions', {
     sortKey: null as SortableKeys | null,
     sortOrder: 'asc' as 'asc' | 'desc',
     filters: { ...initialFiltersState },
+    selectedCategoryForDashboard: null as string | null,
   }),
 
   getters: {
@@ -139,15 +162,35 @@ export const useTransactionStore = defineStore('transactions', {
       });
     },
 
-    debitChartData(state) {
-      return processChartData(this.filteredTransactions, 'debit');
+    debitChartData() {
+      return processCategoryChartData(this.filteredTransactions, 'debit');
     },
-    creditChartData(state) {
-      return processChartData(this.filteredTransactions, 'credit');
+    creditChartData() {
+      return processCategoryChartData(this.filteredTransactions, 'credit');
     },
-    refundChartData(state) {
-      return processChartData(this.filteredTransactions, 'refund');
+    refundChartData() {
+      return processCategoryChartData(this.filteredTransactions, 'refund');
     },
+
+    debitSubCategoryChartData(state) {
+      return processSubCategoryChartData(this.filteredTransactions, 'debit', state.selectedCategoryForDashboard);
+    },
+    creditSubCategoryChartData(state) {
+      return processSubCategoryChartData(this.filteredTransactions, 'credit', state.selectedCategoryForDashboard);
+    },
+    refundSubCategoryChartData(state) {
+      return processSubCategoryChartData(this.filteredTransactions, 'refund', state.selectedCategoryForDashboard);
+    },
+
+    availableCategoriesInFiltered(): string[] {
+      const categorySet = new Set<string>();
+      this.filteredTransactions.forEach(tx => {
+        if (tx.Category?.name) {
+          categorySet.add(tx.Category.name);
+        }
+      });
+      return Array.from(categorySet).sort();
+    }
   },
 
   actions: {
@@ -259,5 +302,9 @@ export const useTransactionStore = defineStore('transactions', {
         this.sortOrder = 'asc';
       }
     },
+
+    setSelectedCategoryForDashboard(categoryName: string | null) {
+      this.selectedCategoryForDashboard = categoryName;
+    }
   },
 });
