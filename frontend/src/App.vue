@@ -25,7 +25,7 @@ onMounted(() => {
       </nav>
     </div>
   </header>
-  <main class="container">
+  <main>
     <RouterView />
   </main>
 </template>
@@ -88,12 +88,6 @@ body {
   width: 30px;
   height: 30px;
   color: #17B978;
-}
-
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 2rem;
 }
 
 .main-nav {

@@ -26,6 +26,7 @@ import TransactionList from '@/components/TransactionList.vue';
   grid-template-columns: 350px 1fr 350px;
   gap: 2rem;
   align-items: flex-start;
+  padding: 0 2rem;
 }
 
 .form-column,
