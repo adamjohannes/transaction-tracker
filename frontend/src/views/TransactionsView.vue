@@ -28,25 +28,27 @@ import TransactionList from '@/components/TransactionList.vue';
   align-items: flex-start;
 }
 
-.form-column {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+.form-column,
+.filter-column {
+  position: sticky;
+  top: 2rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
 }
 
 .list-column {
   min-width: 0;
 }
 
-.filter-column {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
 @media (max-width: 1200px) {
   .layout-grid {
     grid-template-columns: 1fr;
+  }
+  .form-column,
+  .filter-column {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 }
 </style>
