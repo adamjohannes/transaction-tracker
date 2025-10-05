@@ -42,11 +42,11 @@ CREATE TABLE public.transaction_types
 CREATE TABLE public.transactions
 (
     id           bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-    amount       numeric                             NOT NULL,
+    amount       BYTEA                               NOT NULL,
     category     bigint                              NOT NULL,
     sub_category bigint,
     date         date                                NOT NULL,
-    description  character varying,
+    description  BYTEA,
     status       bigint                              NOT NULL,
     currency     character varying                   NOT NULL,
     type         bigint                              NOT NULL,
