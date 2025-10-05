@@ -3,6 +3,7 @@ package transaction
 import (
 	"context"
 	"fmt"
+	"monthly-expenses-handler/internal/crypto"
 	"monthly-expenses-handler/internal/domain/category"
 	"monthly-expenses-handler/internal/domain/currency"
 	"monthly-expenses-handler/internal/domain/status"
@@ -77,14 +78,15 @@ func (r *postgresRepository) GetSubCategoryAmounts(ctx context.Context) ([]SubCa
 // postgresRepository
 // Is the concrete implementation of the Repository interface for PostgreSQL.
 type postgresRepository struct {
-	db *pgxpool.Pool
+	db     *pgxpool.Pool
+	crypto *crypto.CryptoService
 }
 
 // NewPostgresRepository
 // Creates a new instance of the transaction repository.
 // It takes the database connection pool as a dependency.
-func NewPostgresRepository(db *pgxpool.Pool) Repository {
-	return &postgresRepository{db: db}
+func NewPostgresRepository(db *pgxpool.Pool, cryptoSvc *crypto.CryptoService) Repository {
+	return &postgresRepository{db: db, crypto: cryptoSvc}
 }
 
 // Create
@@ -92,6 +94,18 @@ func NewPostgresRepository(db *pgxpool.Pool) Repository {
 // It uses subqueries to look up foreign key IDs from names.
 func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transaction) (*transaction.Transaction, error) {
 	var id int
+
+	// Encrypt sensitive data before insertion
+	encryptedAmount, err := r.crypto.Encrypt([]byte(tx.Amount.String()))
+	if err != nil {
+		return nil, fmt.Errorf("failed to encrypt transaction amount: %w", err)
+	}
+
+	encryptedDesc, err := r.crypto.Encrypt([]byte(tx.Description))
+	if err != nil {
+		return nil, fmt.Errorf("failed to encrypt transaction description: %w", err)
+	}
+
 	query := `
 		INSERT INTO transactions (amount, date, description, essential, type, status, currency, category, sub_category) 
 		VALUES (
@@ -104,10 +118,10 @@ func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transac
 		) 
 		RETURNING id`
 
-	err := r.db.QueryRow(ctx, query,
-		tx.Amount,
+	err = r.db.QueryRow(ctx, query,
+		encryptedAmount,
 		tx.Date,
-		tx.Description,
+		encryptedDesc,
 		tx.Essential,
 		tx.Type.Name,
 		tx.Status.Name,
@@ -158,8 +172,11 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*transaction.Transac
 		var txCategory category.Category
 		var txSubCategory sub_category.SubCategory
 
+		// Scan encrypted fields into byte slices
+		var encryptedAmount, encryptedDesc []byte
+
 		err := rows.Scan(
-			&tx.ID, &tx.Amount, &tx.Date, &tx.Description, &tx.Essential,
+			&tx.ID, &encryptedAmount, &tx.Date, &encryptedDesc, &tx.Essential,
 			&txType.ID, &txType.Name,
 			&txStatus.ID, &txStatus.Name,
 			&txCurrency.Code,
@@ -169,6 +186,22 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*transaction.Transac
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
 		}
+
+		// Decrypt fields
+		decryptedAmount, err := r.crypto.Decrypt(encryptedAmount)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt amount for tx %d: %w", tx.ID, err)
+		}
+		tx.Amount, err = decimal.NewFromString(string(decryptedAmount))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse decrypted amount for tx %d: %w", tx.ID, err)
+		}
+
+		decryptedDesc, err := r.crypto.Decrypt(encryptedDesc)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt description for tx %d: %w", tx.ID, err)
+		}
+		tx.Description = string(decryptedDesc)
 
 		tx.Type = &txType
 		tx.Status = &txStatus
