@@ -11,6 +11,9 @@
 !controller/
 !controller/*
 
+!crypto/
+!crypto/*
+
 !database/
 !database/*
 
