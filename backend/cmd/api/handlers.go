@@ -22,7 +22,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 
 	token, err := app.authController.Register(requestBody)
 	if err != nil {
-		app.logger.Error("Failed to register user", "error", err)
+		app.logger.Error("Failed to register user", "error", err.Error())
 		var validationErr *apierror.ValidationError
 		if errors.As(err, &validationErr) {
 			app.respondWithError(w, http.StatusBadRequest, validationErr.Error())
