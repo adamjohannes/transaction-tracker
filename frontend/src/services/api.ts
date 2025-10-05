@@ -1,4 +1,10 @@
 import axios from 'axios';
+import { useAuthStore } from '@/stores/auth';
+
+export interface AuthPayload {
+  username: string;
+  password: string;
+}
 
 export interface Transaction {
   ID: number;
@@ -58,6 +64,41 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Request Interceptor to add JWT token to headers
+apiClient.interceptors.request.use(
+  (config) => {
+    const authStore = useAuthStore();
+    if (authStore.token) {
+      config.headers.Authorization = `Bearer ${authStore.token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response Interceptor to handle 401 Unauthorized errors
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      const authStore = useAuthStore();
+      authStore.logout(); // Log out user on 401
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const authService = {
+  login(payload: AuthPayload): Promise<{ token: string }> {
+    return apiClient.post('/login', payload).then(res => res.data);
+  },
+  register(payload: AuthPayload): Promise<{ token: string }> {
+    return apiClient.post('/register', payload).then(res => res.data);
+  },
+};
 
 export const transactionService = {
   // GET /transactions
