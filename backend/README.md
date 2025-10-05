@@ -1,16 +1,19 @@
 # API Section
 
 This section of the project is a headless RESTful API server designed for managing personal financial transactions. It
-provides a robust backend to create, view, and manage your expenses and income programmatically, making it an ideal
-foundation for various client applications (e.g., web, mobile, or desktop).
+provides a robust backend to create, view, and manage your expenses and income programmatically.
 
 ---
 
 ## ✨ Features
 
-- **Transaction Management**: Add new transactions with details like amount, date, type, category, and sub-category.
-- **RESTful API**: Exposes clean and logical endpoints to create and list transactions, categories, and other lookup
-  data programmatically.
+- **Secure User Authentication & Authorization**: Full auth flow with `POST /register` and `POST /login` endpoints.
+  Manages user sessions with secure, signed JSON Web Tokens (JWTs).
+- **Password Hashing**: User passwords are never stored in plaintext. They are securely hashed using the `bcrypt`
+  algorithm.
+- **Transaction Management**: Add new transactions with details like amount, date, type, category, and sub-category. All
+  transaction endpoints are protected and user-specific.
+- **RESTful API**: Exposes clean and logical endpoints to manage transactions and related data.
 - **Layered Architecture**: Built with a clean separation of concerns, making the codebase maintainable and easy to
   understand.
 - **Data Persistence**: Uses a powerful PostgreSQL database for reliable and structured data storage.
@@ -23,6 +26,7 @@ foundation for various client applications (e.g., web, mobile, or desktop).
 
 - **Language**: Go
 - **Database**: PostgreSQL (using the `pgx` driver)
+- **Authentication**: JWT (`github.com/golang-jwt/jwt/v5`), `bcrypt`
 
 ---
 
@@ -32,17 +36,19 @@ The project follows a clean, layered architecture to separate concerns and impro
 
 - **Presentation Layer (`cmd/api`)**: Handles user interactions through HTTP handlers for the API.
 - **Controller Layer (`internal/controller`)**: Acts as a bridge between the API handlers and the repository, containing
-  the core business logic.
-- **Repository Layer (`internal/repository`)**: Manages all database operations, abstracting the SQL queries from the
-  rest of the application.
-- **Domain Layer (`internal/domain`)**: Defines the core data structures (entities) of the application, such as
-  `Transaction` and `Category`.
+  the core business logic. Includes new controllers for `auth` and `user`.
+- **Repository Layer (`internal/repository`)**: Manages all database operations. The `transaction` repository is now
+  user-aware, and a new `user` repository handles user data.
+- **Domain Layer (`internal/domain`)**: Defines the core data structures, including a new `User` entity.
+- **Auth Service (`internal/auth`)**: A dedicated service for handling password hashing, JWT generation, and validation.
 
 ### 🗄️ Database Schema
 
 The database is designed with a core transactions table linked to several lookup tables for data consistency and
 normalization. This structure makes it easy to manage and query financial data.
 
+- `users`: Stores user ID, a securely **encrypted** username, and a hashed password. To allow for fast and secure
+  lookups, it also contains a `username_search_hash` column, which serves as a **blind index**.
 - `transactions`: This is the central table that stores individual financial records. It includes the amount, date, and
   foreign keys that link to the various lookup tables below.
 - `transaction_categories` & `transaction_sub_categories`: These tables define the classification of transactions. Each
@@ -57,7 +63,7 @@ normalization. This structure makes it easy to manage and query financial data.
 
 ## 🚀 Getting Started
 
-### Prerequisites & Configuration 
+### Prerequisites & Configuration
 
 - Go (version 1.24 or later)
 - A running PostgreSQL instance
