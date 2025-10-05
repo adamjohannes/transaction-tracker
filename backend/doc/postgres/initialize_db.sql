@@ -41,17 +41,18 @@ CREATE TABLE public.transaction_types
 );
 CREATE TABLE public.users
 (
-    id              bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-    username        character varying                   NOT NULL,
-    hashed_password text                                NOT NULL,
-    created_at      timestamp with time zone            NOT NULL DEFAULT now(),
+    id                   bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+    username             BYTEA                               NOT NULL,
+    username_search_hash BYTEA                               NOT NULL,
+    hashed_password      text                                NOT NULL,
+    created_at           timestamp with time zone            NOT NULL DEFAULT now(),
     CONSTRAINT users_pkey PRIMARY KEY (id),
-    CONSTRAINT users_username_unique UNIQUE (username)
+    CONSTRAINT users_username_hash_unique UNIQUE (username_search_hash)
 );
 CREATE TABLE public.transactions
 (
     id           bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-    user_id      bigint                              NOT NULL,                               -- Added user_id
+    user_id      bigint                              NOT NULL, -- Added user_id
     amount       BYTEA                               NOT NULL,
     category     bigint                              NOT NULL,
     sub_category bigint,
