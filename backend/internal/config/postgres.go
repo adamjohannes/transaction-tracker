@@ -15,6 +15,7 @@ type PostgresConfig struct {
 	Name          string
 	EncryptionKey string
 	JWTSecret     string
+	SearchHashKey string
 }
 
 // Load
@@ -28,6 +29,7 @@ func Load() (*PostgresConfig, error) {
 		Name:          getEnv("DB_NAME", "postgres"),
 		EncryptionKey: getEnv("ENCRYPTION_KEY", ""),
 		JWTSecret:     getEnv("JWT_SECRET", ""),
+		SearchHashKey: getEnv("SEARCH_HASH_KEY", ""),
 	}
 
 	// Validate that essential variables are present
@@ -43,6 +45,11 @@ func Load() (*PostgresConfig, error) {
 	// Validate JWT secret
 	if cfg.JWTSecret == "" {
 		return nil, fmt.Errorf("security configuration is incomplete; ensure JWT_SECRET is set")
+	}
+
+	// Validate Search Hash Key
+	if cfg.SearchHashKey == "" {
+		return nil, fmt.Errorf("security configuration is incomplete; ensure SEARCH_HASH_KEY is set")
 	}
 
 	return cfg, nil
