@@ -169,7 +169,8 @@ func (r *postgresRepository) GetAllByUser(ctx context.Context, userID int64) ([]
 }
 
 func (r *postgresRepository) scanTransactions(rows pgx.Rows) ([]*transaction.Transaction, error) {
-	var transactions []*transaction.Transaction
+	// Initialize as an empty slice
+	transactions := []*transaction.Transaction{}
 	for rows.Next() {
 		var tx transaction.Transaction
 		var txType transaction_type.TransactionType

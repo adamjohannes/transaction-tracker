@@ -37,7 +37,8 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.Category, er
 	}
 	defer rows.Close()
 
-	var categories []*domain.Category
+	// Initialize as an empty slice
+	categories := []*domain.Category{}
 	for rows.Next() {
 		var id int8
 		var name, description string

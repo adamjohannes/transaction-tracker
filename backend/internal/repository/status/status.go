@@ -28,7 +28,8 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.Status, erro
 	}
 	defer rows.Close()
 
-	var statuses []*domain.Status
+	// Initialize as an empty slice
+	statuses := []*domain.Status{}
 	for rows.Next() {
 		var id int8
 		var name string

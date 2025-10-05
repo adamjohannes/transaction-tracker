@@ -28,7 +28,8 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.Currency, er
 	}
 	defer rows.Close()
 
-	var currencies []*domain.Currency
+	// Initialize as an empty slice
+	currencies := []*domain.Currency{}
 	for rows.Next() {
 		var code string
 		if err := rows.Scan(&code); err != nil {

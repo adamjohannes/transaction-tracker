@@ -28,7 +28,8 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.TransactionT
 	}
 	defer rows.Close()
 
-	var types []*domain.TransactionType
+	// Initialize as an empty slice
+	types := []*domain.TransactionType{}
 	for rows.Next() {
 		var id int8
 		var name string
