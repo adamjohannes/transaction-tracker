@@ -2,6 +2,8 @@ package api
 
 import (
 	"log/slog"
+	"monthly-expenses-handler/internal/auth"
+	authCtrl "monthly-expenses-handler/internal/controller/auth"
 	"monthly-expenses-handler/internal/controller/category"
 	"monthly-expenses-handler/internal/controller/currency"
 	"monthly-expenses-handler/internal/controller/status"
@@ -20,6 +22,8 @@ type application struct {
 	statusController      *status.StatusController
 	currencyController    *currency.CurrencyController
 	typeController        *transaction_type.TypeController
+	authController        *authCtrl.AuthController
+	authService           *auth.AuthService
 }
 
 // NewApplication
@@ -32,6 +36,8 @@ func NewApplication(
 	statusController *status.StatusController,
 	currencyController *currency.CurrencyController,
 	typeController *transaction_type.TypeController,
+	authController *authCtrl.AuthController,
+	authService *auth.AuthService,
 ) *application {
 	return &application{
 		logger:                logger,
@@ -41,5 +47,7 @@ func NewApplication(
 		statusController:      statusController,
 		currencyController:    currencyController,
 		typeController:        typeController,
+		authController:        authController,
+		authService:           authService,
 	}
 }
