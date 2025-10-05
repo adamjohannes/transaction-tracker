@@ -39,9 +39,19 @@ CREATE TABLE public.transaction_types
     name character varying                   NOT NULL,
     CONSTRAINT transaction_types_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.users
+(
+    id              bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+    username        character varying                   NOT NULL,
+    hashed_password text                                NOT NULL,
+    created_at      timestamp with time zone            NOT NULL DEFAULT now(),
+    CONSTRAINT users_pkey PRIMARY KEY (id),
+    CONSTRAINT users_username_unique UNIQUE (username)
+);
 CREATE TABLE public.transactions
 (
     id           bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+    user_id      bigint                              NOT NULL,                               -- Added user_id
     amount       BYTEA                               NOT NULL,
     category     bigint                              NOT NULL,
     sub_category bigint,
@@ -52,6 +62,7 @@ CREATE TABLE public.transactions
     type         bigint                              NOT NULL,
     essential    boolean                             NOT NULL,
     CONSTRAINT transactions_pkey PRIMARY KEY (id),
+    CONSTRAINT transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users (id),
     CONSTRAINT transactions_currency_fkey FOREIGN KEY (currency) REFERENCES public.currencies (code),
     CONSTRAINT transactions_category_fkey FOREIGN KEY (category) REFERENCES public.transaction_categories (id),
     CONSTRAINT transactions_sub_category_fkey FOREIGN KEY (sub_category) REFERENCES public.transaction_sub_categories (id),
