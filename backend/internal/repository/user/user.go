@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"monthly-expenses-handler/internal/domain/user"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,7 +30,7 @@ func (r *postgresRepository) Create(ctx context.Context, u *user.User) (int64, e
 	err := r.db.QueryRow(ctx, query, u.Username, u.HashedPassword).Scan(&id)
 	if err != nil {
 		// Basic check for unique constraint violation
-		if err.Error().Contains("users_username_unique") {
+		if strings.Contains(err.Error(), "users_username_unique") {
 			return 0, fmt.Errorf("username '%s' is already taken", u.Username)
 		}
 		return 0, fmt.Errorf("failed to create user: %w", err)
