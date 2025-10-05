@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"monthly-expenses-handler/internal/auth"
+	"monthly-expenses-handler/internal/crypto"
 	"monthly-expenses-handler/internal/domain/user"
 	"strings"
 
@@ -12,25 +14,34 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, user *user.User) (int64, error)
+	Create(ctx context.Context, u *user.User) (int64, error)
 	GetByUsername(ctx context.Context, username string) (*user.User, error)
 }
 
 type postgresRepository struct {
-	db *pgxpool.Pool
+	db      *pgxpool.Pool
+	crypto  *crypto.CryptoService
+	authSvc *auth.AuthService
 }
 
-func NewPostgresRepository(db *pgxpool.Pool) Repository {
-	return &postgresRepository{db: db}
+func NewPostgresRepository(db *pgxpool.Pool, crypto *crypto.CryptoService, authSvc *auth.AuthService) Repository {
+	return &postgresRepository{db: db, crypto: crypto, authSvc: authSvc}
 }
 
 func (r *postgresRepository) Create(ctx context.Context, u *user.User) (int64, error) {
 	var id int64
-	query := `INSERT INTO users (username, hashed_password) VALUES ($1, $2) RETURNING id`
-	err := r.db.QueryRow(ctx, query, u.Username, u.HashedPassword).Scan(&id)
+
+	encryptedUsername, err := r.crypto.Encrypt([]byte(u.Username))
 	if err != nil {
-		// Basic check for unique constraint violation
-		if strings.Contains(err.Error(), "users_username_unique") {
+		return 0, fmt.Errorf("failed to encrypt username: %w", err)
+	}
+
+	usernameHash := r.authSvc.CreateSearchHash(u.Username)
+
+	query := `INSERT INTO users (username, username_search_hash, hashed_password) VALUES ($1, $2, $3) RETURNING id`
+	err = r.db.QueryRow(ctx, query, encryptedUsername, usernameHash, u.HashedPassword).Scan(&id)
+	if err != nil {
+		if strings.Contains(err.Error(), "users_username_hash_unique") {
 			return 0, fmt.Errorf("username '%s' is already taken", u.Username)
 		}
 		return 0, fmt.Errorf("failed to create user: %w", err)
@@ -40,13 +51,23 @@ func (r *postgresRepository) Create(ctx context.Context, u *user.User) (int64, e
 
 func (r *postgresRepository) GetByUsername(ctx context.Context, username string) (*user.User, error) {
 	var u user.User
-	query := `SELECT id, username, hashed_password FROM users WHERE username = $1`
-	err := r.db.QueryRow(ctx, query, username).Scan(&u.ID, &u.Username, &u.HashedPassword)
+	var encryptedUsername []byte
+	usernameHash := r.authSvc.CreateSearchHash(username)
+
+	query := `SELECT id, username, hashed_password FROM users WHERE username_search_hash = $1`
+	err := r.db.QueryRow(ctx, query, usernameHash).Scan(&u.ID, &encryptedUsername, &u.HashedPassword)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("user not found")
 		}
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get user by hash: %w", err)
 	}
+
+	decryptedUsername, err := r.crypto.Decrypt(encryptedUsername)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decrypt username: %w", err)
+	}
+	u.Username = string(decryptedUsername)
+
 	return &u, nil
 }
