@@ -11,6 +11,7 @@ import (
 	"monthly-expenses-handler/internal/controller/sub_category"
 	"monthly-expenses-handler/internal/controller/transaction"
 	"monthly-expenses-handler/internal/controller/transaction_type"
+	"monthly-expenses-handler/internal/crypto"
 	"monthly-expenses-handler/internal/database"
 	"monthly-expenses-handler/internal/logger"
 )
@@ -33,8 +34,14 @@ func main() {
 	slogLogger := logger.New(pool)
 	ctx := context.Background()
 
+	// Initialize Crypto Service
+	cryptoSvc, err := crypto.NewCryptoService(cfg.EncryptionKey)
+	if err != nil {
+		log.Fatalf("Failed to create crypto service: %v", err)
+	}
+
 	// -- Initialize Controllers --
-	txController := transaction.NewTransactionController(pool, ctx)
+	txController := transaction.NewTransactionController(pool, ctx, cryptoSvc)
 	categoryController := category.NewCategoryController(pool, ctx)
 	subCategoryController := sub_category.NewSubCategoryController(pool, ctx)
 	statusController := status.NewStatusController(pool, ctx)
