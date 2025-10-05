@@ -10,10 +10,9 @@ import (
 	"monthly-expenses-handler/internal/controller/sub_category"
 	"monthly-expenses-handler/internal/controller/transaction"
 	"monthly-expenses-handler/internal/controller/transaction_type"
+	userCtrl "monthly-expenses-handler/internal/controller/user"
 )
 
-// application
-// Holds all the dependencies for the API.
 type application struct {
 	logger                *slog.Logger
 	txController          *transaction.TransactionController
@@ -23,11 +22,10 @@ type application struct {
 	currencyController    *currency.CurrencyController
 	typeController        *transaction_type.TypeController
 	authController        *authCtrl.AuthController
+	userController        *userCtrl.UserController
 	authService           *auth.AuthService
 }
 
-// NewApplication
-// Creates a new application instance with all dependencies.
 func NewApplication(
 	logger *slog.Logger,
 	txController *transaction.TransactionController,
@@ -37,6 +35,7 @@ func NewApplication(
 	currencyController *currency.CurrencyController,
 	typeController *transaction_type.TypeController,
 	authController *authCtrl.AuthController,
+	userController *userCtrl.UserController,
 	authService *auth.AuthService,
 ) *application {
 	return &application{
@@ -48,6 +47,7 @@ func NewApplication(
 		currencyController:    currencyController,
 		typeController:        typeController,
 		authController:        authController,
+		userController:        userController,
 		authService:           authService,
 	}
 }

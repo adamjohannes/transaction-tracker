@@ -13,6 +13,7 @@ import (
 	"monthly-expenses-handler/internal/controller/sub_category"
 	"monthly-expenses-handler/internal/controller/transaction"
 	"monthly-expenses-handler/internal/controller/transaction_type"
+	userCtrl "monthly-expenses-handler/internal/controller/user"
 	"monthly-expenses-handler/internal/crypto"
 	"monthly-expenses-handler/internal/database"
 	"monthly-expenses-handler/internal/logger"
@@ -43,16 +44,17 @@ func main() {
 	}
 
 	// Initialize Auth Service
-	authSvc := auth.NewAuthService(cfg.JWTSecret)
+	authSvc := auth.NewAuthService(cfg.JWTSecret, cfg.SearchHashKey)
 
 	// -- Initialize Controllers --
+	userController := userCtrl.NewUserController(pool, cryptoSvc, authSvc)
+	authController := authCtrl.NewAuthController(ctx, authSvc, userController)
 	txController := transaction.NewTransactionController(pool, ctx, cryptoSvc)
 	categoryController := category.NewCategoryController(pool, ctx)
 	subCategoryController := sub_category.NewSubCategoryController(pool, ctx)
 	statusController := status.NewStatusController(pool, ctx)
 	currencyController := currency.NewCurrencyController(pool, ctx)
 	typeController := transaction_type.NewTypeController(pool, ctx)
-	authController := authCtrl.NewAuthController(pool, ctx, authSvc)
 
 	// -- Create the application instance --
 	app := api.NewApplication(
@@ -64,6 +66,7 @@ func main() {
 		currencyController,
 		typeController,
 		authController,
+		userController,
 		authSvc,
 	)
 

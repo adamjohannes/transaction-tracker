@@ -5,26 +5,23 @@ import (
 	"fmt"
 	"monthly-expenses-handler/internal/apierror"
 	"monthly-expenses-handler/internal/auth"
+	userCtrl "monthly-expenses-handler/internal/controller/user"
 	"monthly-expenses-handler/internal/domain/user"
 	userRepo "monthly-expenses-handler/internal/repository/user"
 	"strings"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type AuthController struct {
-	pool     *pgxpool.Pool
 	ctx      context.Context
 	authSvc  *auth.AuthService
 	userRepo userRepo.Repository
 }
 
-func NewAuthController(pool *pgxpool.Pool, ctx context.Context, authSvc *auth.AuthService) *AuthController {
+func NewAuthController(ctx context.Context, authSvc *auth.AuthService, userController *userCtrl.UserController) *AuthController {
 	return &AuthController{
-		pool:     pool,
 		ctx:      ctx,
 		authSvc:  authSvc,
-		userRepo: userRepo.NewPostgresRepository(pool),
+		userRepo: userController.Repo,
 	}
 }
 
