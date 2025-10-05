@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
-import { useTransactionStore } from '@/stores/transactions';
+import { useAuthStore } from '@/stores/auth';
 import TransactionIcon from '@/assets/icons/transaction.svg?raw';
 
-const store = useTransactionStore();
-
-onMounted(() => {
-  store.fetchTransactions();
-  store.fetchFormOptions();
-});
+const authStore = useAuthStore();
 </script>
 
 <template>
@@ -20,8 +14,15 @@ onMounted(() => {
         <h1>Transaction Tracker</h1>
       </div>
       <nav class="main-nav">
-        <RouterLink to="/">Transactions</RouterLink>
-        <RouterLink to="/dashboard">Dashboard</RouterLink>
+        <template v-if="authStore.isLoggedIn">
+          <RouterLink to="/">Transactions</RouterLink>
+          <RouterLink to="/dashboard">Dashboard</RouterLink>
+          <a href="#" @click.prevent="authStore.logout()">Logout</a>
+        </template>
+        <template v-else>
+          <RouterLink to="/login">Login</RouterLink>
+          <RouterLink to="/register">Register</RouterLink>
+        </template>
       </nav>
     </div>
   </header>
