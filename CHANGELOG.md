@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2025-10-05
+
+### 🚀 Features
+
+- *(crypto)* Add a service for handling base64 AES-GCM cryptography
+- *(config)* And EncryptionKey to the database config struct
+- *(config)* Load JWT secret from environment variables
+- *(user)* Add user domain
+- *(auth)* Add a service for handling user authentication
+- *(user)* Add repository layer for users
+- *(user)* Add controller layer for authentication
+- *(transaction)* Update transaction repository to use user auth
+- *(transaction)* Update transaction controllers to use user auth
+- *(auth)* Add middleware for user authentication
+- *(handlers)* Add handlers for user registration and user login
+- *(handlers)* Apply middleware and separate routes between public and protected
+- *(auth)* Add store for handling user authentication
+- *(auth)* Add services for handling user authentication
+- *(login)* Add a basic login view
+- *(registration)* Add a basic registration view
+- *(config)* Add search hash key to config struct
+- Add username search hash to the database architecture
+- *(auth)* Add method to create a new search hash for usernames
+- *(user)* Add a separate controller for users
+
+### 🐛 Bug Fixes
+
+- Initialize slice as an empty slice, not as nil
+- Send full error data
+
+### 🚜 Refactor
+
+- *(transaction)* Pass the crypto service to the transaction controller
+- *(transaction)* Pass the crypto service to the transaction repository
+- *(transaction)* Initialize the crypto service
+- Update database architecture
+- Update database architecture
+- Inject auth service and controller alongside the other dependencies
+- Update router to consider user auth
+- Check if user is logged in before rendering the list view
+- *(user)* Add search by username hash to user repository
+
+### 📚 Documentation
+
+- Update tech stack and key features
+- Update tech stack, key features, and architecture
+- Update .env example
+- Update OpenAPI documentation for the API
+- Update .env example
+
+### ⚙️ Miscellaneous Tasks
+
+- Add golang-jwt dependency
+
 ## [1.3.0] - 2025-10-04
 
 ### 🚀 Features
