@@ -1,27 +1,28 @@
 package transaction
 
 import (
-	domain "monthly-expenses-handler/internal/domain/transaction"
-	repository "monthly-expenses-handler/internal/repository/transaction"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/net/context"
+	"monthly-expenses-handler/internal/crypto"
+	domain "monthly-expenses-handler/internal/domain/transaction"
+	repository "monthly-expenses-handler/internal/repository/transaction"
 )
 
 // TransactionController
 // Defines the interface for transaction data operations.
 type TransactionController struct {
-	pool *pgxpool.Pool
-	ctx  context.Context
+	pool   *pgxpool.Pool
+	ctx    context.Context
+	crypto *crypto.CryptoService
 }
 
 // NewTransactionController
 // Creates a new instance of the transaction controller.
-// It takes the database connection pool as a dependency.
-func NewTransactionController(pool *pgxpool.Pool, ctx context.Context) *TransactionController {
+func NewTransactionController(pool *pgxpool.Pool, ctx context.Context, cryptoSvc *crypto.CryptoService) *TransactionController {
 	return &TransactionController{
-		pool: pool,
-		ctx:  ctx,
+		pool:   pool,
+		ctx:    ctx,
+		crypto: cryptoSvc,
 	}
 }
 
@@ -35,8 +36,8 @@ func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) 
 		return nil, err
 	}
 
-	// Initialize repository with database pool
-	repo := repository.NewPostgresRepository(tc.pool)
+	// Initialize repository with database pool and crypto service
+	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
 
 	// Save the transaction.
 	createdTransaction, err := repo.Create(tc.ctx, transaction)
@@ -50,29 +51,27 @@ func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) 
 // GetAllTransactions
 // Fetches all transaction records from the database.
 func (tc *TransactionController) GetAllTransactions() ([]*domain.Transaction, error) {
-	// Initialize repository with database pool
-	repo := repository.NewPostgresRepository(tc.pool)
-
-	// Fetch all transactions.
+	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
 	return repo.GetAll(tc.ctx)
 }
 
 // GetFilteredTransactions
 // Fetches transactions based on filter criteria.
 func (tc *TransactionController) GetFilteredTransactions(filters *domain.FilterCriteria) ([]*domain.Transaction, error) {
-	repo := repository.NewPostgresRepository(tc.pool)
+	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
 	return repo.GetFiltered(tc.ctx, filters)
 }
 
-// GetTransactionCount fetches transaction counts grouped by a specific field.
+// GetTransactionCount
+// Fetches transaction counts grouped by a specific field.
 func (tc *TransactionController) GetTransactionCount(groupBy string) (map[string]map[string]int, error) {
-	repo := repository.NewPostgresRepository(tc.pool)
+	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
 	return repo.GetTransactionCount(tc.ctx, groupBy)
 }
 
 // GetSubCategoryAmounts
 // Forwards the call to the repository.
 func (tc *TransactionController) GetSubCategoryAmounts() ([]repository.SubCategoryAmount, error) {
-	repo := repository.NewPostgresRepository(tc.pool)
+	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
 	return repo.GetSubCategoryAmounts(tc.ctx)
 }
