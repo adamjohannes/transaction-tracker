@@ -21,9 +21,9 @@ import (
 // Repository
 // Defines the interface for transaction data operations.
 type Repository interface {
-	Create(ctx context.Context, tx *transaction.Transaction) (*transaction.Transaction, error)
-	GetAll(ctx context.Context) ([]*transaction.Transaction, error)
-	GetFiltered(ctx context.Context, filters *transaction.FilterCriteria) ([]*transaction.Transaction, error)
+	Create(ctx context.Context, tx *transaction.Transaction, userID int64) (*transaction.Transaction, error)
+	GetAllByUser(ctx context.Context, userID int64) ([]*transaction.Transaction, error)
+	GetFiltered(ctx context.Context, filters *transaction.FilterCriteria, userID int64) ([]*transaction.Transaction, error)
 	GetTransactionCountByTypeAndCategory(ctx context.Context) (map[string]map[string]int, error)
 	GetTransactionCount(ctx context.Context, groupBy string) (map[string]map[string]int, error)
 	GetSubCategoryAmounts(ctx context.Context) ([]SubCategoryAmount, error)
@@ -92,8 +92,8 @@ func NewPostgresRepository(db *pgxpool.Pool, cryptoSvc *crypto.CryptoService) Re
 // Create
 // Inserts a new transaction record into the database.
 // It uses subqueries to look up foreign key IDs from names.
-func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transaction) (*transaction.Transaction, error) {
-	var id int
+func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transaction, userID int64) (*transaction.Transaction, error) {
+	var id int64
 
 	// Encrypt sensitive data before insertion
 	encryptedAmount, err := r.crypto.Encrypt([]byte(tx.Amount.String()))
@@ -107,18 +107,19 @@ func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transac
 	}
 
 	query := `
-		INSERT INTO transactions (amount, date, description, essential, type, status, currency, category, sub_category) 
+		INSERT INTO transactions (user_id, amount, date, description, essential, type, status, currency, category, sub_category) 
 		VALUES (
-			$1, $2, $3, $4,
-			(SELECT id FROM transaction_types WHERE name = $5),
-			(SELECT id FROM transaction_status WHERE name = $6),
-			(SELECT code FROM currencies WHERE code = $7),
-			(SELECT id FROM transaction_categories WHERE name = $8),
-			(SELECT id FROM transaction_sub_categories WHERE name = $9 AND parent_category = (SELECT id FROM transaction_categories WHERE name = $8))
+			$1, $2, $3, $4, $5,
+			(SELECT id FROM transaction_types WHERE name = $6),
+			(SELECT id FROM transaction_status WHERE name = $7),
+			(SELECT code FROM currencies WHERE code = $8),
+			(SELECT id FROM transaction_categories WHERE name = $9),
+			(SELECT id FROM transaction_sub_categories WHERE name = $10 AND parent_category = (SELECT id FROM transaction_categories WHERE name = $9))
 		) 
 		RETURNING id`
 
 	err = r.db.QueryRow(ctx, query,
+		userID,
 		encryptedAmount,
 		tx.Date,
 		encryptedDesc,
@@ -134,8 +135,94 @@ func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transac
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
 	}
 
-	tx.ID = int64(id)
+	tx.ID = id
 	return tx, nil
+}
+
+// GetAllByUser
+// Retrieves all transaction records from the database for a specific user.
+func (r *postgresRepository) GetAllByUser(ctx context.Context, userID int64) ([]*transaction.Transaction, error) {
+	query := `
+		SELECT 
+			t.id, t.amount, t.date, t.description, t.essential,
+			tt.id AS type_id, tt.name AS type_name,
+			ts.id AS status_id, ts.name AS status_name,
+			cur.code AS currency_code,
+			cat.id AS category_id, cat.name AS category_name, cat.description AS category_description,
+			scat.id AS sub_category_id, scat.parent_category AS sub_category_parent_id, scat.name AS sub_category_name
+		FROM transactions t
+		JOIN transaction_types tt ON t.type = tt.id
+		JOIN transaction_status ts ON t.status = ts.id
+		JOIN currencies cur ON t.currency = cur.code
+		JOIN transaction_categories cat ON t.category = cat.id
+		JOIN transaction_sub_categories scat ON t.sub_category = scat.id
+		WHERE t.user_id = $1
+		ORDER BY t.date DESC`
+
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query transactions: %w", err)
+	}
+	defer rows.Close()
+
+	return r.scanTransactions(rows)
+}
+
+func (r *postgresRepository) scanTransactions(rows pgx.Rows) ([]*transaction.Transaction, error) {
+	// Initialize as an empty slice
+	transactions := []*transaction.Transaction{}
+	for rows.Next() {
+		var tx transaction.Transaction
+		var txType transaction_type.TransactionType
+		var txStatus status.Status
+		var txCurrency currency.Currency
+		var txCategory category.Category
+		var txSubCategory sub_category.SubCategory
+
+		var encryptedAmount, encryptedDesc []byte
+
+		err := rows.Scan(
+			&tx.ID, &encryptedAmount, &tx.Date, &encryptedDesc, &tx.Essential,
+			&txType.ID, &txType.Name,
+			&txStatus.ID, &txStatus.Name,
+			&txCurrency.Code,
+			&txCategory.Id, &txCategory.Name, &txCategory.Description,
+			&txSubCategory.ID, &txSubCategory.ParentID, &txSubCategory.Name,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
+		}
+
+		// Decrypt fields
+		decryptedAmount, err := r.crypto.Decrypt(encryptedAmount)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt amount for tx %d: %w", tx.ID, err)
+		}
+		tx.Amount, err = decimal.NewFromString(string(decryptedAmount))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse decrypted amount for tx %d: %w", tx.ID, err)
+		}
+
+		decryptedDesc, err := r.crypto.Decrypt(encryptedDesc)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt description for tx %d: %w", tx.ID, err)
+		}
+		tx.Description = string(decryptedDesc)
+
+		tx.Type = &txType
+		tx.Status = &txStatus
+		tx.Currency = &txCurrency
+		tx.Category = &txCategory
+		tx.SubCategory = &txSubCategory
+
+		transactions = append(transactions, &tx)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error reading transaction rows: %w", rows.Err())
+	}
+
+	return transactions, nil
 }
 
 // GetAll
@@ -221,7 +308,7 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*transaction.Transac
 
 // GetFiltered
 // Retrieves transactions based on a dynamic set of criteria.
-func (r *postgresRepository) GetFiltered(ctx context.Context, filters *transaction.FilterCriteria) ([]*transaction.Transaction, error) {
+func (r *postgresRepository) GetFiltered(ctx context.Context, filters *transaction.FilterCriteria, userID int64) ([]*transaction.Transaction, error) {
 	baseQuery := `
 		SELECT 
 			t.id, t.amount, t.date, t.description, t.essential,
@@ -238,9 +325,9 @@ func (r *postgresRepository) GetFiltered(ctx context.Context, filters *transacti
 		JOIN transaction_sub_categories scat ON t.sub_category = scat.id
 	`
 
-	whereClauses := []string{}
-	args := []any{}
-	argCount := 1
+	whereClauses := []string{"t.user_id = $1"}
+	args := []any{userID}
+	argCount := 2
 
 	if filters.CategoryName != nil && *filters.CategoryName != "" {
 		whereClauses = append(whereClauses, "cat.name = $"+strconv.Itoa(argCount))
@@ -283,10 +370,7 @@ func (r *postgresRepository) GetFiltered(ctx context.Context, filters *transacti
 		argCount++
 	}
 
-	finalQuery := baseQuery
-	if len(whereClauses) > 0 {
-		finalQuery += " WHERE " + strings.Join(whereClauses, " AND ")
-	}
+	finalQuery := baseQuery + " WHERE " + strings.Join(whereClauses, " AND ")
 	finalQuery += " ORDER BY t.date DESC"
 
 	rows, err := r.db.Query(ctx, finalQuery, args...)
@@ -295,7 +379,7 @@ func (r *postgresRepository) GetFiltered(ctx context.Context, filters *transacti
 	}
 	defer rows.Close()
 
-	return scanTransactions(rows)
+	return r.scanTransactions(rows)
 }
 
 // scanTransactions

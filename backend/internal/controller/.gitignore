@@ -2,6 +2,9 @@
 
 !.gitignore
 
+!auth/
+!auth/*
+
 !category/
 !category/*
 
@@ -19,3 +22,6 @@
 
 !transaction_type/
 !transaction_type/*
+
+!user/
+!user/*

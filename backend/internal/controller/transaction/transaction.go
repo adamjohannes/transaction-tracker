@@ -1,11 +1,12 @@
 package transaction
 
 import (
-	"github.com/jackc/pgx/v5/pgxpool"
-	"golang.org/x/net/context"
 	"monthly-expenses-handler/internal/crypto"
 	domain "monthly-expenses-handler/internal/domain/transaction"
 	repository "monthly-expenses-handler/internal/repository/transaction"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/net/context"
 )
 
 // TransactionController
@@ -29,18 +30,15 @@ func NewTransactionController(pool *pgxpool.Pool, ctx context.Context, cryptoSvc
 // NewTransaction
 // Inserts a new transaction record in the database.
 // ERROR: Will fail if a required field is missing.
-func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) (*domain.Transaction, error) {
-	// Build domain object from the raw map data
+func (tc *TransactionController) NewTransaction(tempTransaction map[string]any, userID int64) (*domain.Transaction, error) {
 	transaction, err := domain.BuildTransaction(tempTransaction)
 	if err != nil {
 		return nil, err
 	}
 
-	// Initialize repository with database pool and crypto service
 	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
 
-	// Save the transaction.
-	createdTransaction, err := repo.Create(tc.ctx, transaction)
+	createdTransaction, err := repo.Create(tc.ctx, transaction, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,18 +46,25 @@ func (tc *TransactionController) NewTransaction(tempTransaction map[string]any) 
 	return createdTransaction, nil
 }
 
-// GetAllTransactions
-// Fetches all transaction records from the database.
-func (tc *TransactionController) GetAllTransactions() ([]*domain.Transaction, error) {
+// GetAllTransactionsByUser
+// Fetches all transaction records for a user.
+func (tc *TransactionController) GetAllTransactionsByUser(userID int64) ([]*domain.Transaction, error) {
 	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
-	return repo.GetAll(tc.ctx)
+	return repo.GetAllByUser(tc.ctx, userID)
 }
 
+// GetAllTransactions - DEPRECATED
+// Fetches all transaction records from the database.
+//func (tc *TransactionController) GetAllTransactions() ([]*domain.Transaction, error) {
+//	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
+//	return repo.GetAll(tc.ctx)
+//}
+
 // GetFilteredTransactions
-// Fetches transactions based on filter criteria.
-func (tc *TransactionController) GetFilteredTransactions(filters *domain.FilterCriteria) ([]*domain.Transaction, error) {
+// Fetches transactions based on filter criteria for a user.
+func (tc *TransactionController) GetFilteredTransactions(filters *domain.FilterCriteria, userID int64) ([]*domain.Transaction, error) {
 	repo := repository.NewPostgresRepository(tc.pool, tc.crypto)
-	return repo.GetFiltered(tc.ctx, filters)
+	return repo.GetFiltered(tc.ctx, filters, userID)
 }
 
 // GetTransactionCount

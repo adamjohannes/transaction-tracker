@@ -2,18 +2,65 @@ openapi: 3.0.3
 info:
   title: "Transaction Tracker API"
   description: "A headless RESTful API server for managing personal financial transactions. It provides a robust backend to create, view, and manage expenses and income programmatically."
-  version: "1.0.0"
+  version: "1.1.0"
 servers:
   - url: "http://localhost:8080"
     description: "Local development server"
 
 paths:
+  /register:
+    post:
+      summary: "Register a New User"
+      description: "Creates a new user account and returns a JWT for authentication."
+      tags:
+        - "Authentication"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '201':
+          description: "User registered successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /login:
+    post:
+      summary: "Log In"
+      description: "Authenticates a user and returns a JWT."
+      tags:
+        - "Authentication"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: "Login successful."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /transactions:
     get:
-      summary: "List All Transactions"
-      description: "Retrieves a list of all transaction records from the database, ordered by date in descending order."
+      summary: "List All Transactions for Authenticated User"
+      description: "Retrieves a list of all transaction records for the currently authenticated user, ordered by date."
       tags:
-        - Transactions
+        - "Transactions"
+      security:
+        - BearerAuth: [ ]
       responses:
         '200':
           description: "A successful response containing a list of transactions."
@@ -23,15 +70,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
     post:
       summary: "Create a Transaction"
-      description: "Creates a new transaction record in the database."
+      description: "Creates a new transaction record for the currently authenticated user."
       tags:
-        - Transactions
+        - "Transactions"
+      security:
+        - BearerAuth: [ ]
       requestBody:
-        description: "Transaction object that needs to be added to the database."
+        description: "Transaction object that needs to be added."
         required: true
         content:
           application/json:
@@ -56,6 +107,8 @@ paths:
                 $ref: '#/components/schemas/Transaction'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /categories:
     get:
@@ -175,6 +228,25 @@ paths:
 
 components:
   schemas:
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "testuser"
+        password:
+          type: string
+          format: password
+          example: "password123"
+      required:
+        - username
+        - password
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: "JWT authentication token."
     TransactionRequest:
       type: object
       properties:
@@ -326,9 +398,25 @@ components:
             $ref: '#/components/schemas/Error'
           example:
             error: "Could not retrieve items"
+    Unauthorized:
+      description: "Unauthorized. Authentication token is missing or invalid."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid or expired token"
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
 
 tags:
-  - name: Transactions
+  - name: "Authentication"
+    description: "Operations for user registration and login."
+  - name: "Transactions"
     description: "Operations related to creating and retrieving financial transactions."
-  - name: Lookups
+  - name: "Lookups"
     description: "Endpoints for retrieving supplementary data like categories, statuses, and currencies."

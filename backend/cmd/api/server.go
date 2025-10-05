@@ -16,29 +16,49 @@ import (
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	// Transaction routes
-	mux.HandleFunc("POST /transactions", app.createTransaction)
-	mux.HandleFunc("GET /transactions", app.listTransactions)
+	// Auth routes (public)
+	mux.HandleFunc("POST /register", app.registerUser)
+	mux.HandleFunc("POST /login", app.loginUser)
 
-	// Category and Sub-Category routes
-	mux.HandleFunc("GET /categories", app.listCategories)
-	mux.HandleFunc("GET /sub-categories", app.listAllSubCategories)
-	mux.HandleFunc("GET /categories/{category_name}/sub-categories", app.listSubCategoriesByCategory)
+	// Protected routes
+	protectedMux := http.NewServeMux()
+	protectedMux.HandleFunc("POST /transactions", app.createTransaction)
+	protectedMux.HandleFunc("GET /transactions", app.listTransactions)
 
-	// Lookup routes
-	mux.HandleFunc("GET /status", app.listLookups(func() (any, error) {
+	// Public lookup routes
+	lookupMux := http.NewServeMux()
+	lookupMux.HandleFunc("GET /categories", app.listCategories)
+	lookupMux.HandleFunc("GET /sub-categories", app.listAllSubCategories)
+	lookupMux.HandleFunc("GET /categories/{category_name}/sub-categories", app.listSubCategoriesByCategory)
+	lookupMux.HandleFunc("GET /status", app.listLookups(func() (any, error) {
 		return app.statusController.GetAllStatus()
 	}, "status"))
-	mux.HandleFunc("GET /currencies", app.listLookups(func() (any, error) {
+	lookupMux.HandleFunc("GET /currencies", app.listLookups(func() (any, error) {
 		return app.currencyController.GetAllCurrencies()
 	}, "currencies"))
-	mux.HandleFunc("GET /types", app.listLookups(func() (any, error) {
+	lookupMux.HandleFunc("GET /types", app.listLookups(func() (any, error) {
 		return app.typeController.GetAllTransactionTypes()
 	}, "types"))
 
 	// Apply middleware
 	var handler http.Handler = mux
-	handler = middleware.LoggingMiddleware(handler, app.logger)
+
+	// Chain middlewares: Auth -> Logging
+	protectedHandler := middleware.AuthMiddleware(protectedMux, app.authService)
+	mux.Handle("/transactions", protectedHandler)
+	mux.Handle("/transactions/", protectedHandler)
+
+	// Mount public lookup routes
+	mux.Handle("/categories", lookupMux)
+	mux.Handle("/categories/", lookupMux)
+	mux.Handle("/sub-categories", lookupMux)
+	mux.Handle("/sub-categories/", lookupMux)
+	mux.Handle("/status", lookupMux)
+	mux.Handle("/currencies", lookupMux)
+	mux.Handle("/types", lookupMux)
+
+	// Apply logging middleware to all routes
+	handler = middleware.LoggingMiddleware(mux, app.logger)
 
 	return handler
 }

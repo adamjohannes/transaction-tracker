@@ -3,23 +3,84 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"monthly-expenses-handler/internal/middleware"
 	"net/http"
 
 	"monthly-expenses-handler/internal/apierror"
 )
 
-// createTransaction
-// Handles the creation of a new transaction.
-func (app *application) createTransaction(w http.ResponseWriter, r *http.Request) {
+// registerUser
+// Handles user registration.
+func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 	var requestBody map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		app.respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
-	app.logger.Info("Attempting to create a new transaction", "payload", requestBody)
+	app.logger.Info("Attempting to register a new user", "username", requestBody["username"])
 
-	createdTx, err := app.txController.NewTransaction(requestBody)
+	token, err := app.authController.Register(requestBody)
+	if err != nil {
+		app.logger.Error("Failed to register user", "error", err.Error())
+		var validationErr *apierror.ValidationError
+		if errors.As(err, &validationErr) {
+			app.respondWithError(w, http.StatusBadRequest, validationErr.Error())
+		} else {
+			app.respondWithError(w, http.StatusInternalServerError, "Could not register user due to a server error")
+		}
+		return
+	}
+
+	app.logger.Info("Successfully registered user", "username", requestBody["username"])
+	app.respondWithJSON(w, http.StatusCreated, map[string]string{"token": token})
+}
+
+// loginUser
+// Handles user login.
+func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
+	var requestBody map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		app.respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	app.logger.Info("Attempting to login user", "username", requestBody["username"])
+
+	token, err := app.authController.Login(requestBody)
+	if err != nil {
+		app.logger.Error("Failed to login user", "error", err)
+		var validationErr *apierror.ValidationError
+		if errors.As(err, &validationErr) {
+			app.respondWithError(w, http.StatusUnauthorized, validationErr.Error())
+		} else {
+			app.respondWithError(w, http.StatusInternalServerError, "Could not log in user due to a server error")
+		}
+		return
+	}
+
+	app.logger.Info("Successfully logged in user", "username", requestBody["username"])
+	app.respondWithJSON(w, http.StatusOK, map[string]string{"token": token})
+}
+
+// createTransaction
+// Handles the creation of a new transaction.
+func (app *application) createTransaction(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int64)
+	if !ok {
+		app.respondWithError(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
+	var requestBody map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		app.respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	app.logger.Info("Attempting to create a new transaction", "userID", userID, "payload", requestBody)
+
+	createdTx, err := app.txController.NewTransaction(requestBody, userID)
 	if err != nil {
 		app.logger.Error("Failed to create transaction", "error", err, "payload", requestBody)
 		var validationErr *apierror.ValidationError
@@ -31,23 +92,28 @@ func (app *application) createTransaction(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	app.logger.Info("Successfully created transaction", "transaction_id", createdTx.ID)
+	app.logger.Info("Successfully created transaction", "transaction_id", createdTx.ID, "userID", userID)
 	app.respondWithJSON(w, http.StatusCreated, createdTx)
 }
 
 // listTransactions
 // Handles fetching all transactions.
 func (app *application) listTransactions(w http.ResponseWriter, r *http.Request) {
-	app.logger.Info("Attempting to fetch all transactions")
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int64)
+	if !ok {
+		app.respondWithError(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+	app.logger.Info("Attempting to fetch all transactions", "userID", userID)
 
-	transactions, err := app.txController.GetAllTransactions()
+	transactions, err := app.txController.GetAllTransactionsByUser(userID)
 	if err != nil {
-		app.logger.Error("Failed to fetch transactions", "error", err)
+		app.logger.Error("Failed to fetch transactions", "error", err, "userID", userID)
 		app.respondWithError(w, http.StatusInternalServerError, "Could not retrieve transactions")
 		return
 	}
 
-	app.logger.Info("Successfully fetched all transactions", "count", len(transactions))
+	app.logger.Info("Successfully fetched all transactions", "userID", userID, "count", len(transactions))
 	app.respondWithJSON(w, http.StatusOK, transactions)
 }
 

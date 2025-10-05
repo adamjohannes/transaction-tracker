@@ -37,7 +37,8 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.SubCategory,
 	}
 	defer rows.Close()
 
-	var subCategories []*domain.SubCategory
+	// Initialize as an empty slice
+	subCategories := []*domain.SubCategory{}
 	for rows.Next() {
 		var id, parentID int8
 		var name string
@@ -70,7 +71,8 @@ func (r *postgresRepository) GetByParentCategoryName(ctx context.Context, catego
 	}
 	defer rows.Close()
 
-	var subCategories []*domain.SubCategory
+	// Initialize as an empty slice
+	subCategories := []*domain.SubCategory{}
 	for rows.Next() {
 		var id, parentID int8
 		var name string

@@ -4,13 +4,16 @@ import (
 	"context"
 	"log"
 	"monthly-expenses-handler/cmd/api"
+	"monthly-expenses-handler/internal/auth"
 	"monthly-expenses-handler/internal/config"
+	authCtrl "monthly-expenses-handler/internal/controller/auth"
 	"monthly-expenses-handler/internal/controller/category"
 	"monthly-expenses-handler/internal/controller/currency"
 	"monthly-expenses-handler/internal/controller/status"
 	"monthly-expenses-handler/internal/controller/sub_category"
 	"monthly-expenses-handler/internal/controller/transaction"
 	"monthly-expenses-handler/internal/controller/transaction_type"
+	userCtrl "monthly-expenses-handler/internal/controller/user"
 	"monthly-expenses-handler/internal/crypto"
 	"monthly-expenses-handler/internal/database"
 	"monthly-expenses-handler/internal/logger"
@@ -40,7 +43,12 @@ func main() {
 		log.Fatalf("Failed to create crypto service: %v", err)
 	}
 
+	// Initialize Auth Service
+	authSvc := auth.NewAuthService(cfg.JWTSecret, cfg.SearchHashKey)
+
 	// -- Initialize Controllers --
+	userController := userCtrl.NewUserController(pool, cryptoSvc, authSvc)
+	authController := authCtrl.NewAuthController(ctx, authSvc, userController)
 	txController := transaction.NewTransactionController(pool, ctx, cryptoSvc)
 	categoryController := category.NewCategoryController(pool, ctx)
 	subCategoryController := sub_category.NewSubCategoryController(pool, ctx)
@@ -57,6 +65,9 @@ func main() {
 		statusController,
 		currencyController,
 		typeController,
+		authController,
+		userController,
+		authSvc,
 	)
 
 	// -- Start the server --
