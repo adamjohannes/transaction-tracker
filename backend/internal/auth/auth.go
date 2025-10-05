@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -10,10 +12,22 @@ import (
 
 type AuthService struct {
 	jwtSecret []byte
+	hashKey   []byte
 }
 
-func NewAuthService(secret string) *AuthService {
-	return &AuthService{jwtSecret: []byte(secret)}
+func NewAuthService(secret, hashKey string) *AuthService {
+	return &AuthService{
+		jwtSecret: []byte(secret),
+		hashKey:   []byte(hashKey),
+	}
+}
+
+// CreateSearchHash
+// Creates an HMAC-SHA256 hash for blind indexing.
+func (s *AuthService) CreateSearchHash(data string) []byte {
+	h := hmac.New(sha256.New, s.hashKey)
+	h.Write([]byte(data))
+	return h.Sum(nil)
 }
 
 // HashPassword
