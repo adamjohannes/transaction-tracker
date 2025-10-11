@@ -43,22 +43,22 @@ themeStore.initializeTheme();
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
   /* Backgrounds */
-  --bg-main: #f8f9fa;
+  --bg-main: #eefff2;
   --bg-card: #ffffff;
 
   /* Text */
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
+  --text-primary: #1e2a24;
+  --text-secondary: #5a6e64;
 
   /* Borders & Shadows */
-  --border-color: #dee2e6;
+  --border-color: #dde5e0;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
-  /* Primary / Accent Colors */
-  --primary-gradient: linear-gradient(45deg, #4f46e5 0%, #6366f1 100%);
-  --primary-color-start: #4f46e5;
-  --primary-color-end: #6366f1;
+  /* Primary / Accent Colors (Vibrant Green) */
+  --primary-gradient: linear-gradient(45deg, #16a34a 0%, #22c55e 100%);
+  --primary-color-start: #16a34a;
+  --primary-color-end: #22c55e;
 
   /* Status Colors */
   --color-credit: #10b981;
