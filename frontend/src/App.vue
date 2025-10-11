@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
 import TransactionIcon from '@/assets/icons/transaction.svg?raw';
 
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
+themeStore.initializeTheme();
 </script>
 
 <template>
@@ -24,6 +27,9 @@ const authStore = useAuthStore();
           <RouterLink to="/register">Register</RouterLink>
         </template>
       </nav>
+      <button @click="themeStore.toggleTheme" class="theme-toggle" :title="'Switch to ' + (themeStore.theme === 'light' ? 'Dark' : 'Light') + ' Mode'">
+        {{ themeStore.theme === 'light' ? '☀️' : '🌙' }}
+      </button>
     </div>
   </header>
   <main>
@@ -48,6 +54,32 @@ const authStore = useAuthStore();
   --color-debit: #ef4444;
   --color-refund: #3b82f6;
   --radius: 8px;
+}
+
+html.dark-theme {
+  --bg-main: #1a202c;
+  --bg-card: #2d3748;
+  --text-primary: #f7fafc;
+  --text-secondary: #a0aec0;
+  --border-color: #4a5568;
+  color-scheme: dark;
+}
+
+html.dark-theme .clear-button:hover {
+  background-color: #374151;
+}
+html.dark-theme select:disabled {
+  background-color: #374151;
+  opacity: 0.5;
+}
+html.dark-theme .error-message {
+  background-color: #450a0a;
+  color: #fecaca;
+}
+html.dark-theme .select-prompt,
+html.dark-theme .breakdown-container,
+html.dark-theme .chart-container {
+  background-color: var(--bg-card);
 }
 
 body {
@@ -85,7 +117,7 @@ body {
   margin: 0;
 }
 
-.logo span svg {
+.logo span :deep(svg) {
   width: 30px;
   height: 30px;
   color: #17B978;
@@ -114,5 +146,24 @@ body {
 .main-nav a.router-link-exact-active {
   background-image: var(--primary-gradient);
   color: white;
+}
+
+.theme-toggle {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border-color);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-main);
 }
 </style>
