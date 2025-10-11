@@ -6,6 +6,7 @@ import TransactionIcon from '@/assets/icons/transaction.svg?raw';
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
+// Ensures the correct theme class is applied on app startup
 themeStore.initializeTheme();
 </script>
 
@@ -28,7 +29,7 @@ themeStore.initializeTheme();
         </template>
       </nav>
       <button @click="themeStore.toggleTheme" class="theme-toggle" :title="'Switch to ' + (themeStore.theme === 'light' ? 'Dark' : 'Light') + ' Mode'">
-        {{ themeStore.theme === 'light' ? '☀️' : '🌙' }}
+        {{ themeStore.theme === 'light' ? '🌙' : '☀️' }}
       </button>
     </div>
   </header>
@@ -38,43 +39,76 @@ themeStore.initializeTheme();
 </template>
 
 <style>
+/* --- Light Theme --- */
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --bg-main: #f3f4f7;
+
+  /* Backgrounds */
+  --bg-main: #f8f9fa;
   --bg-card: #ffffff;
-  --text-primary: #1a202c;
-  --text-secondary: #5a6a7a;
-  --border-color: #e2e8f0;
-  --primary-gradient: linear-gradient(45deg, #8f5300 0%, #ffc500 100%);
-  --primary-color-start: #8f5300;
-  --primary-color-end: #ffc500;
+
+  /* Text */
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+
+  /* Borders & Shadows */
+  --border-color: #dee2e6;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* Primary / Accent Colors */
+  --primary-gradient: linear-gradient(45deg, #4f46e5 0%, #6366f1 100%);
+  --primary-color-start: #4f46e5;
+  --primary-color-end: #6366f1;
+
+  /* Status Colors */
   --color-credit: #10b981;
   --color-debit: #ef4444;
   --color-refund: #3b82f6;
+
+  /* UI Elements */
   --radius: 8px;
 }
 
+/* --- Dark Theme --- */
 html.dark-theme {
-  --bg-main: #1a202c;
-  --bg-card: #2d3748;
-  --text-primary: #f7fafc;
-  --text-secondary: #a0aec0;
-  --border-color: #4a5568;
+  /* Backgrounds */
+  --bg-main: #111827;
+  --bg-card: #1f2937;
+
+  /* Text */
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+
+  /* Borders & Shadows */
+  --border-color: #374151;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+
+  /* Primary / Accent Colors */
+  --primary-gradient: linear-gradient(45deg, #6366f1 0%, #818cf8 100%);
+  --primary-color-start: #6366f1;
+  --primary-color-end: #818cf8;
+
+  /* Status Colors */
+  --color-credit: #34d399;
+  --color-debit: #f87171;
+  --color-refund: #60a5fa;
+
+  /* Browser UI hint */
   color-scheme: dark;
 }
 
 html.dark-theme .clear-button:hover {
-  background-color: #374151;
+  background-color: var(--border-color);
 }
 html.dark-theme select:disabled {
   background-color: #374151;
   opacity: 0.5;
 }
 html.dark-theme .error-message {
-  background-color: #450a0a;
-  color: #fecaca;
+  background-color: rgba(248, 113, 113, 0.1);
+  color: var(--color-debit);
 }
 html.dark-theme .select-prompt,
 html.dark-theme .breakdown-container,
@@ -89,6 +123,7 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .app-header {
@@ -97,6 +132,7 @@ body {
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   margin-bottom: 2rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .logo-area {
@@ -120,7 +156,8 @@ body {
 .logo span :deep(svg) {
   width: 30px;
   height: 30px;
-  color: #17B978;
+  color: var(--primary-color-end);
+  transition: color 0.3s ease;
 }
 
 .main-nav {
