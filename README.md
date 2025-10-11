@@ -6,6 +6,16 @@ containerized with Docker for easy setup and deployment.
 
 ---
 
+<img width="1921" height="1050" alt="image" src="https://github.com/user-attachments/assets/8859f7f6-3b98-4717-bfe4-37124df4265e" />
+<img width="1921" height="1075" alt="image" src="https://github.com/user-attachments/assets/85e41a97-d9f0-4511-9a07-30e2095c5fd5" />
+
+---
+
+<img width="1921" height="1043" alt="image" src="https://github.com/user-attachments/assets/ebdbd78f-5552-4347-a8f8-3c59b33de7d4" />
+<img width="1921" height="1053" alt="image" src="https://github.com/user-attachments/assets/5832ac54-8f5e-4412-b083-3f54bd19a4e5" />
+
+---
+
 ## ✨ Features
 
 - **Secure User Authentication**: Full authentication flow with user registration and login. Sessions are managed using
