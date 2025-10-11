@@ -6,7 +6,6 @@ import TransactionIcon from '@/assets/icons/transaction.svg?raw';
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
-// Ensures the correct theme class is applied on app startup
 themeStore.initializeTheme();
 </script>
 
@@ -29,7 +28,7 @@ themeStore.initializeTheme();
         </template>
       </nav>
       <button @click="themeStore.toggleTheme" class="theme-toggle" :title="'Switch to ' + (themeStore.theme === 'light' ? 'Dark' : 'Light') + ' Mode'">
-        {{ themeStore.theme === 'light' ? '🌙' : '☀️' }}
+        {{ themeStore.theme === 'light' ? '☀️' : '🌙' }}
       </button>
     </div>
   </header>
@@ -73,25 +72,25 @@ themeStore.initializeTheme();
 /* --- Dark Theme --- */
 html.dark-theme {
   /* Backgrounds */
-  --bg-main: #111827;
-  --bg-card: #1f2937;
+  --bg-main: #060e0a;
+  --bg-card: #0c1f16;
 
   /* Text */
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
+  --text-primary: #e8f5e9;
+  --text-secondary: #7e968a;
 
   /* Borders & Shadows */
-  --border-color: #374151;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --border-color: #20402c;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.25);
 
-  /* Primary / Accent Colors */
-  --primary-gradient: linear-gradient(45deg, #6366f1 0%, #818cf8 100%);
-  --primary-color-start: #6366f1;
-  --primary-color-end: #818cf8;
+  /* Primary / Accent Colors (Vibrant Green) */
+  --primary-gradient: linear-gradient(45deg, #16a34a 0%, #22c55e 100%);
+  --primary-color-start: #16a34a;
+  --primary-color-end: #22c55e;
 
   /* Status Colors */
-  --color-credit: #34d399;
+  --color-credit: #4ade80;
   --color-debit: #f87171;
   --color-refund: #60a5fa;
 
@@ -103,7 +102,7 @@ html.dark-theme .clear-button:hover {
   background-color: var(--border-color);
 }
 html.dark-theme select:disabled {
-  background-color: #374151;
+  background-color: var(--border-color);
   opacity: 0.5;
 }
 html.dark-theme .error-message {
@@ -116,6 +115,7 @@ html.dark-theme .chart-container {
   background-color: var(--bg-card);
 }
 
+/* --- Base Styles --- */
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-main);
