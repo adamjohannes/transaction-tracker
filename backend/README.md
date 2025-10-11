@@ -17,8 +17,6 @@ provides a robust backend to create, view, and manage your expenses and income p
 - **Layered Architecture**: Built with a clean separation of concerns, making the codebase maintainable and easy to
   understand.
 - **Data Persistence**: Uses a powerful PostgreSQL database for reliable and structured data storage.
-- **CSV Data Import**: Includes a utility script to import historical transaction data from a CSV file directly into the
-  database.
 
 ---
 
@@ -130,20 +128,5 @@ curl -X POST http://localhost:8080/transactions \
 ```bash 
 curl http://localhost:8080/transactions
 ```
-
----
-
-## 📥 CSV Importer Script
-
-The project includes a script to import transactions from a CSV file.
-
-### Usage:
-
-```bash
-go run cmd/scripts/importer/main.go <path_to_your_csv_file>
-```
-
-An example CSV file is provided at `cmd/scripts/importer/example.csv`. The script expects the CSV to have a specific
-column structure for a successful import.
 
 ---

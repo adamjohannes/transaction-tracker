@@ -24,8 +24,6 @@ containerized with Docker for easy setup and deployment.
   support for transactions.
 - **Structured Logging**: Backend application events are logged directly to a dedicated `app_logs` table in the database
   for robust monitoring and debugging.
-- **CSV Data Import**: A utility script is included to import historical transaction data from a CSV file directly into
-  the database.
 - **Amount Privacy**: A UI toggle allows for hiding transaction amounts for enhanced privacy.
 
 ---
