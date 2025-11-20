@@ -14,20 +14,17 @@
 !controller/
 !controller/*
 
-!crypto/
-!crypto/*
-
 !database/
 !database/*
 
-!dependencies/
-!dependencies/*
+!dependency/
+!dependency/*
 
 !domain/
 !domain/*
 
-!logger/
-!logger/*
+!infrastructure/
+!infrastructure/*
 
 !middleware/
 !middleware/*
@@ -40,3 +37,6 @@
 
 !status/
 !status/*
+
+!usecase/
+!usecase/*

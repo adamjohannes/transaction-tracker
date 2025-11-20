@@ -1,87 +1,160 @@
 package auth
 
 import (
-	"context"
-	"fmt"
+	"errors"
 	"monthly-expenses-handler/internal/api_error"
-	"monthly-expenses-handler/internal/auth"
-	userCtrl "monthly-expenses-handler/internal/controller/user"
 	"monthly-expenses-handler/internal/domain/user"
-	userRepo "monthly-expenses-handler/internal/repository/user"
-	"strings"
+	"monthly-expenses-handler/internal/infrastructure/logger"
+	"monthly-expenses-handler/internal/service/auth"
+	userService "monthly-expenses-handler/internal/usecase/user"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-type AuthController struct {
-	ctx      context.Context
-	authSvc  *auth.AuthService
-	userRepo userRepo.Repository
+type Controller struct {
+	authSvc *auth.AuthService
+	useCase *userService.UseCase
+	logger  *logger.Logger
 }
 
-func NewAuthController(ctx context.Context, authSvc *auth.AuthService, userController *userCtrl.UserController) *AuthController {
-	return &AuthController{
-		ctx:      ctx,
-		authSvc:  authSvc,
-		userRepo: userController.Repo,
+type authRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func NewAuthController(authSvc *auth.AuthService, useCase *userService.UseCase, logger *logger.Logger) *Controller {
+	return &Controller{
+		authSvc,
+		useCase,
+		logger,
 	}
 }
 
-func (c *AuthController) Register(payload map[string]any) (string, error) {
-	username, okU := payload["username"].(string)
-	password, okP := payload["password"].(string)
+func (ac *Controller) Register(c *gin.Context) {
+	ac.logger.Info("Received a request to register a new user", nil)
 
-	if !okU || !okP {
-		return "", apierror.NewValidationError("username and password are required")
+	request, err := collectRequest(c)
+	if err != nil {
+		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "failed to bind request",
+			"detail": err,
+		})
+		return
 	}
 
-	newUser, err := user.New(username, password)
+	newUser, err := buildUserObj(request)
 	if err != nil {
-		return "", apierror.NewValidationError(err.Error())
+		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "failed to build new user",
+			"detail": err,
+		})
+		return
 	}
 
-	hashedPassword, err := c.authSvc.HashPassword(password)
-	if err != nil {
-		return "", fmt.Errorf("could not hash password: %w", err)
-	}
-	newUser.HashedPassword = hashedPassword
+	ac.logger.Info("Attempting to register a new user...", map[string]interface{}{"username": newUser.Username})
 
-	userID, err := c.userRepo.Create(c.ctx, newUser)
+	token, err := ac.useCase.Register(newUser)
 	if err != nil {
-		// Check if it's a validation-style error
-		if strings.Contains(err.Error(), "already taken") {
-			return "", apierror.NewValidationError(err.Error())
+		ac.logger.Error("Failed to register user", map[string]interface{}{"error": err})
+		var validationErr *api_error.ValidationError
+		if errors.As(err, &validationErr) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Failed register user",
+				"detail":  validationErr,
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to register user",
+				"detail":  err,
+			})
 		}
-		return "", fmt.Errorf("could not create user in db: %w", err)
+		return
 	}
 
-	token, err := c.authSvc.GenerateJWT(userID)
-	if err != nil {
-		return "", fmt.Errorf("could not generate token: %w", err)
-	}
+	ac.logger.Info("Successfully registered user", map[string]interface{}{
+		"token":    token,
+		"username": newUser.Username,
+	})
 
-	return token, nil
+	c.JSON(http.StatusCreated, map[string]string{"token": token})
 }
 
-func (c *AuthController) Login(payload map[string]any) (string, error) {
-	username, okU := payload["username"].(string)
-	password, okP := payload["password"].(string)
+func (ac *Controller) Login(c *gin.Context) {
+	ac.logger.Info("Received a request to log-in a user", nil)
 
-	if !okU || !okP {
-		return "", apierror.NewValidationError("username and password are required")
-	}
-
-	existingUser, err := c.userRepo.GetByUsername(c.ctx, username)
+	requestDatamap, err := collectRequest(c)
 	if err != nil {
-		return "", apierror.NewValidationError("invalid credentials")
+		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "failed to bind request",
+			"detail": err,
+		})
 	}
 
-	if !c.authSvc.CheckPasswordHash(password, existingUser.HashedPassword) {
-		return "", apierror.NewValidationError("invalid credentials")
-	}
-
-	token, err := c.authSvc.GenerateJWT(existingUser.ID)
+	requestedUser, err := buildUserObj(requestDatamap)
 	if err != nil {
-		return "", fmt.Errorf("could not generate token: %w", err)
+		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "failed to build new user",
+			"detail": err,
+		})
+		return
 	}
 
-	return token, nil
+	ac.logger.Info("Attempting to login user...", map[string]interface{}{"username": requestedUser.Username})
+
+	token, err := ac.useCase.Login(requestedUser)
+	if err != nil {
+		ac.logger.Error("Failed to log-in user", map[string]interface{}{"error": err})
+
+		var authErr *api_error.AuthError
+		var validationErr *api_error.ValidationError
+
+		if errors.As(err, &authErr) {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Failed to log-in user",
+				"detail":  authErr,
+			})
+		} else if errors.As(err, &validationErr) {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Failed to log-in user",
+				"detail":  validationErr,
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to log-in user",
+				"detail":  err,
+			})
+		}
+
+		return
+	}
+
+	ac.logger.Info("Successfully logged in user", map[string]interface{}{"username": requestedUser.Username})
+	c.JSON(http.StatusOK, map[string]string{"token": token})
+}
+
+// --- Helpers
+
+func collectRequest(c *gin.Context) (*authRequest, error) {
+	var request *authRequest
+
+	// Parse the request body
+	if err := c.ShouldBindJSON(&request); err != nil {
+		return nil, err
+	}
+
+	return request, nil
+}
+
+func buildUserObj(request *authRequest) (*user.User, error) {
+	newUser, err := user.New(request.Username, request.Password)
+	if err != nil {
+		return nil, api_error.NewValidationError("invalid credentials", err)
+	}
+
+	return newUser, nil
 }
