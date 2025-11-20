@@ -13,7 +13,7 @@ import (
 
 // routes
 // Sets up the router for the API.
-func (app *application) routes() http.Handler {
+func (app *dependencies) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	// Auth routes (public)
@@ -65,7 +65,7 @@ func (app *application) routes() http.Handler {
 
 // Serve
 // Starts the HTTP server and handles graceful shutdown.
-func (app *application) Serve() {
+func (app *dependencies) Serve() {
 	port := "8080"
 	server := &http.Server{
 		Addr:    ":" + port,

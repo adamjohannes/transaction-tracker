@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"monthly-expenses-handler/internal/config"
 	"os"
 	"runtime"
 	"strings"
@@ -50,10 +51,10 @@ type Logger struct {
 // Creates a new Logger.
 // `out` is the destination for the log output.
 // `minLevel` is the minimum level to log.
-func New(out io.Writer, minLevel Level) *Logger {
+func New(config *config.Config) *Logger {
 	return &Logger{
-		out:      out,
-		minLevel: minLevel,
+		out:      config.Logger.Out,
+		minLevel: config.Logger.MinLevel,
 	}
 }
 

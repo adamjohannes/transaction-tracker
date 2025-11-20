@@ -1,53 +1,77 @@
 package api
 
 import (
-	"log/slog"
-	"monthly-expenses-handler/internal/auth"
-	authCtrl "monthly-expenses-handler/internal/controller/auth"
+	"context"
+	"log"
+	authSrvc "monthly-expenses-handler/internal/auth"
+	"monthly-expenses-handler/internal/config"
+	"monthly-expenses-handler/internal/controller/auth"
 	"monthly-expenses-handler/internal/controller/category"
 	"monthly-expenses-handler/internal/controller/currency"
 	"monthly-expenses-handler/internal/controller/status"
 	"monthly-expenses-handler/internal/controller/sub_category"
 	"monthly-expenses-handler/internal/controller/transaction"
 	"monthly-expenses-handler/internal/controller/transaction_type"
-	userCtrl "monthly-expenses-handler/internal/controller/user"
+	"monthly-expenses-handler/internal/controller/user"
+	"monthly-expenses-handler/internal/crypto"
+	"monthly-expenses-handler/internal/database"
+	"monthly-expenses-handler/internal/logger"
 )
 
-type application struct {
-	logger                *slog.Logger
-	txController          *transaction.TransactionController
+type dependencies struct {
+	logger *logger.Logger
+
+	authService *authSrvc.AuthService
+
+	authController        *auth.AuthController
 	categoryController    *category.CategoryController
+	currencyController    *currency.CurrencyController
 	subCategoryController *sub_category.SubCategoryController
 	statusController      *status.StatusController
-	currencyController    *currency.CurrencyController
+	transactionController *transaction.TransactionController
 	typeController        *transaction_type.TypeController
-	authController        *authCtrl.AuthController
-	userController        *userCtrl.UserController
-	authService           *auth.AuthService
+	userController        *user.UserController
 }
 
-func NewApplication(
-	logger *slog.Logger,
-	txController *transaction.TransactionController,
-	categoryController *category.CategoryController,
-	subCategoryController *sub_category.SubCategoryController,
-	statusController *status.StatusController,
-	currencyController *currency.CurrencyController,
-	typeController *transaction_type.TypeController,
-	authController *authCtrl.AuthController,
-	userController *userCtrl.UserController,
-	authService *auth.AuthService,
-) *application {
-	return &application{
-		logger:                logger,
-		txController:          txController,
-		categoryController:    categoryController,
-		subCategoryController: subCategoryController,
-		statusController:      statusController,
-		currencyController:    currencyController,
-		typeController:        typeController,
-		authController:        authController,
-		userController:        userController,
-		authService:           authService,
+func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.Logger) *dependencies {
+	// Connect to the database
+	pool, err := database.ConnectDB(cfg, ctx, logger)
+	if err != nil {
+		log.Fatalf("Could not connect to the database: %v", err)
+	}
+	defer pool.Close()
+
+	// Initialize Crypto Service
+	cryptoSvc, err := crypto.NewCryptoService(cfg.Postgres.EncryptionKey)
+	if err != nil {
+		logger.Fatalf("Failed to create crypto service: %v", err)
+	}
+
+	// Initialize Auth Service
+	authService := authSrvc.NewAuthService(cfg.Postgres.JWTSecret, cfg.Postgres.SearchHashKey)
+
+	// Initialize Controllers
+	userController := user.NewUserController(pool, cryptoSvc, authService)
+	authController := auth.NewAuthController(ctx, authService, userController)
+	transactionController := transaction.NewTransactionController(pool, ctx, cryptoSvc)
+	categoryController := category.NewCategoryController(pool, ctx)
+	subCategoryController := sub_category.NewSubCategoryController(pool, ctx)
+	statusController := status.NewStatusController(pool, ctx)
+	currencyController := currency.NewCurrencyController(pool, ctx)
+	typeController := transaction_type.NewTypeController(pool, ctx)
+
+	return &dependencies{
+		logger,
+
+		authService,
+
+		authController,
+		categoryController,
+		currencyController,
+		subCategoryController,
+		statusController,
+		transactionController,
+		typeController,
+		userController,
 	}
 }

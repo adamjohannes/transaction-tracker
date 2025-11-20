@@ -11,7 +11,7 @@ import (
 
 // registerUser
 // Handles user registration.
-func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
+func (app *dependencies) registerUser(w http.ResponseWriter, r *http.Request) {
 	var requestBody map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		app.respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -38,7 +38,7 @@ func (app *application) registerUser(w http.ResponseWriter, r *http.Request) {
 
 // loginUser
 // Handles user login.
-func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
+func (app *dependencies) loginUser(w http.ResponseWriter, r *http.Request) {
 	var requestBody map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		app.respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -65,7 +65,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 
 // createTransaction
 // Handles the creation of a new transaction.
-func (app *application) createTransaction(w http.ResponseWriter, r *http.Request) {
+func (app *dependencies) createTransaction(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(middleware.UserIDKey).(int64)
 	if !ok {
 		app.respondWithError(w, http.StatusUnauthorized, "Not authorized")
@@ -80,7 +80,7 @@ func (app *application) createTransaction(w http.ResponseWriter, r *http.Request
 
 	app.logger.Info("Attempting to create a new transaction", "userID", userID, "payload", requestBody)
 
-	createdTx, err := app.txController.NewTransaction(requestBody, userID)
+	createdTx, err := app.transactionController.NewTransaction(requestBody, userID)
 	if err != nil {
 		app.logger.Error("Failed to create transaction", "error", err, "payload", requestBody)
 		var validationErr *apierror.ValidationError
@@ -98,7 +98,7 @@ func (app *application) createTransaction(w http.ResponseWriter, r *http.Request
 
 // listTransactions
 // Handles fetching all transactions.
-func (app *application) listTransactions(w http.ResponseWriter, r *http.Request) {
+func (app *dependencies) listTransactions(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(middleware.UserIDKey).(int64)
 	if !ok {
 		app.respondWithError(w, http.StatusUnauthorized, "Not authorized")
@@ -106,7 +106,7 @@ func (app *application) listTransactions(w http.ResponseWriter, r *http.Request)
 	}
 	app.logger.Info("Attempting to fetch all transactions", "userID", userID)
 
-	transactions, err := app.txController.GetAllTransactionsByUser(userID)
+	transactions, err := app.transactionController.GetAllTransactionsByUser(userID)
 	if err != nil {
 		app.logger.Error("Failed to fetch transactions", "error", err, "userID", userID)
 		app.respondWithError(w, http.StatusInternalServerError, "Could not retrieve transactions")
@@ -119,7 +119,7 @@ func (app *application) listTransactions(w http.ResponseWriter, r *http.Request)
 
 // listCategories
 // Handles fetching all categories.
-func (app *application) listCategories(w http.ResponseWriter, r *http.Request) {
+func (app *dependencies) listCategories(w http.ResponseWriter, r *http.Request) {
 	app.logger.Info("Attempting to fetch all categories")
 
 	categories, err := app.categoryController.GetAllCategories()
@@ -135,7 +135,7 @@ func (app *application) listCategories(w http.ResponseWriter, r *http.Request) {
 
 // listAllSubCategories
 // Handles fetching all sub-categories.
-func (app *application) listAllSubCategories(w http.ResponseWriter, r *http.Request) {
+func (app *dependencies) listAllSubCategories(w http.ResponseWriter, r *http.Request) {
 	app.logger.Info("Attempting to fetch all sub categories")
 
 	subCategories, err := app.subCategoryController.GetAllSubCategories()
@@ -151,7 +151,7 @@ func (app *application) listAllSubCategories(w http.ResponseWriter, r *http.Requ
 
 // listSubCategoriesByCategory
 // Handles fetching sub-categories for a parent.
-func (app *application) listSubCategoriesByCategory(w http.ResponseWriter, r *http.Request) {
+func (app *dependencies) listSubCategoriesByCategory(w http.ResponseWriter, r *http.Request) {
 	categoryName := r.PathValue("category_name")
 	if categoryName == "" {
 		app.respondWithError(w, http.StatusBadRequest, "Category name is required")
@@ -173,7 +173,7 @@ func (app *application) listSubCategoriesByCategory(w http.ResponseWriter, r *ht
 
 // listLookups
 // is a generic handler for simple lookup tables.
-func (app *application) listLookups(fetchFunc func() (any, error), entityName string) http.HandlerFunc {
+func (app *dependencies) listLookups(fetchFunc func() (any, error), entityName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		app.logger.Info("Attempting to fetch", "entity", entityName)
 
