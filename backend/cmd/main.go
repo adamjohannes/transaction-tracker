@@ -4,8 +4,8 @@ import (
 	"context"
 	"monthly-expenses-handler/cmd/api"
 	"monthly-expenses-handler/internal/config"
-	"monthly-expenses-handler/internal/dependencies"
-	"monthly-expenses-handler/internal/logger"
+	"monthly-expenses-handler/internal/dependency"
+	"monthly-expenses-handler/internal/infrastructure/logger"
 )
 
 func main() {

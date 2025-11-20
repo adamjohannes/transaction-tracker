@@ -13,13 +13,13 @@ import (
 // TransactionHandler
 // Holds the transaction controller.
 type TransactionHandler struct {
-	controller *transaction.TransactionController
+	controller *transaction.Controller
 	logger     *slog.Logger
 }
 
 // NewTransactionHandler
 // Creates a new handler with the necessary dependencies.
-func NewTransactionHandler(c *transaction.TransactionController, l *slog.Logger) *TransactionHandler {
+func NewTransactionHandler(c *transaction.Controller, l *slog.Logger) *TransactionHandler {
 	return &TransactionHandler{controller: c, logger: l}
 }
 
@@ -35,7 +35,7 @@ func NewTransactionHandler(c *transaction.TransactionController, l *slog.Logger)
 //
 //	h.logger.Info("Attempting to create a new transaction", "payload", requestBody)
 //
-//	createdTx, err := h.controller.NewTransaction(requestBody)
+//	createdTx, err := h.controller.PostTransaction(requestBody)
 //	if err != nil {
 //		h.logger.Error("Failed to create transaction", "error", err, "payload", requestBody)
 //
@@ -55,10 +55,10 @@ func NewTransactionHandler(c *transaction.TransactionController, l *slog.Logger)
 //	respondWithJSON(w, http.StatusCreated, createdTx)
 //}
 
-// ListTransactions
+// List
 // Handles fetching all transactions.
 // Method: GET /transactions
-//func (h *TransactionHandler) ListTransactions(w http.ResponseWriter, r *http.Request) {
+//func (h *TransactionHandler) List(w http.ResponseWriter, r *http.Request) {
 //	h.logger.Info("Attempting to fetch all transactions")
 //
 //	transactions, err := h.controller.GetAllTransactions()

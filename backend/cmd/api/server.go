@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"monthly-expenses-handler/internal/dependencies"
+	"monthly-expenses-handler/internal/dependency"
 	"net/http"
 	"os"
 	"os/signal"

@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
-	"monthly-expenses-handler/internal/auth"
+	"monthly-expenses-handler/internal/service/auth"
 	"net/http"
 	"strings"
 )
@@ -11,6 +11,7 @@ import (
 type contextKey string
 
 const UserIDKey contextKey = "userID"
+const GroupBy contextKey = "groupBy"
 
 // AuthMiddleware
 // Validates the JWT token from the Authorization header.

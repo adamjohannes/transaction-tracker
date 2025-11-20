@@ -2,7 +2,7 @@ package config
 
 import (
 	"io"
-	"monthly-expenses-handler/internal/logger"
+	"monthly-expenses-handler/internal/infrastructure/logger"
 	"os"
 )
 

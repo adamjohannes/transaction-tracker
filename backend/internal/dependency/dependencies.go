@@ -3,7 +3,6 @@ package dependencies
 import (
 	"context"
 	"log"
-	authSrvc "monthly-expenses-handler/internal/auth"
 	"monthly-expenses-handler/internal/config"
 	"monthly-expenses-handler/internal/controller/auth"
 	"monthly-expenses-handler/internal/controller/category"
@@ -13,9 +12,11 @@ import (
 	"monthly-expenses-handler/internal/controller/transaction"
 	"monthly-expenses-handler/internal/controller/transaction_type"
 	"monthly-expenses-handler/internal/controller/user"
-	"monthly-expenses-handler/internal/crypto"
 	"monthly-expenses-handler/internal/database"
-	"monthly-expenses-handler/internal/logger"
+	"monthly-expenses-handler/internal/infrastructure/crypto"
+	"monthly-expenses-handler/internal/infrastructure/logger"
+	authSrvc "monthly-expenses-handler/internal/service/auth"
+	userService2 "monthly-expenses-handler/internal/usecase/user"
 )
 
 type Dependencies struct {
@@ -23,12 +24,12 @@ type Dependencies struct {
 
 	authService *authSrvc.AuthService
 
-	AuthController        *auth.AuthController
+	AuthController        *auth.Controller
 	CategoryController    *category.CategoryController
 	CurrencyController    *currency.CurrencyController
 	SubCategoryController *sub_category.SubCategoryController
 	StatusController      *status.StatusController
-	TransactionController *transaction.TransactionController
+	TransactionController *transaction.Controller
 	TypeController        *transaction_type.TypeController
 	UserController        *user.UserController
 }
@@ -41,18 +42,18 @@ func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.L
 	}
 	defer pool.Close()
 
-	// Initialize Crypto Service
+	// Initialize Services
 	cryptoSvc, err := crypto.NewCryptoService(cfg.Postgres.EncryptionKey)
 	if err != nil {
 		logger.Fatalf("Failed to create crypto service: %v", err)
 	}
 
-	// Initialize Auth Service
 	authService := authSrvc.NewAuthService(cfg.Postgres.JWTSecret, cfg.Postgres.SearchHashKey)
+	userService := userService2.New(authService, ctx, logger, user)
 
 	// Initialize Controllers
 	userController := user.NewUserController(pool, cryptoSvc, authService)
-	authController := auth.NewAuthController(ctx, authService, userController)
+	authController := auth.NewAuthController(authService, userController, ctx)
 	transactionController := transaction.NewTransactionController(pool, ctx, cryptoSvc)
 	categoryController := category.NewCategoryController(pool, ctx)
 	subCategoryController := sub_category.NewSubCategoryController(pool, ctx)

@@ -13,8 +13,17 @@ import (
 type UseCase struct {
 	authSvc  *auth.AuthService
 	ctx      context.Context
-	logger   logger.Logger
+	logger   *logger.Logger
 	userRepo userRepo.Repository
+}
+
+func New(authSvc *auth.AuthService, ctx context.Context, logger *logger.Logger, userRepo userRepo.Repository) *UseCase {
+	return &UseCase{
+		authSvc,
+		ctx,
+		logger,
+		userRepo,
+	}
 }
 
 // Register

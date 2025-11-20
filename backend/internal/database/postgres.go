@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"monthly-expenses-handler/internal/config"
-	"monthly-expenses-handler/internal/logger"
+	"monthly-expenses-handler/internal/infrastructure/logger"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

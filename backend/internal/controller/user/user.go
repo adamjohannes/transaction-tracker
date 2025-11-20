@@ -1,9 +1,9 @@
 package user
 
 import (
-	"monthly-expenses-handler/internal/auth"
-	"monthly-expenses-handler/internal/crypto"
+	"monthly-expenses-handler/internal/infrastructure/crypto"
 	userRepo "monthly-expenses-handler/internal/repository/user"
+	"monthly-expenses-handler/internal/service/auth"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
