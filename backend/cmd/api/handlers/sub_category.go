@@ -8,11 +8,11 @@ import (
 )
 
 type SubCategoryHandler struct {
-	controller *sub_category.SubCategoryController
+	controller *sub_category.Controller
 	logger     *slog.Logger
 }
 
-func NewSubCategoryHandler(c *sub_category.SubCategoryController, l *slog.Logger) *SubCategoryHandler {
+func NewSubCategoryHandler(c *sub_category.Controller, l *slog.Logger) *SubCategoryHandler {
 	return &SubCategoryHandler{controller: c, logger: l}
 }
 

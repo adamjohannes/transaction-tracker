@@ -29,13 +29,13 @@ func NewCategoryController(ctx context.Context, categoryService category.UseCase
 
 // GetAllCategories
 // Fetches all categories from the repository.
-func (cc *Controller) GetAllCategories(c *gin.Context) {
+func (cc *Controller) GetAllCategories(ctx *gin.Context) {
 	cc.logger.Info("Received a request to fetch all categories", nil)
 
 	categories, err := cc.categoryService.ListCategories()
 	if err != nil {
 		cc.logger.Error("Failed to fetch categories", map[string]interface{}{"error": err})
-		c.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to fetch categories",
 			"detail":  err,
 		})
@@ -43,7 +43,7 @@ func (cc *Controller) GetAllCategories(c *gin.Context) {
 	}
 
 	cc.logger.Info("Successfully fetched all categories", map[string]interface{}{"count": len(categories)})
-	c.JSON(http.StatusOK, map[string]interface{}{
+	ctx.JSON(http.StatusOK, map[string]interface{}{
 		"message":    "Successfully fetched all categories",
 		"categories": categories,
 	})

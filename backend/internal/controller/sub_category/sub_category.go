@@ -2,38 +2,73 @@ package sub_category
 
 import (
 	"context"
-	domain "monthly-expenses-handler/internal/domain/sub_category"
-	repository "monthly-expenses-handler/internal/repository/sub_category"
+	"monthly-expenses-handler/internal/api_error"
+	"monthly-expenses-handler/internal/infrastructure/logger"
+	"monthly-expenses-handler/internal/usecase/sub_category"
+	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/gin-gonic/gin"
 )
 
-// SubCategoryController
+// Controller
 // Orchestrates sub-category operations.
-type SubCategoryController struct {
-	pool *pgxpool.Pool
-	ctx  context.Context
+type Controller struct {
+	ctx                context.Context
+	subcategoryService sub_category.UseCase
+	logger             *logger.Logger
 }
 
 // NewSubCategoryController
 // Creates a new instance of the controller.
-func NewSubCategoryController(pool *pgxpool.Pool, ctx context.Context) *SubCategoryController {
-	return &SubCategoryController{
-		pool: pool,
-		ctx:  ctx,
+func NewSubCategoryController(ctx context.Context, subCategoryService sub_category.UseCase, logger *logger.Logger) *Controller {
+	return &Controller{
+		ctx,
+		subCategoryService,
+		logger,
 	}
-}
-
-// GetSubCategoriesByCategory
-// Fetches sub-categories filtered by the parent category name.
-func (scc *SubCategoryController) GetSubCategoriesByCategory(categoryName string) ([]*domain.SubCategory, error) {
-	repo := repository.NewPostgresRepository(scc.pool)
-	return repo.GetByParentCategoryName(scc.ctx, categoryName)
 }
 
 // GetAllSubCategories
 // Fetches all sub-categories from the repository.
-func (scc *SubCategoryController) GetAllSubCategories() ([]*domain.SubCategory, error) {
-	repo := repository.NewPostgresRepository(scc.pool)
-	return repo.GetAll(scc.ctx)
+func (c *Controller) GetAllSubCategories(ctx *gin.Context) {
+	c.logger.Info("Received a request to fetch all sub categories", nil)
+
+	subCategoriesList, err := c.subcategoryService.List()
+	if err != nil {
+		c.logger.Error("Failed to fetch sub-categories", map[string]interface{}{"error": err})
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"subCategories": subCategoriesList,
+	})
+}
+
+// GetSubCategoriesByCategory
+// Fetches sub-categories filtered by the parent category name.
+func (c *Controller) GetSubCategoriesByCategory(ctx *gin.Context) {
+	c.logger.Info("Received a request to fetch sub categories by category", nil)
+
+	categoryName := ctx.Param("category")
+	if categoryName == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": api_error.NewValidationError("category name is required"),
+		})
+	}
+
+	subCategoriesList, err := c.subcategoryService.ListByCategory(categoryName)
+	if err != nil {
+		c.logger.Error("Failed to fetch sub-categories by category", map[string]interface{}{"error": err})
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"subCategories": subCategoriesList,
+	})
 }

@@ -27,7 +27,7 @@ type Dependencies struct {
 	AuthController        *auth.Controller
 	CategoryController    *category.Controller
 	CurrencyController    *currency.CurrencyController
-	SubCategoryController *sub_category.SubCategoryController
+	SubCategoryController *sub_category.Controller
 	StatusController      *status.StatusController
 	TransactionController *transaction.Controller
 	TypeController        *transaction_type.TypeController

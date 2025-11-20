@@ -2,7 +2,7 @@ package sub_category
 
 import (
 	"context"
-	"fmt"
+	"monthly-expenses-handler/internal/api_error"
 	domain "monthly-expenses-handler/internal/domain/sub_category"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -33,7 +33,7 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.SubCategory,
 	query := `SELECT id, parent_category, name FROM transaction_sub_categories ORDER BY name`
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query sub-categories: %w", err)
+		return nil, api_error.NewAnyError("failed to query sub-categories: %w", err)
 	}
 	defer rows.Close()
 
@@ -43,13 +43,13 @@ func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.SubCategory,
 		var id, parentID int8
 		var name string
 		if err := rows.Scan(&id, &parentID, &name); err != nil {
-			return nil, fmt.Errorf("failed to scan sub-category row: %w", err)
+			return nil, api_error.NewAnyError("failed to scan sub-category row", err)
 		}
 		subCategories = append(subCategories, domain.Build(id, parentID, name))
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("error reading sub-category rows: %w", rows.Err())
+		return nil, api_error.NewAnyError("error reading sub-category rows", rows.Err())
 	}
 
 	return subCategories, nil
@@ -67,7 +67,7 @@ func (r *postgresRepository) GetByParentCategoryName(ctx context.Context, catego
 
 	rows, err := r.db.Query(ctx, query, categoryName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query sub-categories: %w", err)
+		return nil, api_error.NewAnyError("failed to query sub-categories", err)
 	}
 	defer rows.Close()
 
@@ -77,13 +77,13 @@ func (r *postgresRepository) GetByParentCategoryName(ctx context.Context, catego
 		var id, parentID int8
 		var name string
 		if err := rows.Scan(&id, &parentID, &name); err != nil {
-			return nil, fmt.Errorf("failed to scan sub-category row: %w", err)
+			return nil, api_error.NewAnyError("failed to scan sub-category row", err)
 		}
 		subCategories = append(subCategories, domain.Build(id, parentID, name))
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("error reading sub-category rows: %w", rows.Err())
+		return nil, api_error.NewAnyError("error reading sub-category rows", rows.Err())
 	}
 
 	return subCategories, nil
