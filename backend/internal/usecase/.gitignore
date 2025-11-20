@@ -3,6 +3,9 @@
 !category/
 !category/*
 
+!currency/
+!currency/*
+
 !status/
 !status/*
 

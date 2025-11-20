@@ -55,11 +55,9 @@ func (s *server) setup() {
 
 		lookup.GET("/categories", s.deps.CategoryController.GetAllCategories)
 		lookup.GET("/sub-categories", s.deps.SubCategoryController.GetAllSubCategories)
-		lookup.GET("/sub-categories/:category_name", s.deps.SubCategoryController.GetSubCategoriesByCategory)
+		lookup.GET("/sub-categories/:categoryName", s.deps.SubCategoryController.GetSubCategoriesByCategory)
 		lookup.GET("/status", s.deps.StatusController.GetAllStatus)
-		lookup.HandleFunc("GET /currencies", s.deps.listLookups(func() (any, error) {
-			return s.deps.CurrencyController.GetAllCurrencies()
-		}, "currencies"))
+		lookup.GET("/currencies", s.deps.CurrencyController.GetAllCurrency)
 		lookup.HandleFunc("GET /types", s.deps.listLookups(func() (any, error) {
 			return s.deps.TypeController.GetAllTransactionTypes()
 		}, "types"))

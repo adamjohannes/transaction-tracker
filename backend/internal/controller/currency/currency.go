@@ -2,22 +2,40 @@ package currency
 
 import (
 	"context"
-	domain "monthly-expenses-handler/internal/domain/currency"
-	repository "monthly-expenses-handler/internal/repository/currency"
+	"monthly-expenses-handler/internal/infrastructure/logger"
+	currencyService "monthly-expenses-handler/internal/usecase/currency"
+	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/gin-gonic/gin"
 )
 
-type CurrencyController struct {
-	pool *pgxpool.Pool
-	ctx  context.Context
+type Controller struct {
+	ctx             context.Context
+	currencyService currencyService.UseCase
+	logger          *logger.Logger
 }
 
-func NewCurrencyController(pool *pgxpool.Pool, ctx context.Context) *CurrencyController {
-	return &CurrencyController{pool: pool, ctx: ctx}
+func NewCurrencyController(ctx context.Context, currencyService currencyService.UseCase, logger *logger.Logger) *Controller {
+	return &Controller{
+		ctx,
+		currencyService,
+		logger,
+	}
 }
 
-func (cc *CurrencyController) GetAllCurrencies() ([]*domain.Currency, error) {
-	repo := repository.NewPostgresRepository(cc.pool)
-	return repo.GetAll(cc.ctx)
+func (c *Controller) GetAllCurrency(ctx *gin.Context) {
+	c.logger.Info("Received a request to fetch all currency", nil)
+
+	currencyList, err := c.currencyService.List()
+	if err != nil {
+		c.logger.Error("Failed to fetch currency", map[string]interface{}{"error": err})
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"currency": currencyList,
+	})
 }
