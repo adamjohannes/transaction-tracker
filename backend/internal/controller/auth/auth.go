@@ -38,8 +38,8 @@ func (ac *Controller) Register(c *gin.Context) {
 	if err != nil {
 		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err})
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failed to bind request",
-			"detail": err,
+			"message": "failed to bind request",
+			"detail":  err,
 		})
 		return
 	}
@@ -48,8 +48,8 @@ func (ac *Controller) Register(c *gin.Context) {
 	if err != nil {
 		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err})
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failed to build new user",
-			"detail": err,
+			"message": "failed to build new user",
+			"detail":  err,
 		})
 		return
 	}
@@ -89,8 +89,8 @@ func (ac *Controller) Login(c *gin.Context) {
 	if err != nil {
 		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err})
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failed to bind request",
-			"detail": err,
+			"message": "failed to bind request",
+			"detail":  err,
 		})
 	}
 
@@ -98,8 +98,8 @@ func (ac *Controller) Login(c *gin.Context) {
 	if err != nil {
 		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err})
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "failed to build new user",
-			"detail": err,
+			"message": "failed to build new user",
+			"detail":  err,
 		})
 		return
 	}
