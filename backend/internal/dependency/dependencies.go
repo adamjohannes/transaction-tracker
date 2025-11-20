@@ -30,7 +30,7 @@ type Dependencies struct {
 	SubCategoryController *sub_category.Controller
 	StatusController      *status.Controller
 	TransactionController *transaction.Controller
-	TypeController        *transaction_type.TypeController
+	TypeController        *transaction_type.Controller
 	UserController        *user.UserController
 }
 

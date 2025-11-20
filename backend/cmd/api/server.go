@@ -36,8 +36,8 @@ func (s *server) setup() {
 		// Transaction routes
 		transaction := v1.Group("/transaction")
 
-		transaction.POST("/:userID", s.deps.TransactionController.PostTransaction)
 		transaction.GET("/:userID", s.deps.TransactionController.GetAllTransactionsByUser)
+		transaction.POST("/:userID", s.deps.TransactionController.PostTransaction)
 	}
 
 	// --- Public routes
@@ -45,8 +45,8 @@ func (s *server) setup() {
 		// Auth routes (public)
 		auth := v1.Group("/auth")
 
-		auth.POST("/register", s.deps.AuthController.Register)
 		auth.POST("/login", s.deps.AuthController.Login)
+		auth.POST("/register", s.deps.AuthController.Register)
 	}
 
 	{
@@ -54,13 +54,11 @@ func (s *server) setup() {
 		lookup := v1.Group("/lookup")
 
 		lookup.GET("/categories", s.deps.CategoryController.GetAllCategories)
+		lookup.GET("/currencies", s.deps.CurrencyController.GetAllCurrency)
+		lookup.GET("/status", s.deps.StatusController.GetAllStatus)
 		lookup.GET("/sub-categories", s.deps.SubCategoryController.GetAllSubCategories)
 		lookup.GET("/sub-categories/:categoryName", s.deps.SubCategoryController.GetSubCategoriesByCategory)
-		lookup.GET("/status", s.deps.StatusController.GetAllStatus)
-		lookup.GET("/currencies", s.deps.CurrencyController.GetAllCurrency)
-		lookup.HandleFunc("GET /types", s.deps.listLookups(func() (any, error) {
-			return s.deps.TypeController.GetAllTransactionTypes()
-		}, "types"))
+		lookup.GET("/types", s.deps.TypeController.GetAllTransactionType)
 	}
 }
 

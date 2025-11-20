@@ -15,5 +15,8 @@
 !transaction/
 !transaction/*
 
+!transaction_type/
+!transaction_type/*
+
 !user/
 !user/*

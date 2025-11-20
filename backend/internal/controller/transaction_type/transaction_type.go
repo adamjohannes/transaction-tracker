@@ -2,22 +2,40 @@ package transaction_type
 
 import (
 	"context"
-	domain "monthly-expenses-handler/internal/domain/transaction_type"
-	repository "monthly-expenses-handler/internal/repository/transaction_type"
+	"monthly-expenses-handler/internal/infrastructure/logger"
+	transactionTypeService "monthly-expenses-handler/internal/usecase/transaction_type"
+	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/gin-gonic/gin"
 )
 
-type TypeController struct {
-	pool *pgxpool.Pool
-	ctx  context.Context
+type Controller struct {
+	ctx                    context.Context
+	transactionTypeService transactionTypeService.UseCase
+	logger                 *logger.Logger
 }
 
-func NewTypeController(pool *pgxpool.Pool, ctx context.Context) *TypeController {
-	return &TypeController{pool: pool, ctx: ctx}
+func NewTypeController(ctx context.Context, transactionTypeService transactionTypeService.UseCase, logger *logger.Logger) *Controller {
+	return &Controller{
+		ctx,
+		transactionTypeService,
+		logger,
+	}
 }
 
-func (tc *TypeController) GetAllTransactionTypes() ([]*domain.TransactionType, error) {
-	repo := repository.NewPostgresRepository(tc.pool)
-	return repo.GetAll(tc.ctx)
+func (c *Controller) GetAllTransactionType(ctx *gin.Context) {
+	c.logger.Info("Received a request to fetch all transaction type", nil)
+
+	transactionTypeList, err := c.transactionTypeService.List()
+	if err != nil {
+		c.logger.Error("Failed to fetch transaction type", map[string]interface{}{"error": err})
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"transactionType": transactionTypeList,
+	})
 }
