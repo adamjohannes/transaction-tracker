@@ -9,8 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"monthly-expenses-handler/internal/middleware"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,11 +26,21 @@ func NewServer(deps *dependencies.Dependencies) *server {
 	}
 }
 
-// routes
+// setup
 // Sets up the router for the API.
-func (s *server) routes() http.Handler {
+func (s *server) setup() {
 	v1 := s.router.Group("/v1")
 
+	// --- Protected routes
+	{
+		// Transaction routes
+		transaction := v1.Group("/transaction")
+
+		transaction.POST("/:userID", s.deps.TransactionController.PostTransaction)
+		transaction.GET("/:userID", s.deps.TransactionController.GetAllTransactionsByUser)
+	}
+
+	// --- Public routes
 	{
 		// Auth routes (public)
 		auth := v1.Group("/auth")
@@ -42,49 +50,20 @@ func (s *server) routes() http.Handler {
 	}
 
 	{
-		// Transaction routes (protected)
-		transaction := v1.Group("/transaction")
+		// Lookup routes (public)
+		lookup := v1.Group("/lookup")
 
-		transaction.POST("/:userID", s.deps.TransactionController.PostTransaction)
-		transaction.GET("/:userID", s.deps.TransactionController.GetAllTransactionsByUser)
+		lookup.GET("/categories", s.deps.CategoryController.GetAllCategories)
+		lookup.GET("/sub-categories", s.deps.SubCategoryController.GetAllSubCategories)
+		lookup.GET("/sub-categories/:category_name", s.deps.SubCategoryController.GetSubCategoriesByCategory)
+		lookup.GET("/status", s.deps.StatusController.GetAllStatus)
+		lookup.HandleFunc("GET /currencies", s.deps.listLookups(func() (any, error) {
+			return s.deps.CurrencyController.GetAllCurrencies()
+		}, "currencies"))
+		lookup.HandleFunc("GET /types", s.deps.listLookups(func() (any, error) {
+			return s.deps.TypeController.GetAllTransactionTypes()
+		}, "types"))
 	}
-
-	// Public lookup routes
-	lookupMux := http.NewServeMux()
-	lookupMux.HandleFunc("GET /categories", s.deps.listCategories)
-	lookupMux.HandleFunc("GET /sub-categories", s.deps.listAllSubCategories)
-	lookupMux.HandleFunc("GET /categories/{category_name}/sub-categories", s.deps.listSubCategoriesByCategory)
-	lookupMux.HandleFunc("GET /status", s.deps.listLookups(func() (any, error) {
-		return s.deps.StatusController.GetAllStatus()
-	}, "status"))
-	lookupMux.HandleFunc("GET /currencies", s.deps.listLookups(func() (any, error) {
-		return s.deps.CurrencyController.GetAllCurrencies()
-	}, "currencies"))
-	lookupMux.HandleFunc("GET /types", s.deps.listLookups(func() (any, error) {
-		return s.deps.TypeController.GetAllTransactionTypes()
-	}, "types"))
-
-	// Apply middleware
-	var handler http.Handler = mux
-
-	// Chain middlewares: Auth -> Logging
-	protectedHandler := middleware.AuthMiddleware(protectedMux, s.deps.authService)
-	mux.Handle("/transactions", protectedHandler)
-	mux.Handle("/transactions/", protectedHandler)
-
-	// Mount public lookup routes
-	mux.Handle("/categories", lookupMux)
-	mux.Handle("/categories/", lookupMux)
-	mux.Handle("/sub-categories", lookupMux)
-	mux.Handle("/sub-categories/", lookupMux)
-	mux.Handle("/status", lookupMux)
-	mux.Handle("/currencies", lookupMux)
-	mux.Handle("/types", lookupMux)
-
-	// Apply logging middleware to all routes
-	handler = middleware.LoggingMiddleware(mux, s.deps.Logger)
-
-	return handler
 }
 
 // Serve
@@ -93,7 +72,7 @@ func (s *server) Serve() {
 	port := "8080"
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: s.routes(),
+		Handler: s.setup(),
 	}
 
 	serverErrors := make(chan error, 1)

@@ -9,11 +9,11 @@ import (
 )
 
 type StatusHandler struct {
-	controller *status.StatusController
+	controller *status.Controller
 	logger     *slog.Logger
 }
 
-func NewStatusHandler(c *status.StatusController, l *slog.Logger) *StatusHandler {
+func NewStatusHandler(c *status.Controller, l *slog.Logger) *StatusHandler {
 	return &StatusHandler{controller: c, logger: l}
 }
 
