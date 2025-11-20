@@ -18,11 +18,11 @@ func (deps *Dependencies) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deps.Logger.Info("Attempting to register a new user", "username", requestBody["username"])
+	deps.Logger.Info("Attempting to register a new user", map[string]interface{}{"username": requestBody["username"]})
 
-	token, err := deps.authController.Register(requestBody)
+	token, err := deps.AuthController.Register(requestBody)
 	if err != nil {
-		deps.Logger.Error("Failed to register user", "error", err.Error())
+		deps.Logger.Error("Failed to register user", map[string]interface{}{"error": err.Error()})
 		var validationErr *apierror.ValidationError
 		if errors.As(err, &validationErr) {
 			deps.respondWithError(w, http.StatusBadRequest, validationErr.Error())
@@ -32,7 +32,7 @@ func (deps *Dependencies) registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deps.Logger.Info("Successfully registered user", "username", requestBody["username"])
+	deps.Logger.Info("Successfully registered user", map[string]interface{}{"username": requestBody["username"]})
 	deps.respondWithJSON(w, http.StatusCreated, map[string]string{"token": token})
 }
 
@@ -45,11 +45,11 @@ func (deps *Dependencies) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deps.Logger.Info("Attempting to login user", "username", requestBody["username"])
+	deps.Logger.Info("Attempting to login user", map[string]interface{}{"username": requestBody["username"]})
 
-	token, err := deps.authController.Login(requestBody)
+	token, err := deps.AuthController.Login(requestBody)
 	if err != nil {
-		deps.Logger.Error("Failed to login user", "error", err)
+		deps.Logger.Error("Failed to login user", map[string]interface{}{"error": err})
 		var validationErr *apierror.ValidationError
 		if errors.As(err, &validationErr) {
 			deps.respondWithError(w, http.StatusUnauthorized, validationErr.Error())
@@ -59,7 +59,7 @@ func (deps *Dependencies) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deps.Logger.Info("Successfully logged in user", "username", requestBody["username"])
+	deps.Logger.Info("Successfully logged in user", map[string]interface{}{"username": requestBody["username"]})
 	deps.respondWithJSON(w, http.StatusOK, map[string]string{"token": token})
 }
 
@@ -78,11 +78,11 @@ func (deps *Dependencies) createTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	deps.Logger.Info("Attempting to create a new transaction", "userID", userID, "payload", requestBody)
+	deps.Logger.Info("Attempting to create a new transaction", map[string]interface{}{"userID": userID, "payload": requestBody})
 
-	createdTx, err := deps.transactionController.NewTransaction(requestBody, userID)
+	createdTx, err := deps.TransactionController.NewTransaction(requestBody, userID)
 	if err != nil {
-		deps.Logger.Error("Failed to create transaction", "error", err, "payload", requestBody)
+		deps.Logger.Error("Failed to create transaction", map[string]interface{}{"error": err, "payload": requestBody})
 		var validationErr *apierror.ValidationError
 		if errors.As(err, &validationErr) {
 			deps.respondWithError(w, http.StatusBadRequest, validationErr.Error())
@@ -92,7 +92,7 @@ func (deps *Dependencies) createTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	deps.Logger.Info("Successfully created transaction", "transaction_id", createdTx.ID, "userID", userID)
+	deps.Logger.Info("Successfully created transaction", map[string]interface{}{"transaction_id": createdTx.ID, "userID": userID})
 	deps.respondWithJSON(w, http.StatusCreated, createdTx)
 }
 
@@ -104,48 +104,48 @@ func (deps *Dependencies) listTransactions(w http.ResponseWriter, r *http.Reques
 		deps.respondWithError(w, http.StatusUnauthorized, "Not authorized")
 		return
 	}
-	deps.Logger.Info("Attempting to fetch all transactions", "userID", userID)
+	deps.Logger.Info("Attempting to fetch all transactions", map[string]interface{}{"userID": userID})
 
-	transactions, err := deps.transactionController.GetAllTransactionsByUser(userID)
+	transactions, err := deps.TransactionController.GetAllTransactionsByUser(userID)
 	if err != nil {
-		deps.Logger.Error("Failed to fetch transactions", "error", err, "userID", userID)
+		deps.Logger.Error("Failed to fetch transactions", map[string]interface{}{"error": err, "userID": userID})
 		deps.respondWithError(w, http.StatusInternalServerError, "Could not retrieve transactions")
 		return
 	}
 
-	deps.Logger.Info("Successfully fetched all transactions", "userID", userID, "count", len(transactions))
+	deps.Logger.Info("Successfully fetched all transactions", map[string]interface{}{"userID": userID, "count": len(transactions)})
 	deps.respondWithJSON(w, http.StatusOK, transactions)
 }
 
 // listCategories
 // Handles fetching all categories.
 func (deps *Dependencies) listCategories(w http.ResponseWriter, r *http.Request) {
-	deps.Logger.Info("Attempting to fetch all categories")
+	deps.Logger.Info("Attempting to fetch all categories...", nil)
 
-	categories, err := deps.categoryController.GetAllCategories()
+	categories, err := deps.CategoryController.GetAllCategories()
 	if err != nil {
-		deps.Logger.Error("Failed to fetch categories", "error", err)
+		deps.Logger.Error("Failed to fetch categories", map[string]interface{}{"error": err})
 		deps.respondWithError(w, http.StatusInternalServerError, "Could not retrieve categories")
 		return
 	}
 
-	deps.Logger.Info("Successfully fetched all categories", "count", len(categories))
+	deps.Logger.Info("Successfully fetched all categories", map[string]interface{}{"count": len(categories)})
 	deps.respondWithJSON(w, http.StatusOK, categories)
 }
 
 // listAllSubCategories
 // Handles fetching all sub-categories.
 func (deps *Dependencies) listAllSubCategories(w http.ResponseWriter, r *http.Request) {
-	deps.Logger.Info("Attempting to fetch all sub categories")
+	deps.Logger.Info("Attempting to fetch all sub categories", nil)
 
-	subCategories, err := deps.subCategoryController.GetAllSubCategories()
+	subCategories, err := deps.SubCategoryController.GetAllSubCategories()
 	if err != nil {
-		deps.Logger.Error("Failed to fetch sub categories", "error", err)
+		deps.Logger.Error("Failed to fetch sub categories", map[string]interface{}{"error": err})
 		deps.respondWithError(w, http.StatusInternalServerError, "Could not retrieve sub-categories")
 		return
 	}
 
-	deps.Logger.Info("Successfully fetched all sub categories", "count", len(subCategories))
+	deps.Logger.Info("Successfully fetched all sub categories", map[string]interface{}{"count": len(subCategories)})
 	deps.respondWithJSON(w, http.StatusOK, subCategories)
 }
 
@@ -158,16 +158,16 @@ func (deps *Dependencies) listSubCategoriesByCategory(w http.ResponseWriter, r *
 		return
 	}
 
-	deps.Logger.Info("Attempting to fetch sub categories related to a parent category", "parent_category", categoryName)
+	deps.Logger.Info("Attempting to fetch sub categories related to a parent category", map[string]interface{}{"parent_category": categoryName})
 
-	subCategories, err := deps.subCategoryController.GetSubCategoriesByCategory(categoryName)
+	subCategories, err := deps.SubCategoryController.GetSubCategoriesByCategory(categoryName)
 	if err != nil {
-		deps.Logger.Error("Failed to fetch sub categories", "parent_category", categoryName, "error", err)
+		deps.Logger.Error("Failed to fetch sub categories", map[string]interface{}{"parent_category": categoryName, "error": err})
 		deps.respondWithError(w, http.StatusInternalServerError, "Could not retrieve sub-categories")
 		return
 	}
 
-	deps.Logger.Info("Successfully fetched sub categories", "parent_category", categoryName, "count", len(subCategories))
+	deps.Logger.Info("Successfully fetched sub categories", map[string]interface{}{"parent_category": categoryName, "count": len(subCategories)})
 	deps.respondWithJSON(w, http.StatusOK, subCategories)
 }
 
@@ -175,16 +175,16 @@ func (deps *Dependencies) listSubCategoriesByCategory(w http.ResponseWriter, r *
 // is a generic handler for simple lookup tables.
 func (deps *Dependencies) listLookups(fetchFunc func() (any, error), entityName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		deps.Logger.Info("Attempting to fetch", "entity", entityName)
+		deps.Logger.Info("Attempting to fetch", map[string]interface{}{"entity": entityName})
 
 		items, err := fetchFunc()
 		if err != nil {
-			deps.Logger.Error("Failed to fetch", "entity", entityName, "error", err)
+			deps.Logger.Error("Failed to fetch", map[string]interface{}{"entity": entityName, "error": err})
 			deps.respondWithError(w, http.StatusInternalServerError, "Could not retrieve "+entityName+" list")
 			return
 		}
 
-		deps.Logger.Info("Successfully fetched", "entity", entityName)
+		deps.Logger.Info("Successfully fetched", map[string]interface{}{"entity": entityName})
 		deps.respondWithJSON(w, http.StatusOK, items)
 	}
 }
