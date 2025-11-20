@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	"monthly-expenses-handler/internal/apierror"
+	"monthly-expenses-handler/internal/api_error"
 	"monthly-expenses-handler/internal/domain/category"
 	"monthly-expenses-handler/internal/domain/currency"
 	"monthly-expenses-handler/internal/domain/status"

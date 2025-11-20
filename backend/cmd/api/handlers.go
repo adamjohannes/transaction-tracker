@@ -6,7 +6,7 @@ import (
 	"monthly-expenses-handler/internal/middleware"
 	"net/http"
 
-	"monthly-expenses-handler/internal/apierror"
+	"monthly-expenses-handler/internal/api_error"
 )
 
 // registerUser

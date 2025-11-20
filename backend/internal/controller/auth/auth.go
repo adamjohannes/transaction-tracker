@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
-	"monthly-expenses-handler/internal/apierror"
+	"monthly-expenses-handler/internal/api_error"
 	"monthly-expenses-handler/internal/auth"
 	userCtrl "monthly-expenses-handler/internal/controller/user"
 	"monthly-expenses-handler/internal/domain/user"

@@ -2,8 +2,8 @@
 
 !.gitignore
 
-!apierror/
-!apierror/*
+!api_error/
+!api_error/*
 
 !auth/
 !auth/*
