@@ -20,6 +20,9 @@
 !database/
 !database/*
 
+!dependencies/
+!dependencies/*
+
 !domain/
 !domain/*
 

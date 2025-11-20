@@ -1,4 +1,4 @@
-package api
+package dependencies
 
 import (
 	"context"
@@ -18,22 +18,22 @@ import (
 	"monthly-expenses-handler/internal/logger"
 )
 
-type dependencies struct {
-	logger *logger.Logger
+type Dependencies struct {
+	Logger *logger.Logger
 
 	authService *authSrvc.AuthService
 
-	authController        *auth.AuthController
-	categoryController    *category.CategoryController
-	currencyController    *currency.CurrencyController
-	subCategoryController *sub_category.SubCategoryController
-	statusController      *status.StatusController
-	transactionController *transaction.TransactionController
-	typeController        *transaction_type.TypeController
-	userController        *user.UserController
+	AuthController        *auth.AuthController
+	CategoryController    *category.CategoryController
+	CurrencyController    *currency.CurrencyController
+	SubCategoryController *sub_category.SubCategoryController
+	StatusController      *status.StatusController
+	TransactionController *transaction.TransactionController
+	TypeController        *transaction_type.TypeController
+	UserController        *user.UserController
 }
 
-func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.Logger) *dependencies {
+func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.Logger) *Dependencies {
 	// Connect to the database
 	pool, err := database.ConnectDB(cfg, ctx, logger)
 	if err != nil {
@@ -60,7 +60,7 @@ func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.L
 	currencyController := currency.NewCurrencyController(pool, ctx)
 	typeController := transaction_type.NewTypeController(pool, ctx)
 
-	return &dependencies{
+	return &Dependencies{
 		logger,
 
 		authService,

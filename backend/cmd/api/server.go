@@ -2,49 +2,67 @@ package api
 
 import (
 	"context"
+	"monthly-expenses-handler/internal/dependencies"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"monthly-expenses-handler/internal/middleware"
 )
 
+type server struct {
+	deps   *dependencies.Dependencies
+	router *gin.Engine
+}
+
+func NewServer(deps *dependencies.Dependencies) *server {
+	router := gin.New()
+
+	return &server{
+		deps,
+		router,
+	}
+}
+
 // routes
 // Sets up the router for the API.
-func (app *dependencies) routes() http.Handler {
+func (s *server) routes() http.Handler {
+	s.router.Group("/v1")
+
 	mux := http.NewServeMux()
 
 	// Auth routes (public)
-	mux.HandleFunc("POST /register", app.registerUser)
-	mux.HandleFunc("POST /login", app.loginUser)
+	mux.HandleFunc("POST /register", s.deps.registerUser)
+	mux.HandleFunc("POST /login", s.deps.loginUser)
 
 	// Protected routes
 	protectedMux := http.NewServeMux()
-	protectedMux.HandleFunc("POST /transactions", app.createTransaction)
-	protectedMux.HandleFunc("GET /transactions", app.listTransactions)
+	protectedMux.HandleFunc("POST /transactions", s.deps.createTransaction)
+	protectedMux.HandleFunc("GET /transactions", s.deps.listTransactions)
 
 	// Public lookup routes
 	lookupMux := http.NewServeMux()
-	lookupMux.HandleFunc("GET /categories", app.listCategories)
-	lookupMux.HandleFunc("GET /sub-categories", app.listAllSubCategories)
-	lookupMux.HandleFunc("GET /categories/{category_name}/sub-categories", app.listSubCategoriesByCategory)
-	lookupMux.HandleFunc("GET /status", app.listLookups(func() (any, error) {
-		return app.statusController.GetAllStatus()
+	lookupMux.HandleFunc("GET /categories", s.deps.listCategories)
+	lookupMux.HandleFunc("GET /sub-categories", s.deps.listAllSubCategories)
+	lookupMux.HandleFunc("GET /categories/{category_name}/sub-categories", s.deps.listSubCategoriesByCategory)
+	lookupMux.HandleFunc("GET /status", s.deps.listLookups(func() (any, error) {
+		return s.deps.StatusController.GetAllStatus()
 	}, "status"))
-	lookupMux.HandleFunc("GET /currencies", app.listLookups(func() (any, error) {
-		return app.currencyController.GetAllCurrencies()
+	lookupMux.HandleFunc("GET /currencies", s.deps.listLookups(func() (any, error) {
+		return s.deps.CurrencyController.GetAllCurrencies()
 	}, "currencies"))
-	lookupMux.HandleFunc("GET /types", app.listLookups(func() (any, error) {
-		return app.typeController.GetAllTransactionTypes()
+	lookupMux.HandleFunc("GET /types", s.deps.listLookups(func() (any, error) {
+		return s.deps.TypeController.GetAllTransactionTypes()
 	}, "types"))
 
 	// Apply middleware
 	var handler http.Handler = mux
 
 	// Chain middlewares: Auth -> Logging
-	protectedHandler := middleware.AuthMiddleware(protectedMux, app.authService)
+	protectedHandler := middleware.AuthMiddleware(protectedMux, s.deps.authService)
 	mux.Handle("/transactions", protectedHandler)
 	mux.Handle("/transactions/", protectedHandler)
 
@@ -58,23 +76,23 @@ func (app *dependencies) routes() http.Handler {
 	mux.Handle("/types", lookupMux)
 
 	// Apply logging middleware to all routes
-	handler = middleware.LoggingMiddleware(mux, app.logger)
+	handler = middleware.LoggingMiddleware(mux, s.deps.Logger)
 
 	return handler
 }
 
 // Serve
 // Starts the HTTP server and handles graceful shutdown.
-func (app *dependencies) Serve() {
+func (s *server) Serve() {
 	port := "8080"
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: app.routes(),
+		Handler: s.routes(),
 	}
 
 	serverErrors := make(chan error, 1)
 	go func() {
-		app.logger.Info("🚀 Starting API server", "port", port)
+		s.deps.Logger.Info("🚀 Starting API server", map[string]interface{}{"port": port})
 		serverErrors <- server.ListenAndServe()
 	}()
 
@@ -84,17 +102,17 @@ func (app *dependencies) Serve() {
 	select {
 	case err := <-serverErrors:
 		if err != nil && err != http.ErrServerClosed {
-			app.logger.Error("Server error", "error", err)
+			s.deps.Logger.Error("Server error", "error", err)
 		}
 	case sig := <-shutdownChan:
-		app.logger.Info("Shutdown signal received", "signal", sig)
+		s.deps.Logger.Info("Shutdown signal received", "signal", sig)
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			app.logger.Error("Graceful shutdown failed", "error", err)
+			s.deps.Logger.Error("Graceful shutdown failed", "error", err)
 		} else {
-			app.logger.Info("Server shut down gracefully")
+			s.deps.Logger.Info("Server shut down gracefully")
 		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"monthly-expenses-handler/cmd/api"
 	"monthly-expenses-handler/internal/config"
+	"monthly-expenses-handler/internal/dependencies"
 	"monthly-expenses-handler/internal/logger"
 )
 
@@ -15,12 +16,15 @@ func main() {
 	ctx := context.Background()
 
 	// Initialize logger
-	logger := logger.New(cfg)
+	log := logger.New(cfg)
 
 	// Build dependencies
-	app := api.BuildDependencies(cfg, ctx, logger)
+	deps := dependencies.BuildDependencies(cfg, ctx, log)
+
+	// Build server
+	server := api.NewServer(deps)
 
 	// Start the server
-	logger.Info("Dependencies initialized, starting server...", nil)
-	app.Serve()
+	log.Info("Dependencies initialized, starting server...", nil)
+	server.Serve()
 }
