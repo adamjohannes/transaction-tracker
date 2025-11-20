@@ -3,13 +3,14 @@ package transaction
 import (
 	"context"
 	"fmt"
-	"monthly-expenses-handler/internal/crypto"
+	"monthly-expenses-handler/internal/api_error"
 	"monthly-expenses-handler/internal/domain/category"
 	"monthly-expenses-handler/internal/domain/currency"
 	"monthly-expenses-handler/internal/domain/status"
 	"monthly-expenses-handler/internal/domain/sub_category"
 	"monthly-expenses-handler/internal/domain/transaction"
 	"monthly-expenses-handler/internal/domain/transaction_type"
+	"monthly-expenses-handler/internal/infrastructure/crypto"
 	"strconv"
 	"strings"
 
@@ -21,8 +22,8 @@ import (
 // Repository
 // Defines the interface for transaction data operations.
 type Repository interface {
-	Create(ctx context.Context, tx *transaction.Transaction, userID int64) (*transaction.Transaction, error)
-	GetAllByUser(ctx context.Context, userID int64) ([]*transaction.Transaction, error)
+	Create(ctx context.Context, tx *transaction.Transaction, userID uint64) (*transaction.Transaction, error)
+	List(ctx context.Context, userID uint64) ([]*transaction.Transaction, error)
 	GetFiltered(ctx context.Context, filters *transaction.FilterCriteria, userID int64) ([]*transaction.Transaction, error)
 	GetTransactionCountByTypeAndCategory(ctx context.Context) (map[string]map[string]int, error)
 	GetTransactionCount(ctx context.Context, groupBy string) (map[string]map[string]int, error)
@@ -92,18 +93,18 @@ func NewPostgresRepository(db *pgxpool.Pool, cryptoSvc *crypto.CryptoService) Re
 // Create
 // Inserts a new transaction record into the database.
 // It uses subqueries to look up foreign key IDs from names.
-func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transaction, userID int64) (*transaction.Transaction, error) {
+func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transaction, userID uint64) (*transaction.Transaction, error) {
 	var id int64
 
 	// Encrypt sensitive data before insertion
 	encryptedAmount, err := r.crypto.Encrypt([]byte(tx.Amount.String()))
 	if err != nil {
-		return nil, fmt.Errorf("failed to encrypt transaction amount: %w", err)
+		return nil, api_error.NewAnyError("failed to encrypt transaction amount", err)
 	}
 
 	encryptedDesc, err := r.crypto.Encrypt([]byte(tx.Description))
 	if err != nil {
-		return nil, fmt.Errorf("failed to encrypt transaction description: %w", err)
+		return nil, api_error.NewAnyError("failed to encrypt transaction description", err)
 	}
 
 	query := `
@@ -132,16 +133,16 @@ func (r *postgresRepository) Create(ctx context.Context, tx *transaction.Transac
 	).Scan(&id)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create transaction: %w", err)
+		return nil, api_error.NewAnyError("failed to create transaction", err)
 	}
 
 	tx.ID = id
 	return tx, nil
 }
 
-// GetAllByUser
+// List
 // Retrieves all transaction records from the database for a specific user.
-func (r *postgresRepository) GetAllByUser(ctx context.Context, userID int64) ([]*transaction.Transaction, error) {
+func (r *postgresRepository) List(ctx context.Context, userID uint64) ([]*transaction.Transaction, error) {
 	query := `
 		SELECT 
 			t.id, t.amount, t.date, t.description, t.essential,
@@ -161,7 +162,7 @@ func (r *postgresRepository) GetAllByUser(ctx context.Context, userID int64) ([]
 
 	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query transactions: %w", err)
+		return nil, api_error.NewAnyError("failed to query transactions", err)
 	}
 	defer rows.Close()
 
@@ -190,22 +191,22 @@ func (r *postgresRepository) scanTransactions(rows pgx.Rows) ([]*transaction.Tra
 			&txSubCategory.ID, &txSubCategory.ParentID, &txSubCategory.Name,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
+			return nil, api_error.NewAnyError("failed to scan transaction row", err)
 		}
 
 		// Decrypt fields
 		decryptedAmount, err := r.crypto.Decrypt(encryptedAmount)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt amount for tx %d: %w", tx.ID, err)
+			return nil, api_error.NewAnyError("failed to decrypt amount for tx", tx.ID, err)
 		}
 		tx.Amount, err = decimal.NewFromString(string(decryptedAmount))
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse decrypted amount for tx %d: %w", tx.ID, err)
+			return nil, api_error.NewAnyError("failed to parse decrypted amount for tx", tx.ID, err)
 		}
 
 		decryptedDesc, err := r.crypto.Decrypt(encryptedDesc)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt description for tx %d: %w", tx.ID, err)
+			return nil, api_error.NewAnyError("failed to decrypt description for tx", tx.ID, err)
 		}
 		tx.Description = string(decryptedDesc)
 
@@ -219,7 +220,7 @@ func (r *postgresRepository) scanTransactions(rows pgx.Rows) ([]*transaction.Tra
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("error reading transaction rows: %w", rows.Err())
+		return nil, api_error.NewAnyError("error reading transaction rows", rows.Err())
 	}
 
 	return transactions, nil
@@ -500,7 +501,7 @@ func (r *postgresRepository) GetTransactionCount(ctx context.Context, groupBy st
 
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query transaction counts: %w", err)
+		return nil, api_error.NewAnyError("failed to query transaction counts", err)
 	}
 	defer rows.Close()
 
@@ -512,7 +513,7 @@ func (r *postgresRepository) GetTransactionCount(ctx context.Context, groupBy st
 
 		// Scan into groupName, which is an alias for either category or sub-category name
 		if err := rows.Scan(&transactionType, &groupName, &transactionCount); err != nil {
-			return nil, fmt.Errorf("failed to scan transaction count row: %w", err)
+			return nil, api_error.NewAnyError("failed to scan transaction count row", err)
 		}
 
 		if _, ok := results[transactionType]; !ok {
@@ -522,7 +523,7 @@ func (r *postgresRepository) GetTransactionCount(ctx context.Context, groupBy st
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("error reading transaction count rows: %w", rows.Err())
+		return nil, api_error.NewAnyError("error reading transaction count rows", rows.Err())
 	}
 
 	return results, nil

@@ -13,15 +13,16 @@ import (
 )
 
 type Transaction struct {
-	ID          int64
+	ID int64
+
 	Amount      decimal.Decimal
 	Category    *category.Category
-	SubCategory *sub_category.SubCategory
+	Currency    *currency.Currency
 	Date        time.Time
 	Description string
-	Status      *status.Status
-	Currency    *currency.Currency
 	Essential   bool
+	Status      *status.Status
+	SubCategory *sub_category.SubCategory
 	Type        *transaction_type.TransactionType
 }
 
@@ -32,16 +33,16 @@ func New(
 	transactionCurrency currency.Currency, essential bool,
 	transactionType transaction_type.TransactionType) *Transaction {
 	return &Transaction{
-		ID:          -1,
-		Amount:      amount,
-		Category:    &transactionCategory,
-		SubCategory: &transactionSubcategory,
-		Date:        date,
-		Description: description,
-		Status:      &transactionStatus,
-		Currency:    &transactionCurrency,
-		Essential:   essential,
-		Type:        &transactionType,
+		0,
+		amount,
+		&transactionCategory,
+		&transactionCurrency,
+		date,
+		description,
+		essential,
+		&transactionStatus,
+		&transactionSubcategory,
+		&transactionType,
 	}
 }
 
@@ -54,20 +55,20 @@ func BuildTransaction(transaction map[string]any) (*Transaction, error) {
 	amountStr, _ := transaction["amount"].(string)
 	amount, err := decimal.NewFromString(amountStr)
 	if err != nil {
-		return nil, apierror.NewValidationError("invalid amount format: %v", transaction["amount"])
+		return nil, api_error.NewValidationError("invalid amount format: %v", transaction["amount"])
 	}
 
 	// --- Date ---
 	dateStr, _ := transaction["date"].(string)
 	date, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
-		return nil, apierror.NewValidationError("invalid date format, use YYYY-MM-DD")
+		return nil, api_error.NewValidationError("invalid date format, use YYYY-MM-DD")
 	}
 
 	// --- Essential ---
 	essential, ok := transaction["essential"].(bool)
 	if !ok {
-		return nil, apierror.NewValidationError("field 'essential' must be a boolean (true/false)")
+		return nil, api_error.NewValidationError("field 'essential' must be a boolean (true/false)")
 	}
 
 	// --- Description (Optional) ---
@@ -109,16 +110,16 @@ func BuildTransaction(transaction map[string]any) (*Transaction, error) {
 	}
 
 	return &Transaction{
-		ID:          -1, // ID is set by the database
-		Amount:      amount,
-		Category:    transactionCategory,
-		SubCategory: transactionSubcategory,
-		Date:        date,
-		Description: description,
-		Status:      transactionStatus,
-		Currency:    transactionCurrency,
-		Essential:   essential,
-		Type:        transactionType,
+		0,
+		amount,
+		transactionCategory,
+		transactionCurrency,
+		date,
+		description,
+		essential,
+		transactionStatus,
+		transactionSubcategory,
+		transactionType,
 	}, nil
 }
 
@@ -128,7 +129,7 @@ func BuildTransaction(transaction map[string]any) (*Transaction, error) {
 // Validates if all required fields are present in the transaction.
 func validateRequiredFields(transaction map[string]any) error {
 	if transaction == nil {
-		return apierror.NewValidationError("transaction payload is required")
+		return api_error.NewValidationError("transaction payload is required")
 	}
 
 	requiredFields := []string{
@@ -139,11 +140,11 @@ func validateRequiredFields(transaction map[string]any) error {
 	for _, field := range requiredFields {
 		val, ok := transaction[field]
 		if !ok || val == nil {
-			return apierror.NewValidationError("field '%s' is required", field)
+			return api_error.NewValidationError("field '%s' is required", field)
 		}
 		// Check for empty strings as well
 		if strVal, ok := val.(string); ok && strVal == "" {
-			return apierror.NewValidationError("field '%s' cannot be empty", field)
+			return api_error.NewValidationError("field '%s' cannot be empty", field)
 		}
 	}
 
