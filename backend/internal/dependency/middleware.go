@@ -4,22 +4,6 @@ import (
 	"net/http"
 )
 
-// listCategories
-// Handles fetching all categories.
-func (deps *Dependencies) listCategories(w http.ResponseWriter, r *http.Request) {
-	deps.Logger.Info("Attempting to fetch all categories...", nil)
-
-	categories, err := deps.CategoryController.GetAllCategories()
-	if err != nil {
-		deps.Logger.Error("Failed to fetch categories", map[string]interface{}{"error": err})
-		deps.respondWithError(w, http.StatusInternalServerError, "Could not retrieve categories")
-		return
-	}
-
-	deps.Logger.Info("Successfully fetched all categories", map[string]interface{}{"count": len(categories)})
-	deps.respondWithJSON(w, http.StatusOK, categories)
-}
-
 // listAllSubCategories
 // Handles fetching all sub-categories.
 func (deps *Dependencies) listAllSubCategories(w http.ResponseWriter, r *http.Request) {

@@ -9,8 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"monthly-expenses-handler/internal/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 type server struct {
@@ -30,18 +31,23 @@ func NewServer(deps *dependencies.Dependencies) *server {
 // routes
 // Sets up the router for the API.
 func (s *server) routes() http.Handler {
-	s.router.Group("/v1")
+	v1 := s.router.Group("/v1")
 
-	mux := http.NewServeMux()
+	{
+		// Auth routes (public)
+		auth := v1.Group("/auth")
 
-	// Auth routes (public)
-	mux.HandleFunc("POST /register", s.deps.registerUser)
-	mux.HandleFunc("POST /login", s.deps.loginUser)
+		auth.POST("/register", s.deps.AuthController.Register)
+		auth.POST("/login", s.deps.AuthController.Login)
+	}
 
-	// Protected routes
-	protectedMux := http.NewServeMux()
-	protectedMux.HandleFunc("POST /transactions", s.deps.createTransaction)
-	protectedMux.HandleFunc("GET /transactions", s.deps.listTransactions)
+	{
+		// Transaction routes (protected)
+		transaction := v1.Group("/transaction")
+
+		transaction.POST("/:userID", s.deps.TransactionController.PostTransaction)
+		transaction.GET("/:userID", s.deps.TransactionController.GetAllTransactionsByUser)
+	}
 
 	// Public lookup routes
 	lookupMux := http.NewServeMux()
@@ -102,17 +108,17 @@ func (s *server) Serve() {
 	select {
 	case err := <-serverErrors:
 		if err != nil && err != http.ErrServerClosed {
-			s.deps.Logger.Error("Server error", "error", err)
+			s.deps.Logger.Error("Server error", map[string]interface{}{"error": err})
 		}
 	case sig := <-shutdownChan:
-		s.deps.Logger.Info("Shutdown signal received", "signal", sig)
+		s.deps.Logger.Info("Shutdown signal received", map[string]interface{}{"signal": sig})
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			s.deps.Logger.Error("Graceful shutdown failed", "error", err)
+			s.deps.Logger.Error("Graceful shutdown failed", map[string]interface{}{"error": err})
 		} else {
-			s.deps.Logger.Info("Server shut down gracefully")
+			s.deps.Logger.Info("Server shut down gracefully", nil)
 		}
 	}
 }

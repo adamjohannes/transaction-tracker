@@ -2,37 +2,49 @@ package category
 
 import (
 	"context"
-	domain "monthly-expenses-handler/internal/domain/category"
-	repository "monthly-expenses-handler/internal/repository/category"
+	"monthly-expenses-handler/internal/infrastructure/logger"
+	"monthly-expenses-handler/internal/usecase/category"
+	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/gin-gonic/gin"
 )
 
-// CategoryController
+// Controller
 // Orchestrates category-related operations.
-type CategoryController struct {
-	pool *pgxpool.Pool
-	ctx  context.Context
+type Controller struct {
+	ctx             context.Context
+	categoryService category.UseCase
+	logger          *logger.Logger
 }
 
 // NewCategoryController
 // Creates a new instance of the category controller.
-func NewCategoryController(pool *pgxpool.Pool, ctx context.Context) *CategoryController {
-	return &CategoryController{
-		pool: pool,
-		ctx:  ctx,
+func NewCategoryController(ctx context.Context, categoryService category.UseCase, logger *logger.Logger) *Controller {
+	return &Controller{
+		ctx,
+		categoryService,
+		logger,
 	}
 }
 
 // GetAllCategories
 // Fetches all categories from the repository.
-func (cc *CategoryController) GetAllCategories() ([]*domain.Category, error) {
-	repo := repository.NewPostgresRepository(cc.pool)
-	categories, err := repo.GetAll(cc.ctx)
+func (cc *Controller) GetAllCategories(c *gin.Context) {
+	cc.logger.Info("Received a request to fetch all categories", nil)
 
+	categories, err := cc.categoryService.ListCategories()
 	if err != nil {
-		return nil, err
+		cc.logger.Error("Failed to fetch categories", map[string]interface{}{"error": err})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to fetch categories",
+			"detail":  err,
+		})
+		return
 	}
 
-	return categories, nil
+	cc.logger.Info("Successfully fetched all categories", map[string]interface{}{"count": len(categories)})
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"message":    "Successfully fetched all categories",
+		"categories": categories,
+	})
 }

@@ -25,7 +25,7 @@ type Dependencies struct {
 	authService *authSrvc.AuthService
 
 	AuthController        *auth.Controller
-	CategoryController    *category.CategoryController
+	CategoryController    *category.Controller
 	CurrencyController    *currency.CurrencyController
 	SubCategoryController *sub_category.SubCategoryController
 	StatusController      *status.StatusController

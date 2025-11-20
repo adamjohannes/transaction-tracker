@@ -8,11 +8,11 @@ import (
 )
 
 type CategoryHandler struct {
-	controller *category.CategoryController
+	controller *category.Controller
 	logger     *slog.Logger
 }
 
-func NewCategoryHandler(c *category.CategoryController, l *slog.Logger) *CategoryHandler {
+func NewCategoryHandler(c *category.Controller, l *slog.Logger) *CategoryHandler {
 	return &CategoryHandler{controller: c, logger: l}
 }
 
