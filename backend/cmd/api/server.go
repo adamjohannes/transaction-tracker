@@ -2,19 +2,18 @@ package api
 
 import (
 	"context"
+	"monthly-expenses-handler/cmd/api/dependency"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"monthly-expenses-handler/internal/dependency"
-
 	"github.com/gin-gonic/gin"
 )
 
 type server struct {
-	deps       *dependencies.Dependencies
+	deps       *dependencies.dependencies
 	router     *gin.Engine
 	httpServer *http.Server
 }

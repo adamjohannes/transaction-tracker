@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"monthly-expenses-handler/cmd/api"
+	"monthly-expenses-handler/cmd/api/dependency"
 	"monthly-expenses-handler/internal/config"
-	"monthly-expenses-handler/internal/dependency"
 	"monthly-expenses-handler/internal/infrastructure/logger"
 )
 
@@ -19,7 +19,7 @@ func main() {
 	log := logger.New(cfg)
 
 	// Build dependencies
-	deps := dependencies.BuildDependencies(cfg, ctx, log)
+	deps := dependencies.dependencies.BuildDependencies(cfg, ctx, log)
 
 	// Build server
 	server := api.NewServer(deps)
