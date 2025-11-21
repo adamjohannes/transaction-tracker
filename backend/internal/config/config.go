@@ -2,7 +2,6 @@ package config
 
 import (
 	"io"
-	"monthly-expenses-handler/internal/infrastructure/logger"
 	"os"
 )
 
@@ -56,22 +55,22 @@ func loadLoggerOutputStream() io.Writer {
 	return os.Stdout
 }
 
-func loadLoggerLevel() logger.Level {
+func loadLoggerLevel() LogLevel {
 	if value, ok := os.LookupEnv("LEVEL"); ok {
 		switch value {
 		case "debug":
-			return logger.DEBUG
+			return DEBUG
 		case "info":
-			return logger.INFO
+			return INFO
 		case "warn":
-			return logger.WARNING
+			return WARNING
 		case "error":
-			return logger.ERROR
+			return ERROR
 		case "fatal":
-			return logger.FATAL
+			return FATAL
 		}
 	}
-	return logger.INFO
+	return INFO
 }
 
 func getEnv(key, fallback string) string {

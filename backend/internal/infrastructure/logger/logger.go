@@ -12,38 +12,11 @@ import (
 	"time"
 )
 
-type Level int
-
-const (
-	DEBUG Level = iota
-	INFO
-	WARNING
-	ERROR
-	FATAL
-)
-
-func (l Level) String() string {
-	switch l {
-	case DEBUG:
-		return "DEBUG"
-	case INFO:
-		return "INFO"
-	case WARNING:
-		return "WARNING"
-	case ERROR:
-		return "ERROR"
-	case FATAL:
-		return "FATAL"
-	default:
-		return "UNKNOWN"
-	}
-}
-
 // Logger
 // It is a structured, leveled logger.
 type Logger struct {
 	out      io.Writer
-	minLevel Level
+	minLevel config.LogLevel
 	mu       sync.Mutex
 }
 
@@ -61,7 +34,7 @@ func New(config *config.Config) *Logger {
 // internalLog
 // It is the private method that handles all log writing.
 // Thread safe 😎 (at least until a thread explodes and proves otherwise).
-func (l *Logger) internalLog(level Level, message string, fields map[string]interface{}) {
+func (l *Logger) internalLog(level config.LogLevel, message string, fields map[string]interface{}) {
 	// 1. Check the level
 	if level < l.minLevel {
 		return
@@ -71,9 +44,9 @@ func (l *Logger) internalLog(level Level, message string, fields map[string]inte
 	// `runtime.Caller()` returns the execution call stack.
 	// If we go up 2 levels, we can collect the function
 	// that called the logger:
-	// Level 0: runtime.Caller()
-	// Level 1: internalLog()
-	// Level 2: the function that called the logger
+	// LogLevel 0: runtime.Caller()
+	// LogLevel 1: internalLog()
+	// LogLevel 2: the function that called the logger
 	// - IT SEEMS the compiler "suppresses" the call to Info/Debugf/...
 	//   through inlining
 	// - I expected to have to go up 3 levels, because I imagined that at
@@ -131,7 +104,7 @@ func (l *Logger) internalLog(level Level, message string, fields map[string]inte
 	_, _ = l.out.Write([]byte("\n")) // We add a newline for line-based log processing
 
 	// 7. If the level is FATAL, terminate the program
-	if level == FATAL {
+	if level == config.FATAL {
 		os.Exit(1)
 	}
 }
@@ -141,31 +114,31 @@ func (l *Logger) internalLog(level Level, message string, fields map[string]inte
 // Debug
 // Logs a message at the DEBUG level with optional structured fields.
 func (l *Logger) Debug(message string, fields map[string]interface{}) {
-	l.internalLog(DEBUG, message, fields)
+	l.internalLog(config.DEBUG, message, fields)
 }
 
 // Info
 // Logs a message at the INFO level with optional structured fields.
 func (l *Logger) Info(message string, fields map[string]interface{}) {
-	l.internalLog(INFO, message, fields)
+	l.internalLog(config.INFO, message, fields)
 }
 
 // Warning
 // Logs a message at the WARNING level with optional structured fields.
 func (l *Logger) Warning(message string, fields map[string]interface{}) {
-	l.internalLog(WARNING, message, fields)
+	l.internalLog(config.WARNING, message, fields)
 }
 
 // Error
 // Logs a message at the ERROR level with optional structured fields.
 func (l *Logger) Error(message string, fields map[string]interface{}) {
-	l.internalLog(ERROR, message, fields)
+	l.internalLog(config.ERROR, message, fields)
 }
 
 // Fatal
 // Logs a message at the FATAL level with optional structured fields, and then terminates.
 func (l *Logger) Fatal(message string, fields map[string]interface{}) {
-	l.internalLog(FATAL, message, fields)
+	l.internalLog(config.FATAL, message, fields)
 }
 
 // --- Public Formatted Methods ---
@@ -173,29 +146,29 @@ func (l *Logger) Fatal(message string, fields map[string]interface{}) {
 // Debugf
 // Logs a formatted message at the DEBUG level.
 func (l *Logger) Debugf(format string, v ...interface{}) {
-	l.internalLog(DEBUG, fmt.Sprintf(format, v...), nil)
+	l.internalLog(config.DEBUG, fmt.Sprintf(format, v...), nil)
 }
 
 // Infof
 // Logs a formatted message at the INFO level.
 func (l *Logger) Infof(format string, v ...interface{}) {
-	l.internalLog(INFO, fmt.Sprintf(format, v...), nil)
+	l.internalLog(config.INFO, fmt.Sprintf(format, v...), nil)
 }
 
 // Warningf
 // Logs a formatted message at the WARNING level.
 func (l *Logger) Warningf(format string, v ...interface{}) {
-	l.internalLog(WARNING, fmt.Sprintf(format, v...), nil)
+	l.internalLog(config.WARNING, fmt.Sprintf(format, v...), nil)
 }
 
 // Errorf
 // Logs a formatted message at the ERROR level.
 func (l *Logger) Errorf(format string, v ...interface{}) {
-	l.internalLog(ERROR, fmt.Sprintf(format, v...), nil)
+	l.internalLog(config.ERROR, fmt.Sprintf(format, v...), nil)
 }
 
 // Fatalf
 // Logs a formatted message at the FATAL level, and then terminates.
 func (l *Logger) Fatalf(format string, v ...interface{}) {
-	l.internalLog(FATAL, fmt.Sprintf(format, v...), nil)
+	l.internalLog(config.FATAL, fmt.Sprintf(format, v...), nil)
 }

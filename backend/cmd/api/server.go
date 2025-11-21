@@ -2,27 +2,33 @@ package api
 
 import (
 	"context"
-	"monthly-expenses-handler/internal/dependency"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"monthly-expenses-handler/internal/dependency"
+
 	"github.com/gin-gonic/gin"
 )
 
 type server struct {
-	deps   *dependencies.Dependencies
-	router *gin.Engine
+	deps       *dependencies.Dependencies
+	router     *gin.Engine
+	httpServer *http.Server
 }
 
 func NewServer(deps *dependencies.Dependencies) *server {
 	router := gin.New()
+	srv := &http.Server{
+		Handler: router,
+	}
 
 	return &server{
-		deps,
-		router,
+		deps:       deps,
+		router:     router,
+		httpServer: srv,
 	}
 }
 
@@ -66,11 +72,14 @@ func (s *server) setup() {
 // Starts the HTTP server and handles graceful shutdown.
 func (s *server) Serve() {
 	port := "8080"
+	s.httpServer.Addr = ":" + port
 
 	serverErrors := make(chan error, 1)
 	go func() {
 		s.deps.Logger.Info("Starting API server", map[string]interface{}{"port": port})
-		s.router.Run(":" + port)
+		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			serverErrors <- err
+		}
 	}()
 
 	shutdownChan := make(chan os.Signal, 1)
@@ -78,16 +87,14 @@ func (s *server) Serve() {
 
 	select {
 	case err := <-serverErrors:
-		if err != nil && err != http.ErrServerClosed {
-			s.deps.Logger.Error("Server error", map[string]interface{}{"error": err})
-		}
+		s.deps.Logger.Error("Server critical error", map[string]interface{}{"error": err})
 	case sig := <-shutdownChan:
-		s.deps.Logger.Info("Shutdown signal received", map[string]interface{}{"signal": sig})
+		s.deps.Logger.Info("Shutdown signal received", map[string]interface{}{"signal": sig.String()})
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		if err := s.Shutdown(shutdownCtx); err != nil {
-			s.deps.Logger.Error("Graceful shutdown failed", map[string]interface{}{"error": err})
+		if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
+			s.deps.Logger.Error("Graceful shutdown failed: Server forced to exit", map[string]interface{}{"error": err})
 		} else {
 			s.deps.Logger.Info("Server shut down gracefully", nil)
 		}
