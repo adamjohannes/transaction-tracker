@@ -6,7 +6,7 @@ import (
 	"monthly-expenses-handler/internal/domain/user"
 	"monthly-expenses-handler/internal/infrastructure/logger"
 	"monthly-expenses-handler/internal/service/auth"
-	userService "monthly-expenses-handler/internal/usecase/user"
+	userSvc "monthly-expenses-handler/internal/usecase/user"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,7 @@ import (
 
 type Controller struct {
 	authSvc *auth.AuthService
-	useCase *userService.UseCase
+	userSvc *userSvc.UseCase
 	logger  *logger.Logger
 }
 
@@ -23,10 +23,10 @@ type authRequest struct {
 	Password string `json:"password"`
 }
 
-func NewAuthController(authSvc *auth.AuthService, useCase *userService.UseCase, logger *logger.Logger) *Controller {
+func NewAuthController(authSvc *auth.AuthService, userSvc *userSvc.UseCase, logger *logger.Logger) *Controller {
 	return &Controller{
 		authSvc,
-		useCase,
+		userSvc,
 		logger,
 	}
 }
@@ -56,7 +56,7 @@ func (ac *Controller) Register(c *gin.Context) {
 
 	ac.logger.Info("Attempting to register a new user...", map[string]interface{}{"username": newUser.Username})
 
-	token, err := ac.useCase.Register(newUser)
+	token, err := ac.userSvc.Register(newUser)
 	if err != nil {
 		ac.logger.Error("Failed to register user", map[string]interface{}{"error": err})
 		var validationErr *api_error.ValidationError
@@ -106,7 +106,7 @@ func (ac *Controller) Login(c *gin.Context) {
 
 	ac.logger.Info("Attempting to login user...", map[string]interface{}{"username": requestedUser.Username})
 
-	token, err := ac.useCase.Login(requestedUser)
+	token, err := ac.userSvc.Login(requestedUser)
 	if err != nil {
 		ac.logger.Error("Failed to log-in user", map[string]interface{}{"error": err})
 

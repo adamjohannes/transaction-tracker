@@ -11,18 +11,30 @@ import (
 	"monthly-expenses-handler/internal/controller/sub_category"
 	"monthly-expenses-handler/internal/controller/transaction"
 	"monthly-expenses-handler/internal/controller/transaction_type"
-	"monthly-expenses-handler/internal/controller/user"
 	"monthly-expenses-handler/internal/database"
 	"monthly-expenses-handler/internal/infrastructure/crypto"
 	"monthly-expenses-handler/internal/infrastructure/logger"
-	authSrvc "monthly-expenses-handler/internal/service/auth"
-	userService2 "monthly-expenses-handler/internal/usecase/user"
+	categoryRepository "monthly-expenses-handler/internal/repository/category"
+	currencyRepository "monthly-expenses-handler/internal/repository/currency"
+	statusRepository "monthly-expenses-handler/internal/repository/status"
+	subCategoryRepository "monthly-expenses-handler/internal/repository/sub_category"
+	transactionRepo "monthly-expenses-handler/internal/repository/transaction"
+	typeRepository "monthly-expenses-handler/internal/repository/transaction_type"
+	userRepository "monthly-expenses-handler/internal/repository/user"
+	authService "monthly-expenses-handler/internal/service/auth"
+	categoryService "monthly-expenses-handler/internal/usecase/category"
+	currencyService "monthly-expenses-handler/internal/usecase/currency"
+	statusService "monthly-expenses-handler/internal/usecase/status"
+	subCategoryService "monthly-expenses-handler/internal/usecase/sub_category"
+	transactionService "monthly-expenses-handler/internal/usecase/transaction"
+	transaction_type2 "monthly-expenses-handler/internal/usecase/transaction_type"
+	userService "monthly-expenses-handler/internal/usecase/user"
 )
 
 type Dependencies struct {
 	Logger *logger.Logger
 
-	authService *authSrvc.AuthService
+	authService *authService.AuthService
 
 	AuthController        *auth.Controller
 	CategoryController    *category.Controller
@@ -31,7 +43,6 @@ type Dependencies struct {
 	StatusController      *status.Controller
 	TransactionController *transaction.Controller
 	TypeController        *transaction_type.Controller
-	UserController        *user.UserController
 }
 
 func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.Logger) *Dependencies {
@@ -48,23 +59,41 @@ func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.L
 		logger.Fatalf("Failed to create crypto service: %v", err)
 	}
 
-	authService := authSrvc.NewAuthService(cfg.Postgres.JWTSecret, cfg.Postgres.SearchHashKey)
-	userService := userService2.New(authService, ctx, logger, user)
+	authSvc := authService.NewAuthService(cfg.Postgres.JWTSecret, cfg.Postgres.SearchHashKey)
+	userRepo := userRepository.NewPostgresRepository(pool, cryptoSvc, authSvc, logger)
+	userSvc := userService.NewUserService(authSvc, ctx, logger, userRepo)
+
+	categoryRepo := categoryRepository.NewPostgresRepository(pool)
+	categorySvc := categoryService.NewCategoryService(ctx, categoryRepo, logger)
+
+	currencyRepo := currencyRepository.NewPostgresRepository(pool)
+	currencySvc := currencyService.NewCurrencyService(ctx, currencyRepo, logger)
+
+	statusRepo := statusRepository.NewPostgresRepository(pool)
+	statusSvc := statusService.NewStatusService(ctx, &statusRepo, logger) // TODO check inconsistency
+
+	subCategoryRepo := subCategoryRepository.NewPostgresRepository(pool)
+	subCategorySvc := subCategoryService.NewSubCategoryService(ctx, subCategoryRepo, logger)
+
+	transactionRepo := transactionRepo.NewPostgresRepository(pool, cryptoSvc)
+	transactionSvc := transactionService.NewTransactionService(ctx, transactionRepo, logger)
+
+	typeRepo := typeRepository.NewPostgresRepository(pool)
+	typeSvc := transaction_type2.NewTypeService(ctx, &typeRepo, logger) // TODO check inconsistency
 
 	// Initialize Controllers
-	userController := user.NewUserController(pool, cryptoSvc, authService)
-	authController := auth.NewAuthController(authService, userController, ctx)
-	transactionController := transaction.NewTransactionController(pool, ctx, cryptoSvc)
-	categoryController := category.NewCategoryController(pool, ctx)
-	subCategoryController := sub_category.NewSubCategoryController(pool, ctx)
-	statusController := status.NewStatusController(pool, ctx)
-	currencyController := currency.NewCurrencyController(pool, ctx)
-	typeController := transaction_type.NewTypeController(pool, ctx)
+	authController := auth.NewAuthController(authSvc, userSvc, logger)
+	categoryController := category.NewCategoryController(ctx, categorySvc, logger)
+	currencyController := currency.NewCurrencyController(ctx, currencySvc, logger)
+	statusController := status.NewStatusController(ctx, statusSvc, logger)
+	subCategoryController := sub_category.NewSubCategoryController(ctx, subCategorySvc, logger) // TODO check inconsistency
+	transactionController := transaction.NewTransactionController(*transactionSvc, logger)      // TODO check inconsistency
+	typeController := transaction_type.NewTypeController(ctx, *typeSvc, logger)                 // TODO check inconsistency
 
 	return &Dependencies{
 		logger,
 
-		authService,
+		authSvc,
 
 		authController,
 		categoryController,
@@ -73,6 +102,5 @@ func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.L
 		statusController,
 		transactionController,
 		typeController,
-		userController,
 	}
 }

@@ -9,8 +9,16 @@ import (
 
 type UseCase struct {
 	ctx          context.Context
-	logger       *logger.Logger
 	categoryRepo sub_category.Repository
+	logger       *logger.Logger
+}
+
+func NewSubCategoryService(ctx context.Context, subCategoryRepo sub_category.Repository, logger *logger.Logger) *UseCase {
+	return &UseCase{
+		ctx,
+		subCategoryRepo,
+		logger,
+	}
 }
 
 // List

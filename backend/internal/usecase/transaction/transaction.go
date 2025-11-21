@@ -9,8 +9,16 @@ import (
 
 type UseCase struct {
 	ctx             context.Context
-	logger          *logger.Logger
 	transactionRepo transactionRepo.Repository
+	logger          *logger.Logger
+}
+
+func NewTransactionService(ctx context.Context, transactionRepo transactionRepo.Repository, logger *logger.Logger) *UseCase {
+	return &UseCase{
+		ctx,
+		transactionRepo,
+		logger,
+	}
 }
 
 // RecordTransaction

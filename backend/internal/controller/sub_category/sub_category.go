@@ -14,13 +14,13 @@ import (
 // Orchestrates sub-category operations.
 type Controller struct {
 	ctx                context.Context
-	subcategoryService sub_category.UseCase
+	subcategoryService *sub_category.UseCase
 	logger             *logger.Logger
 }
 
 // NewSubCategoryController
 // Creates a new instance of the controller.
-func NewSubCategoryController(ctx context.Context, subCategoryService sub_category.UseCase, logger *logger.Logger) *Controller {
+func NewSubCategoryController(ctx context.Context, subCategoryService *sub_category.UseCase, logger *logger.Logger) *Controller {
 	return &Controller{
 		ctx,
 		subCategoryService,

@@ -15,8 +15,8 @@ import (
 // Controller
 // Defines the interface for transaction data operations.
 type Controller struct {
-	useCase transactionService.UseCase
-	logger  *logger.Logger
+	transactionSvc transactionService.UseCase
+	logger         *logger.Logger
 }
 
 type transactionPostRequest struct {
@@ -69,7 +69,7 @@ func (t *Controller) PostTransaction(c *gin.Context) {
 
 	t.logger.Info("Attempting to create a new transaction...", nil)
 
-	transactionObj, err := t.useCase.RecordTransaction(newTransaction, userID)
+	transactionObj, err := t.transactionSvc.RecordTransaction(newTransaction, userID)
 	if err != nil {
 		t.logger.Error("Failed to create transaction", map[string]interface{}{"error": err})
 
@@ -120,7 +120,7 @@ func (t *Controller) GetAllTransactionsByUser(c *gin.Context) {
 
 	t.logger.Info("Fetching transactions...", map[string]interface{}{"userID": userID})
 
-	transactionList, err := t.useCase.List(userID)
+	transactionList, err := t.transactionSvc.List(userID)
 	if err != nil {
 		t.logger.Error("Failed to list transactions", map[string]interface{}{"error": err})
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -148,7 +148,7 @@ func (t *Controller) GetFilteredTransactions(c *gin.Context) {
 func (t *Controller) GetTransactionCount(c *gin.Context) {
 	groupBy := c.Value(middleware.GroupBy).(string)
 
-	countMap, err := t.useCase.Count(groupBy)
+	countMap, err := t.transactionSvc.Count(groupBy)
 	if err != nil {
 		t.logger.Error("Failed to count transactions", map[string]interface{}{"error": err})
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -166,7 +166,7 @@ func (t *Controller) GetTransactionCount(c *gin.Context) {
 // GetSubCategoryAmounts
 // Forwards the call to the transactionRepo.
 func (t *Controller) GetSubCategoryAmounts(c *gin.Context) {
-	amount, err := t.useCase.CollectSubCategoryAmount()
+	amount, err := t.transactionSvc.CollectSubCategoryAmount()
 	if err != nil {
 		t.logger.Error("Failed to collect sub-category amounts", map[string]interface{}{"error": err})
 		c.JSON(http.StatusInternalServerError, gin.H{

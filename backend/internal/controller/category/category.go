@@ -12,17 +12,17 @@ import (
 // Controller
 // Orchestrates category-related operations.
 type Controller struct {
-	ctx             context.Context
-	categoryService category.UseCase
-	logger          *logger.Logger
+	ctx         context.Context
+	categorySvc *category.UseCase
+	logger      *logger.Logger
 }
 
 // NewCategoryController
 // Creates a new instance of the category controller.
-func NewCategoryController(ctx context.Context, categoryService category.UseCase, logger *logger.Logger) *Controller {
+func NewCategoryController(ctx context.Context, categorySvc *category.UseCase, logger *logger.Logger) *Controller {
 	return &Controller{
 		ctx,
-		categoryService,
+		categorySvc,
 		logger,
 	}
 }
@@ -32,7 +32,7 @@ func NewCategoryController(ctx context.Context, categoryService category.UseCase
 func (cc *Controller) GetAllCategories(ctx *gin.Context) {
 	cc.logger.Info("Received a request to fetch all categories", nil)
 
-	categories, err := cc.categoryService.ListCategories()
+	categories, err := cc.categorySvc.ListCategories()
 	if err != nil {
 		cc.logger.Error("Failed to fetch categories", map[string]interface{}{"error": err})
 		ctx.JSON(http.StatusInternalServerError, gin.H{

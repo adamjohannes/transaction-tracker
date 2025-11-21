@@ -9,8 +9,16 @@ import (
 
 type UseCase struct {
 	ctx        context.Context
+	statusRepo *statusRepo.Repository
 	logger     *logger.Logger
-	statusRepo statusRepo.Repository
+}
+
+func NewStatusService(ctx context.Context, statusRepo *statusRepo.Repository, logger *logger.Logger) UseCase {
+	return UseCase{
+		ctx,
+		statusRepo,
+		logger,
+	}
 }
 
 func (u *UseCase) List() ([]*status.Status, error) {

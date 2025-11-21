@@ -9,8 +9,16 @@ import (
 
 type UseCase struct {
 	ctx          context.Context
-	logger       *logger.Logger
 	currencyRepo currencyRepo.Repository
+	logger       *logger.Logger
+}
+
+func NewCurrencyService(ctx context.Context, currencyRepo currencyRepo.Repository, logger *logger.Logger) UseCase {
+	return UseCase{
+		ctx,
+		currencyRepo,
+		logger,
+	}
 }
 
 func (u *UseCase) List() ([]*currency.Currency, error) {

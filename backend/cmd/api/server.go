@@ -66,15 +66,11 @@ func (s *server) setup() {
 // Starts the HTTP server and handles graceful shutdown.
 func (s *server) Serve() {
 	port := "8080"
-	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: s.setup(),
-	}
 
 	serverErrors := make(chan error, 1)
 	go func() {
-		s.deps.Logger.Info("🚀 Starting API server", map[string]interface{}{"port": port})
-		serverErrors <- server.ListenAndServe()
+		s.deps.Logger.Info("Starting API server", map[string]interface{}{"port": port})
+		s.router.Run(":" + port)
 	}()
 
 	shutdownChan := make(chan os.Signal, 1)
@@ -90,7 +86,7 @@ func (s *server) Serve() {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		if err := server.Shutdown(shutdownCtx); err != nil {
+		if err := s.Shutdown(shutdownCtx); err != nil {
 			s.deps.Logger.Error("Graceful shutdown failed", map[string]interface{}{"error": err})
 		} else {
 			s.deps.Logger.Info("Server shut down gracefully", nil)

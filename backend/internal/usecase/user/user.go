@@ -17,7 +17,7 @@ type UseCase struct {
 	userRepo userRepo.Repository
 }
 
-func New(authSvc *auth.AuthService, ctx context.Context, logger *logger.Logger, userRepo userRepo.Repository) *UseCase {
+func NewUserService(authSvc *auth.AuthService, ctx context.Context, logger *logger.Logger, userRepo userRepo.Repository) *UseCase {
 	return &UseCase{
 		authSvc,
 		ctx,
