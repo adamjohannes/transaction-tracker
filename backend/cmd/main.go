@@ -19,7 +19,7 @@ func main() {
 	log := logger.New(cfg)
 
 	// Build dependencies
-	deps := dependencies.dependencies.BuildDependencies(cfg, ctx, log)
+	deps := dependencies.BuildDependencies(cfg, ctx, log)
 
 	// Build server
 	server := api.NewServer(deps)
