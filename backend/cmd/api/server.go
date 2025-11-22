@@ -62,8 +62,8 @@ func (s *Server) setup() {
 		lookup.GET("/categories", s.deps.CategoryController.GetAllCategories)
 		lookup.GET("/currencies", s.deps.CurrencyController.GetAllCurrency)
 		lookup.GET("/status", s.deps.StatusController.GetAllStatus)
-		lookup.GET("/sub-categories", s.deps.SubCategoryController.GetAllSubCategories)
-		lookup.GET("/sub-categories/:categoryName", s.deps.SubCategoryController.GetSubCategoriesByCategory)
+		lookup.GET("/subCategories", s.deps.SubCategoryController.GetAllSubCategories)
+		lookup.GET("/subCategories/:categoryName", s.deps.SubCategoryController.GetSubCategoriesByCategory)
 		lookup.GET("/types", s.deps.TypeController.GetAllTransactionType)
 	}
 }
