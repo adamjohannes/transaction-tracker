@@ -73,6 +73,7 @@ func (s *Server) setup() {
 func (s *Server) Serve() {
 	port := "8080"
 	s.httpServer.Addr = ":" + port
+	s.setup()
 
 	serverErrors := make(chan error, 1)
 	go func() {
