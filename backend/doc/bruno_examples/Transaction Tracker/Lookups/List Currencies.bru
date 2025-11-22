@@ -1,0 +1,16 @@
+meta {
+  name: List Currencies
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://{{HOST}}:{{PORT}}/v1/lookup/currencies
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

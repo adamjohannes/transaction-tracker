@@ -1,0 +1,16 @@
+meta {
+  name: List Sub Categories
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://{{HOST}}:{{PORT}}/v1/lookup/subCategories
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Register
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://{{HOST}}:{{PORT}}/v1/auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "{{USER}}",
+    "password": "{{PASSWORD}}"
+  }
+}
+
+script:post-response {
+  // 1. Get the JSON response body
+  const body = res.getBody();
+  
+  // 2. Extract the 'token' field
+  const tokenValue = body.token;
+  
+  // 3. Set the variable 'TOKEN' for use in subsequent requests
+  bru.setVar("TOKEN", tokenValue); 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

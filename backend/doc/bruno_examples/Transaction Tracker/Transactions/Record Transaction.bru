@@ -1,0 +1,30 @@
+meta {
+  name: Record Transaction
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://{{HOST}}:{{PORT}}/v1/transaction
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "amount": "53.25",
+    "category": "Shopping",
+    "currency": "BRL",
+    "date": "2000-12-29",
+    "description": "test transaction",
+    "essential": false,
+    "status": "Completed",
+    "subCategory": "Electronics",
+    "type": "Debit"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
