@@ -15,7 +15,7 @@ import (
 // Controller
 // Defines the interface for transaction data operations.
 type Controller struct {
-	transactionSvc transactionService.UseCase
+	transactionSvc *transactionService.UseCase
 	logger         *logger.Logger
 }
 
@@ -33,7 +33,7 @@ type transactionPostRequest struct {
 
 // NewTransactionController
 // Creates a new instance of the transaction controller.
-func NewTransactionController(useCase transactionService.UseCase, logger *logger.Logger) *Controller {
+func NewTransactionController(useCase *transactionService.UseCase, logger *logger.Logger) *Controller {
 	return &Controller{
 		useCase,
 		logger,

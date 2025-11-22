@@ -9,11 +9,11 @@ import (
 
 type UseCase struct {
 	ctx                 context.Context
-	transactionTypeRepo *transactionTypeRepo.Repository
+	transactionTypeRepo transactionTypeRepo.Repository
 	logger              *logger.Logger
 }
 
-func NewTypeService(ctx context.Context, typeRepo *transactionTypeRepo.Repository, logger *logger.Logger) *UseCase {
+func NewTypeService(ctx context.Context, typeRepo transactionTypeRepo.Repository, logger *logger.Logger) *UseCase {
 	return &UseCase{
 		ctx,
 		typeRepo,

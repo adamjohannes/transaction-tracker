@@ -70,7 +70,7 @@ func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.L
 	currencySvc := currencyService.NewCurrencyService(ctx, currencyRepo, logger)
 
 	statusRepo := statusRepository.NewPostgresRepository(pool)
-	statusSvc := statusService.NewStatusService(ctx, &statusRepo, logger) // TODO check inconsistency
+	statusSvc := statusService.NewStatusService(ctx, statusRepo, logger)
 
 	subCategoryRepo := subCategoryRepository.NewPostgresRepository(pool)
 	subCategorySvc := subCategoryService.NewSubCategoryService(ctx, subCategoryRepo, logger)
@@ -79,16 +79,16 @@ func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.L
 	transactionSvc := transactionService.NewTransactionService(ctx, transactionRepo, logger)
 
 	typeRepo := typeRepository.NewPostgresRepository(pool)
-	typeSvc := transaction_type2.NewTypeService(ctx, &typeRepo, logger) // TODO check inconsistency
+	typeSvc := transaction_type2.NewTypeService(ctx, typeRepo, logger)
 
 	// Initialize Controllers
 	authController := auth.NewAuthController(authSvc, userSvc, logger)
 	categoryController := category.NewCategoryController(ctx, categorySvc, logger)
 	currencyController := currency.NewCurrencyController(ctx, currencySvc, logger)
 	statusController := status.NewStatusController(ctx, statusSvc, logger)
-	subCategoryController := sub_category.NewSubCategoryController(ctx, subCategorySvc, logger) // TODO check inconsistency
-	transactionController := transaction.NewTransactionController(*transactionSvc, logger)      // TODO check inconsistency
-	typeController := transaction_type.NewTypeController(ctx, *typeSvc, logger)                 // TODO check inconsistency
+	subCategoryController := sub_category.NewSubCategoryController(ctx, subCategorySvc, logger)
+	transactionController := transaction.NewTransactionController(transactionSvc, logger)
+	typeController := transaction_type.NewTypeController(ctx, typeSvc, logger)
 
 	return &Dependencies{
 		logger,

@@ -9,11 +9,11 @@ import (
 
 type UseCase struct {
 	ctx        context.Context
-	statusRepo *statusRepo.Repository
+	statusRepo statusRepo.Repository
 	logger     *logger.Logger
 }
 
-func NewStatusService(ctx context.Context, statusRepo *statusRepo.Repository, logger *logger.Logger) UseCase {
+func NewStatusService(ctx context.Context, statusRepo statusRepo.Repository, logger *logger.Logger) UseCase {
 	return UseCase{
 		ctx,
 		statusRepo,

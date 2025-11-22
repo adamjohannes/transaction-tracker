@@ -11,11 +11,11 @@ import (
 
 type Controller struct {
 	ctx                    context.Context
-	transactionTypeService transactionTypeService.UseCase
+	transactionTypeService *transactionTypeService.UseCase
 	logger                 *logger.Logger
 }
 
-func NewTypeController(ctx context.Context, transactionTypeService transactionTypeService.UseCase, logger *logger.Logger) *Controller {
+func NewTypeController(ctx context.Context, transactionTypeService *transactionTypeService.UseCase, logger *logger.Logger) *Controller {
 	return &Controller{
 		ctx,
 		transactionTypeService,

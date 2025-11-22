@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"monthly-expenses-handler/cmd/api/dependency"
 	"net/http"
 	"os"
@@ -12,19 +13,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type server struct {
-	deps       *dependencies.dependencies
+type Server struct {
+	deps       *dependencies.Dependencies
 	router     *gin.Engine
 	httpServer *http.Server
 }
 
-func NewServer(deps *dependencies.Dependencies) *server {
+func NewServer(deps *dependencies.Dependencies) *Server {
 	router := gin.New()
 	srv := &http.Server{
 		Handler: router,
 	}
 
-	return &server{
+	return &Server{
 		deps:       deps,
 		router:     router,
 		httpServer: srv,
@@ -33,7 +34,7 @@ func NewServer(deps *dependencies.Dependencies) *server {
 
 // setup
 // Sets up the router for the API.
-func (s *server) setup() {
+func (s *Server) setup() {
 	v1 := s.router.Group("/v1")
 
 	// --- Protected routes
@@ -69,14 +70,14 @@ func (s *server) setup() {
 
 // Serve
 // Starts the HTTP server and handles graceful shutdown.
-func (s *server) Serve() {
+func (s *Server) Serve() {
 	port := "8080"
 	s.httpServer.Addr = ":" + port
 
 	serverErrors := make(chan error, 1)
 	go func() {
 		s.deps.Logger.Info("Starting API server", map[string]interface{}{"port": port})
-		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErrors <- err
 		}
 	}()

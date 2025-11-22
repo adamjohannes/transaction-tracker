@@ -17,7 +17,7 @@ type postgresRepository struct {
 }
 
 func NewPostgresRepository(db *pgxpool.Pool) Repository {
-	return &postgresRepository{db: db}
+	return &postgresRepository{db}
 }
 
 func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.Status, error) {
