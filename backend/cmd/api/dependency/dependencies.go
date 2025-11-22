@@ -51,7 +51,6 @@ func BuildDependencies(cfg *config.Config, ctx context.Context, logger *logger.L
 	if err != nil {
 		log.Fatalf("Could not connect to the database: %v", err)
 	}
-	defer pool.Close()
 
 	// Initialize Services
 	cryptoSvc, err := crypto.NewCryptoService(cfg.Postgres.EncryptionKey)
