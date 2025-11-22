@@ -35,9 +35,9 @@ func (c *Controller) GetAllSubCategories(ctx *gin.Context) {
 
 	subCategoriesList, err := c.subcategoryService.List()
 	if err != nil {
-		c.logger.Error("Failed to fetch sub-categories", map[string]interface{}{"error": err})
+		c.logger.Error("Failed to fetch sub-categories", map[string]interface{}{"error": err.Error()})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
 		return
 	}
@@ -61,9 +61,9 @@ func (c *Controller) GetSubCategoriesByCategory(ctx *gin.Context) {
 
 	subCategoriesList, err := c.subcategoryService.ListByCategory(categoryName)
 	if err != nil {
-		c.logger.Error("Failed to fetch sub-categories by category", map[string]interface{}{"error": err})
+		c.logger.Error("Failed to fetch sub-categories by category", map[string]interface{}{"error": err.Error()})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
 		return
 	}

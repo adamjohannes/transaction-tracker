@@ -28,9 +28,9 @@ func (c *Controller) GetAllStatus(ctx *gin.Context) {
 
 	statusList, err := c.statusService.List()
 	if err != nil {
-		c.logger.Error("Failed to fetch status", map[string]interface{}{"error": err})
+		c.logger.Error("Failed to fetch status", map[string]interface{}{"error": err.Error()})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
 		return
 	}

@@ -36,20 +36,20 @@ func (ac *Controller) Register(c *gin.Context) {
 
 	request, err := collectRequest(c)
 	if err != nil {
-		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err})
+		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "failed to bind request",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 		return
 	}
 
 	newUser, err := buildUserObj(request)
 	if err != nil {
-		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err})
+		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "failed to build new user",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 		return
 	}
@@ -58,7 +58,7 @@ func (ac *Controller) Register(c *gin.Context) {
 
 	token, err := ac.userSvc.Register(newUser)
 	if err != nil {
-		ac.logger.Error("Failed to register user", map[string]interface{}{"error": err})
+		ac.logger.Error("Failed to register user", map[string]interface{}{"error": err.Error()})
 		var validationErr *api_error.ValidationError
 		if errors.As(err, &validationErr) {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -68,7 +68,7 @@ func (ac *Controller) Register(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Failed to register user",
-				"detail":  err,
+				"detail":  err.Error(),
 			})
 		}
 		return
@@ -87,19 +87,19 @@ func (ac *Controller) Login(c *gin.Context) {
 
 	requestDatamap, err := collectRequest(c)
 	if err != nil {
-		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err})
+		ac.logger.Error("Failed to bind request", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "failed to bind request",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 	}
 
 	requestedUser, err := buildUserObj(requestDatamap)
 	if err != nil {
-		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err})
+		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "failed to build new user",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 		return
 	}
@@ -108,7 +108,7 @@ func (ac *Controller) Login(c *gin.Context) {
 
 	token, err := ac.userSvc.Login(requestedUser)
 	if err != nil {
-		ac.logger.Error("Failed to log-in user", map[string]interface{}{"error": err})
+		ac.logger.Error("Failed to log-in user", map[string]interface{}{"error": err.Error()})
 
 		var authErr *api_error.AuthError
 		var validationErr *api_error.ValidationError
@@ -126,7 +126,7 @@ func (ac *Controller) Login(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Failed to log-in user",
-				"detail":  err,
+				"detail":  err.Error(),
 			})
 		}
 

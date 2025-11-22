@@ -28,9 +28,9 @@ func (c *Controller) GetAllTransactionType(ctx *gin.Context) {
 
 	transactionTypeList, err := c.transactionTypeService.List()
 	if err != nil {
-		c.logger.Error("Failed to fetch transaction type", map[string]interface{}{"error": err})
+		c.logger.Error("Failed to fetch transaction type", map[string]interface{}{"error": err.Error()})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
 		return
 	}

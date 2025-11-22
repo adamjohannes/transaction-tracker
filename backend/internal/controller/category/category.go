@@ -34,10 +34,10 @@ func (cc *Controller) GetAllCategories(ctx *gin.Context) {
 
 	categories, err := cc.categorySvc.ListCategories()
 	if err != nil {
-		cc.logger.Error("Failed to fetch categories", map[string]interface{}{"error": err})
+		cc.logger.Error("Failed to fetch categories", map[string]interface{}{"error": err.Error()})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to fetch categories",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 		return
 	}

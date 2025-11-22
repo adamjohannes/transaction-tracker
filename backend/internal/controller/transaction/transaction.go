@@ -57,7 +57,7 @@ func (t *Controller) PostTransaction(c *gin.Context) {
 
 	requestDatamap, err := collectPostRequest(c)
 	if err != nil {
-		t.logger.Error("Failed to bind request", map[string]interface{}{"error": err})
+		t.logger.Error("Failed to bind request", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "failed to bind request",
 			"detail": err,
@@ -71,7 +71,7 @@ func (t *Controller) PostTransaction(c *gin.Context) {
 
 	transactionObj, err := t.transactionSvc.RecordTransaction(newTransaction, userID)
 	if err != nil {
-		t.logger.Error("Failed to create transaction", map[string]interface{}{"error": err})
+		t.logger.Error("Failed to create transaction", map[string]interface{}{"error": err.Error()})
 
 		var validationErr *api_error.ValidationError
 		var authErr *api_error.ValidationError
@@ -89,7 +89,7 @@ func (t *Controller) PostTransaction(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Failed to create transaction",
-				"detail":  err,
+				"detail":  err.Error(),
 			})
 		}
 
@@ -122,10 +122,10 @@ func (t *Controller) GetAllTransactionsByUser(c *gin.Context) {
 
 	transactionList, err := t.transactionSvc.List(userID)
 	if err != nil {
-		t.logger.Error("Failed to list transactions", map[string]interface{}{"error": err})
+		t.logger.Error("Failed to list transactions", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to list transactions",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 		return
 	}
@@ -150,10 +150,10 @@ func (t *Controller) GetTransactionCount(c *gin.Context) {
 
 	countMap, err := t.transactionSvc.Count(groupBy)
 	if err != nil {
-		t.logger.Error("Failed to count transactions", map[string]interface{}{"error": err})
+		t.logger.Error("Failed to count transactions", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to count transactions",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 		return
 	}
@@ -168,10 +168,10 @@ func (t *Controller) GetTransactionCount(c *gin.Context) {
 func (t *Controller) GetSubCategoryAmounts(c *gin.Context) {
 	amount, err := t.transactionSvc.CollectSubCategoryAmount()
 	if err != nil {
-		t.logger.Error("Failed to collect sub-category amounts", map[string]interface{}{"error": err})
+		t.logger.Error("Failed to collect sub-category amounts", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to collect sub-category amounts",
-			"detail":  err,
+			"detail":  err.Error(),
 		})
 		return
 	}

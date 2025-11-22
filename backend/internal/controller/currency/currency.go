@@ -28,9 +28,9 @@ func (c *Controller) GetAllCurrency(ctx *gin.Context) {
 
 	currencyList, err := c.currencyService.List()
 	if err != nil {
-		c.logger.Error("Failed to fetch currency", map[string]interface{}{"error": err})
+		c.logger.Error("Failed to fetch currency", map[string]interface{}{"error": err.Error()})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
 		return
 	}

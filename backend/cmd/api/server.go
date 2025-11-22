@@ -88,14 +88,14 @@ func (s *Server) Serve() {
 
 	select {
 	case err := <-serverErrors:
-		s.deps.Logger.Error("Server critical error", map[string]interface{}{"error": err})
+		s.deps.Logger.Error("Server critical error", map[string]interface{}{"error": err.Error()})
 	case sig := <-shutdownChan:
 		s.deps.Logger.Info("Shutdown signal received", map[string]interface{}{"signal": sig.String()})
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
-			s.deps.Logger.Error("Graceful shutdown failed: Server forced to exit", map[string]interface{}{"error": err})
+			s.deps.Logger.Error("Graceful shutdown failed: Server forced to exit", map[string]interface{}{"error": err.Error()})
 		} else {
 			s.deps.Logger.Info("Server shut down gracefully", nil)
 		}
