@@ -34,7 +34,7 @@ import (
 type Dependencies struct {
 	Logger *logger.Logger
 
-	authService *authService.AuthService
+	AuthService *authService.AuthService
 
 	AuthController        *auth.Controller
 	CategoryController    *category.Controller

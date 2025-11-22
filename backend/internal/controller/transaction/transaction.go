@@ -65,7 +65,17 @@ func (t *Controller) PostTransaction(c *gin.Context) {
 		return
 	}
 
+	t.logger.Debug("Building Transaction object...", map[string]interface{}{"transaction": requestDatamap})
+
 	newTransaction, err := buildTransactionObj(requestDatamap)
+	if err != nil {
+		t.logger.Error("Invalid transaction data", map[string]interface{}{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "invalid transaction data",
+			"detail": err,
+		})
+		return
+	}
 
 	t.logger.Info("Attempting to create a new transaction...", nil)
 

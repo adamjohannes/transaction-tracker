@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"monthly-expenses-handler/cmd/api/dependency"
+	"monthly-expenses-handler/internal/service/auth"
 	"net/http"
 	"os"
 	"os/signal"
@@ -41,9 +42,9 @@ func (s *Server) setup() {
 	{
 		// Transaction routes
 		transaction := v1.Group("/transaction")
-
-		transaction.GET("/:userID", s.deps.TransactionController.GetAllTransactionsByUser)
-		transaction.POST("/:userID", s.deps.TransactionController.PostTransaction)
+		transaction.Use(auth.AuthMiddleware(s.deps.AuthService))
+		transaction.GET("/", s.deps.TransactionController.GetAllTransactionsByUser)
+		transaction.POST("/", s.deps.TransactionController.PostTransaction)
 	}
 
 	// --- Public routes

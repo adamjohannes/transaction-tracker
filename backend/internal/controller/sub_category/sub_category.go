@@ -52,7 +52,7 @@ func (c *Controller) GetAllSubCategories(ctx *gin.Context) {
 func (c *Controller) GetSubCategoriesByCategory(ctx *gin.Context) {
 	c.logger.Info("Received a request to fetch sub categories by category", nil)
 
-	categoryName := ctx.Param("category")
+	categoryName := ctx.Param("categoryName")
 	if categoryName == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": api_error.NewValidationError("category name is required"),

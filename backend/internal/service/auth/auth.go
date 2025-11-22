@@ -4,8 +4,12 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"fmt"
+	"monthly-expenses-handler/internal/middleware"
+	"net/http"
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -58,7 +62,7 @@ func (s *AuthService) GenerateJWT(userID int64) (string, error) {
 
 // ValidateJWT
 // Validates a token string and returns the userID (sub claim).
-func (s *AuthService) ValidateJWT(tokenString string) (int64, error) {
+func (s *AuthService) ValidateJWT(tokenString string) (uint64, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -72,9 +76,39 @@ func (s *AuthService) ValidateJWT(tokenString string) (int64, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if sub, ok := claims["sub"].(float64); ok {
-			return int64(sub), nil
+			return uint64(sub), nil
 		}
 	}
 
 	return 0, fmt.Errorf("invalid token")
+}
+
+// AuthMiddleware
+// Validates the JWT token from the Authorization header for Gin.
+func AuthMiddleware(authSvc *AuthService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+			return
+		}
+
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+			return
+		}
+
+		tokenString := parts[1]
+		userID, err := authSvc.ValidateJWT(tokenString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			return
+		}
+
+		// Set the userID in Gin's context so controllers can retrieve it via c.Get()
+		c.Set(middleware.UserIDKey, userID)
+
+		c.Next()
+	}
 }
