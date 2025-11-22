@@ -46,9 +46,9 @@ func (ac *Controller) Register(c *gin.Context) {
 
 	newUser, err := buildUserObj(request)
 	if err != nil {
-		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err.Error()})
+		ac.logger.Error("Invalid credentials", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "failed to build new user",
+			"message": "Invalid credentials",
 			"detail":  err.Error(),
 		})
 		return
