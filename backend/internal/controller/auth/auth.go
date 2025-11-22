@@ -48,7 +48,7 @@ func (ac *Controller) Register(c *gin.Context) {
 	if err != nil {
 		ac.logger.Error("Invalid credentials", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid credentials",
+			"message": "invalid credentials",
 			"detail":  err.Error(),
 		})
 		return
@@ -96,9 +96,9 @@ func (ac *Controller) Login(c *gin.Context) {
 
 	requestedUser, err := buildUserObj(requestDatamap)
 	if err != nil {
-		ac.logger.Error("Failed to build new user", map[string]interface{}{"error": err.Error()})
+		ac.logger.Error("Invalid credentials", map[string]interface{}{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "failed to build new user",
+			"message": "invalid credentials",
 			"detail":  err.Error(),
 		})
 		return
